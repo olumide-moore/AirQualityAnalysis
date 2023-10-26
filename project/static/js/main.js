@@ -81,6 +81,11 @@ function updateMapMarkers(data){
             mapObject.setView([51.505, -0.09], 13);
         }
 
+        //Update statistics
+        let meanData = document.getElementById("meanData");
+        mean=data.mean;
+        meanData.innerHTML = "";
+        meanData.innerHTML ="<p>NO2: "+mean.no2+"</p><p>VOC: "+mean.voc+"</p><p>PM10: "+mean.particulatepm10+"</p><p>PM2.5: "+mean.particulatepm2_5+"</p><p>PM1: "+mean.particulatepm1+"</p>";
 
         //Update table
         let tableBody = document.getElementById("tableBody");

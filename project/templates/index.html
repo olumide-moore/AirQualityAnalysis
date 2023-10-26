@@ -9,24 +9,20 @@
 <input type="text" id="dateRangeFilter" placeholder="Date" class="mb-7" onchange="dateChanged()">
 </div>
 
-
-<!-- json_script is a Django template tag that converts a Python object into a JSON string, and wraps it in a <script> tag. -->
-    <!-- {{ all_sensor_locations|json_script:"sensor_locations" }}  -->
-    {{ mean_data|json_script:"mean_data" }}
-
 <!-- Mean Data -->
 <div class="mb-7">
     <p class="font-semibold">Mean Data:</p>
-    <p>No2: {{ mean_data.no2 }}</p>
+    <div id = "meanData">
+    <!-- <p>No2: {{ mean_data.no2 }}</p>
     <p>VOC: {{ mean_data.voc }}</p>
     <p>Particulate PM10: {{ mean_data.particulatepm10 }}</p>
     <p>Particulate PM2.5: {{ mean_data.particulatepm2_5 }}</p>
-    <p>Particulate PM1: {{ mean_data.particulatepm1 }}</p>
+    <p>Particulate PM1: {{ mean_data.particulatepm1 }}</p> -->
+    </div>
 </div>
 
 <!-- Map -->
 <div id="map"></div>
-
 
     <div class="overflow-x-auto overflow-y-auto w-full">
     <table class="table-auto bg-white border border-gray-300">
@@ -49,22 +45,7 @@
         
         <!-- <tbody class="flex flex-col justify-between w-full overflow-y-scroll" style="height: 50vh;"> -->
         <tbody id="tableBody">
-            <!-- {% for data in all_sensor_locations %}
-            <tr data-lat="{{data.latitude}}" data-lng="{{data.longitude}}" data-no2="{{data.no2}}" data-voc="{{data.voc}}" data-pm10="{{data.particulatepm10}}" data-pm2_5="{{data.particulatepm2_5}}" data-pm1="{{data.particulatepm1}}"
-            class="coordinate">
-                <td class="py-2 px-4 border-b w-1/3 text-left">{{ data.sensor_id }}</td>
-                <td class="py-2 px-4 border-b w-1/3 text-left">{{ data.obs_date }}</td>
-                <td class="py-2 px-4 border-b w-1/3 text-left">{{ data.obs_time_utc }}</td>
-                <td class="py-2 px-4 border-b w-1/3 text-left">{{ data.latitude }}</td>
-                <td class="py-2 px-4 border-b w-1/3 text-left">{{ data.longitude }}</td>
-                <td class="py-2 px-4 border-b w-1/3 text-left">{{ data.no2 }}</td>
-                <td class="py-2 px-4 border-b w-1/3 text-left">{{ data.voc }}</td>
-                <td class="py-2 px-4 border-b w-1/3 text-left">{{ data.particulatepm10 }}</td>
-                <td class="py-2 px-4 border-b w-1/3 text-left">{{ data.particulatepm2_5 }}</td>
-                <td class="py-2 px-4 border-b w-1/3 text-left">{{ data.particulatepm1 }}</td>
-                <td class="py-2 px-4 border-b w-1/3 text-left">{{ data.geom }}</td>
-            </tr>
-            {% endfor %} -->
+        
 
         </tbody>
     </table>
