@@ -111,6 +111,60 @@ class AllSensorMeasurements(models.Model):
         db_table = 'all_sensor_measurements'
 
 
+class AllSensorMeasurementsWithLocationsPlume(models.Model):
+    sensor_id = models.IntegerField(blank=True, null=True)
+    obs_date = models.DateField(blank=True, null=True)
+    obs_time_utc = models.TimeField(blank=True, null=True)
+    latitude = models.FloatField(blank=True, null=True)
+    longitude = models.FloatField(blank=True, null=True)
+    no2 = models.FloatField(db_column='NO2', blank=True, null=True)  # Field name made lowercase.
+    voc = models.FloatField(db_column='VOC', blank=True, null=True)  # Field name made lowercase.
+    particulatepm10 = models.FloatField(db_column='particulatePM10', blank=True, null=True)  # Field name made lowercase.
+    particulatepm2_5 = models.FloatField(db_column='particulatePM2.5', blank=True, null=True)  # Field name made lowercase. Field renamed to remove unsuitable characters.
+    particulatepm1 = models.FloatField(db_column='particulatePM1', blank=True, null=True)  # Field name made lowercase.
+    geom = models.TextField(blank=True, null=True)  # This field type is a guess.
+
+    class Meta:
+        managed = False
+        db_table = 'all_sensor_measurements_with_locations_plume'
+
+
+class AllSensorMeasurementsWithLocationsSc(models.Model):
+    sensor_id = models.IntegerField(blank=True, null=True)
+    obs_date = models.DateField(blank=True, null=True)
+    obs_time_utc = models.TimeField(blank=True, null=True)
+    latitude = models.FloatField(blank=True, null=True)
+    longitude = models.FloatField(blank=True, null=True)
+    no2 = models.FloatField(db_column='NO2', blank=True, null=True)  # Field name made lowercase.
+    voc = models.FloatField(db_column='VOC', blank=True, null=True)  # Field name made lowercase.
+    particulatepm10 = models.FloatField(db_column='particulatePM10', blank=True, null=True)  # Field name made lowercase.
+    particulatepm2_5 = models.FloatField(db_column='particulatePM2.5', blank=True, null=True)  # Field name made lowercase. Field renamed to remove unsuitable characters.
+    particulatepm1 = models.FloatField(db_column='particulatePM1', blank=True, null=True)  # Field name made lowercase.
+    geom = models.TextField(blank=True, null=True)  # This field type is a guess.
+
+    class Meta:
+        managed = False
+        db_table = 'all_sensor_measurements_with_locations_sc'
+
+
+class AllSensorMeasurementsWithLocationsZephyr(models.Model):
+    sensor_id = models.IntegerField(blank=True, null=True)
+    obs_date = models.DateField(blank=True, null=True)
+    obs_time_utc = models.TimeField(blank=True, null=True)
+    latitude = models.FloatField(blank=True, null=True)
+    longitude = models.FloatField(blank=True, null=True)
+    no2 = models.FloatField(db_column='NO2', blank=True, null=True)  # Field name made lowercase.
+    voc = models.FloatField(db_column='VOC', blank=True, null=True)  # Field name made lowercase.
+    particulatepm10 = models.FloatField(db_column='particulatePM10', blank=True, null=True)  # Field name made lowercase.
+    particulatepm2_5 = models.FloatField(db_column='particulatePM2.5', blank=True, null=True)  # Field name made lowercase. Field renamed to remove unsuitable characters.
+    particulatepm1 = models.FloatField(db_column='particulatePM1', blank=True, null=True)  # Field name made lowercase.
+    geom = models.TextField(blank=True, null=True)  # This field type is a guess.
+
+    class Meta:
+        managed = False
+        db_table = 'all_sensor_measurements_with_locations_zephyr'
+
+
 class JsonTable(models.Model):
     sensor_id = models.IntegerField(blank=True, null=True)
     obs_date = models.DateField(blank=True, null=True)
