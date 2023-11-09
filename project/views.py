@@ -4,6 +4,7 @@ from django.http import HttpResponse, JsonResponse
 from datetime import datetime
 from django.db.models import Avg, Max, Min 
 from django.db.models.functions import TruncDate
+from collections import defaultdict
 
 sensor_id=60
 data_table=AllSensorMeasurements
@@ -51,30 +52,38 @@ def get_mean(data):
     return mean_data
 
 def sensors_data(request):
-    # start_date, end_date = datetime.strptime(start_date, '%d-%b-%Y'), datetime.strptime(end_date, '%d-%b-%Y')
+    # start_date, end_date = datetime.strptime(start_date, '%d-%b-%Y'), datetime.strptime(end_date, '%d-%b-%Y')#date format for datepicker
     # data = data_table.objects.values(*fields).filter(sensor_id=sensor_id, obs_date__range=[start_date, end_date])
     start_date, end_date = request.GET.get('start_date'), request.GET.get('end_date')
     fields=('sensor_id', 'obs_date', 'obs_time_utc', 'latitude', 'longitude', 'no2', 'voc', 'particulatepm10', 'particulatepm2_5', 'particulatepm1', 'geom')
-    grouped_data=get_raw_data(start_date, end_date)
+    data_by_date=get_raw_data(start_date, end_date)
+    # data_by_date = json.dumps(data_by_date, default=str)
     return JsonResponse(
-       {'raw_data': grouped_data}
+        {"raw_data":data_by_date}
     )
-
 
 def get_raw_data(start_date, end_date):
     '''Returns raw data for each day within the specified date range'''
     fields=('sensor_id', 'obs_date', 'latitude', 'longitude', 'no2', 'voc', 'particulatepm10', 'particulatepm2_5', 'particulatepm1')
-    start_date, end_date = datetime.strptime(start_date, '%d/%m/%Y').date(), datetime.strptime(end_date, '%d/%m/%Y').date()
+    start_date, end_date = datetime.strptime(start_date, '%d/%m/%Y').date(), datetime.strptime(end_date, '%d/%m/%Y').date() #date format from week range input
 
     # Get the raw data for each day for the sensor id
     raw_data = data_table.objects.values(*fields).filter(sensor_id=sensor_id, obs_date__range=[start_date, end_date])
-    #Group into days
-    raw_data_list = list(raw_data)
-    grouped_data = {dat: [] for dat in set(map(lambda x:x['obs_date'], raw_data_list))}
-    for dat in raw_data_list:
-        grouped_data[dat['obs_date']].append(dat)
-    grouped_data= {k.strftime('%d/%m/%Y'): v for k, v in sorted(grouped_data.items(), key=lambda item: item[0])}
-    return grouped_data
+    raw_data = list(raw_data)
+
+
+    # Group the data by date and the no2, voc, as subdicts
+    # data_by_date = {}
+    data_by_date = defaultdict(lambda: defaultdict(list))
+
+    for entry in raw_data:
+        date = entry['obs_date']
+        for sensor_type in ['no2', 'voc', 'particulatepm10', 'particulatepm2_5', 'particulatepm1']:
+            data_by_date[date][sensor_type].append(entry[sensor_type])
+
+    #Sort the data by date
+    data_by_date = {k.strftime('%d/%m/%Y'): v for k, v in sorted(data_by_date.items(), key=lambda item: item[0])}
+    return data_by_date 
 def get_avg_max_min(start_date, end_date):
     '''Returns average, max, min of the data for each day'''
     fields=('sensor_id','obs_date','latitude','longitude','no2','voc','particulatepm10','particulatepm2_5','particulatepm1')
@@ -112,5 +121,3 @@ def users():
     )
 # users = users()
 # print(users)
-
-# def get_mean(all_sensor_locations):
