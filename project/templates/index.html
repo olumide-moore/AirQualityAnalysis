@@ -4,29 +4,70 @@
 
 {% block content %}
 <!--Date range-->
-<div>
-<p class="text-s font-semibold text-gray-400">Filter by date</p>
-<input type="text" id="dateRangeFilter" placeholder="Date" class="mb-7" onchange="dateChanged()">
-</div>
+<!-- <div> -->
+<!-- <p class="text-s font-semibold text-gray-400">Week</p> -->
+
+<!-- <input type="week" id="weekFilter" placeholder="Week" class="mb-7" onchange="weekChanged()"> -->
+<!-- <input type="text" id="dateRangeFilter" placeholder="Date" class="mb-7" onchange="dateChanged()"> -->
+
+<!-- </div> -->
 
 
 <!-- <div class="grid grid-cols-3 gap-3"> -->
 <!-- <div class="rounded border-solid border-2 border-gray-800"> -->
 
 <!--Place map right next to graph-->
-<div class="grid grid-cols-2 gap-1 m-10"> 
-    <div class="h-96 w-96">
-        <canvas id="meanGraph" width="400" height="400"></canvas>
+<!-- <div> 
+    <div><canvas id="no2Boxplot"></canvas></div>
+    <div><canvas id="vocBoxplot"></canvas></div>
+    <div><canvas id="particulatepm10Boxplot"></canvas></div>
+    <div><canvas id="particulatepm2_5Boxplot"></canvas></div>
+    <div><canvas id="particulatepm1Boxplot"></canvas></div>
+</div> -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <!-- Flex container for heading and week filter input -->
+    <div class="flex justify-between items-center mb-6">
+      <!-- Placeholder for the central heading, which will be added dynamically -->
+      <div id="weekRangeHeading" class="text-l font-semibold text-gray-900"></div>
+      <!-- <div id="weekRangeHeading" class="text-m font-semibold text-gray-900 bg-white px-2 py-2 rounded shadow">
+      </div> -->
+      
+      <!-- Week Filter Input -->
+      <input type="week" id="weekFilter" placeholder="Week" class="px-4 shadow-lg border border-gray-300 rounded focus:outline-none focus:border-indigo-500 focus:shadow-outline-indigo" onchange="weekChanged()">
+    </div> 
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+        <div class="p-4 shadow rounded-lg bg-white">
+            <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">NO2 Levels</h2>
+            <div><canvas id="no2Boxplot"></canvas></div>
+        </div>
+        <div class="p-4 shadow rounded-lg bg-white">
+            <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">VOC Levels</h2>
+            <div><canvas id="vocBoxplot"></canvas></div>
+        </div>
+        <div class="p-4 shadow rounded-lg bg-white">
+            <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">PM10 Particulate</h2>
+            <div><canvas id="particulatepm10Boxplot"></canvas></div>
+        </div>
+        <div class="p-4 shadow rounded-lg bg-white">
+            <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">PM2.5 Particulate</h2>
+            <div><canvas id="particulatepm2_5Boxplot"></canvas></div>
+        </div>
+        <div class="p-4 shadow rounded-lg bg-white">
+            <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">PM1 Particulate</h2>
+            <div><canvas id="particulatepm1Boxplot"></canvas></div>
+        </div>
     </div>
-    <!-- Map -->
-    <div id="map" class="z-0"></div>
 </div>
+
 <!-- Mean Data -->
 <div class="mb-7">
     <p class="font-semibold">Mean Data:</p>
     <div id = "meanData">
     </div>
 </div>
+<!-- Map -->
+<div id="map" class="z-0"></div>
+
 
     <!-- <div class="overflow-x-auto overflow-y-auto w-full"> -->
     <!-- <table class="table-auto bg-white border border-gray-300"> -->

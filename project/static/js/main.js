@@ -2,7 +2,7 @@
 var mapObject=createMap([51.505, -0.09], 13);
 var markerFeatureGroup = L.featureGroup()
 mapObject.addLayer(markerFeatureGroup);
-dateChanged(); 
+// dateChanged(); 
     
 //Create a map object and set the center and zoom level
 function createMap(center, zoom){
@@ -15,35 +15,53 @@ function createMap(center, zoom){
 }
 
 // Filter table by date range
-function dateChanged() {
-    // Get date range from input
-    var dateRange = document.getElementById("dateRangeFilter");
-    var dateRange = dateRange.value.split(" to ");
+// function dateChanged() {
+//     // Get date range from input
+//     var dateRange = document.getElementById("dateRangeFilter");
+//     var dateRange = dateRange.value.split(" to ");
     
-    var startDate = dateRange[0];
-    var endDate = dateRange[1] || startDate; // If no end date, use start date
+//     var startDate = dateRange[0];
+//     var endDate = dateRange[1] || startDate; // If no end date, use start date
 
-    // startDate = new Date(startDate);
-    // endDate = new Date(endDate);
-    // var table = document.getElementById("dataTable");
-    // var rows = table.getElementsByTagName("tr");
-    // var filteredData = [];
-    // for (var i = 1; i < rows.length; i++) { // Start from 1 to skip the header row
-    //     var observationDate = rows[i].getElementsByTagName("td")[1].textContent; // Assuming date is in the second column
-    //     observationDate= new Date(observationDate);
-    //     if (observationDate >= startDate && observationDate <= endDate) {
-    //         rows[i].style.display = "";
-    //         filteredData.push(rows[i]);
-    //     } else {
-    //         rows[i].style.display = "none";
-    //     }
-    // }
-    // Update map markers
+//     // startDate = new Date(startDate);
+//     // endDate = new Date(endDate);
+//     // var table = document.getElementById("dataTable");
+//     // var rows = table.getElementsByTagName("tr");
+//     // var filteredData = [];
+//     // for (var i = 1; i < rows.length; i++) { // Start from 1 to skip the header row
+//     //     var observationDate = rows[i].getElementsByTagName("td")[1].textContent; // Assuming date is in the second column
+//     //     observationDate= new Date(observationDate);
+//     //     if (observationDate >= startDate && observationDate <= endDate) {
+//     //         rows[i].style.display = "";
+//     //         filteredData.push(rows[i]);
+//     //     } else {
+//     //         rows[i].style.display = "none";
+//     //     }
+//     // }
+//     // Update map markers
+//     fetchSensorsData([startDate, endDate]);
+
+//     // // Other logic for updating statistical values, if needed
+//     // updateStatistics(filteredData);
+// }
+const weekRangeHeading = document.getElementById("weekRangeHeading");
+function weekChanged() {
+    // Get selected week from input
+    let weekInput = document.getElementById("weekFilter").value;
+    let [year, week] = weekInput.split("-W");
+    let {startDate, endDate} = getWeekDates(year, week); ///get the start and end date of the week
+    // weekRangeHeading.textContent = `Week(${startDate} - ${endDate})`
+    weekRangeHeading.textContent = `${startDate} - ${endDate}`
+    // console.log(startDate, endDate);
     fetchSensorsData([startDate, endDate]);
-
-    // // Other logic for updating statistical values, if needed
-    // updateStatistics(filteredData);
 }
+function getWeekDates(year, week) {
+    let startDate = new Date(year, 0, 2 + ((week - 1) * 7)); 
+    let endDate = new Date(year, 0, 2 + ((week - 1) * 7) + 6);
+    startDate=startDate.toLocaleDateString();
+    endDate=endDate.toLocaleDateString();
+    return {startDate, endDate};
+    }
 
 
 function fetchSensorsData(dateRange){
@@ -60,94 +78,160 @@ function fetchSensorsData(dateRange){
     fetch(`/sensors-data/?start_date=${encodeURIComponent(dateRange[0])}&end_date=${encodeURIComponent(dateRange[1])}`)
     .then(response => response.json()).then(data => {
         // console.log(data);
-        updateMapMarkers(data);
+        updateChart(data);
        
-    });
+    }).catch(error => {
+        console.error('Error fetching data:', error)});
+    }
+    
+
+
+let boxplotCharts = {};
+function createBoxPlotChart(chartId,label, color){
+    let ctx= document.getElementById(chartId).getContext('2d');
+    boxplotCharts[label] = new Chart(ctx, {
+        type: 'boxplot', //bar, horizontalBar, pie, line, doughnut, radar, polarArea//bar, horizontalBar, pie, line, doughnut, radar, polarArea
+        data: {
+            datasets: [{
+                // label: label,
+                //disabling the label for now
+                data: [],
+                backgroundColor: color
+            //     // borderColor: 'rgb(255, 99, 132)',
+            //     // borderWidth: 1,
+            //     // barThickness: 10,
+            //     // maxBarThickness: 8,
+            //     // hoverBorderColor: "rgba(234, 236, 244, 1)",
+            //     // hoverBorderWidth: 3
+            }]
+        },
+        options: {
+            plugins: {
+                legend: {
+                    display: false,
+                    }
+                },
+                responsive: true,
+                maintainAspectRatio: false
+            }
+   });
 }
+const parameters = ['NO2', 'VOC', 'ParticulatePM10', 'ParticulatePM2_5', 'ParticulatePM1'];
+const colors = ['rgba(255, 99, 132, 0.2)', 'rgba(255, 159, 64, 0.2)', 'rgba(255, 206, 86, 0.2)', 'rgba(75, 192, 192, 0.2)', 'rgba(54, 162, 235, 0.2)'];
+for (let param of parameters){
+    createBoxPlotChart(`${param.toLowerCase()}Boxplot`, param, colors[parameters.indexOf(param)]);
+}
+// let ctx = document.getElementById('no2Graph').getContext('2d');
 
-let ctx = document.getElementById('meanGraph').getContext('2d');
+// let myChart = new Chart(ctx, {
+//     type: 'boxplot', //bar, horizontalBar, pie, line, doughnut, radar, polarArea
+//     data: {
+//         // labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+//         datasets: [{
+//             label: 'No2',
+//             backgroundColor: [
+//                 'rgba(255, 99, 132, 0.2)',
+//                 'rgba(255, 159, 64, 0.2)',
+//                 'rgba(255, 206, 86, 0.2)',
+//                 'rgba(75, 192, 192, 0.2)',
+//                 'rgba(54, 162, 235, 0.2)'
+//             ],
+//             borderColor: [
+//                 'rgba(255, 99, 132, 1)', 
+//                 'rgba(255, 159, 64, 1)', 
+//                 'rgba(255, 206, 86, 1)', 
+//                 'rgba(75, 192, 192, 1)', 
+//                 'rgba(54, 162, 235, 1)'
+//             ],
+//             borderWidth: 1,
+//             // barThickness: 10,
+//             // maxBarThickness: 8,
+//             hoverBorderColor: "rgba(234, 236, 244, 1)",
+//             hoverBorderWidth: 3,
+//         }]
+//     }
+//     // options: {
+//     //     title: {
+//     //         display: true,
+//     //         text: 'Mean of pollutants', 
+//     //         fontSize: 210
+//     //     },
+//     //     legend: {
+//     //         display: false,
+//     //         postion: 'right'
+//     //     },
 
-let myChart = new Chart(ctx, {
-    type: 'bar', //bar, horizontalBar, pie, line, doughnut, radar, polarArea
-    data: {
-        labels: ['NO2', 'VOC', 'PM10', 'PM2.5', 'PM1'],
-        datasets: [{
-            label: 'Mean',
-            backgroundColor: [
-                'rgba(255, 99, 132, 0.2)',
-                'rgba(255, 159, 64, 0.2)',
-                'rgba(255, 206, 86, 0.2)',
-                'rgba(75, 192, 192, 0.2)',
-                'rgba(54, 162, 235, 0.2)'
-            ],
-            borderColor: [
-                'rgba(255, 99, 132, 1)', 
-                'rgba(255, 159, 64, 1)', 
-                'rgba(255, 206, 86, 1)', 
-                'rgba(75, 192, 192, 1)', 
-                'rgba(54, 162, 235, 1)'
-            ],
-            borderWidth: 1,
-            // barThickness: 10,
-            // maxBarThickness: 8,
-            hoverBorderColor: "rgba(234, 236, 244, 1)",
-            hoverBorderWidth: 3,
-        }]
-    },
-    options: {
-        title: {
-            display: true,
-            text: 'Mean of pollutants', 
-            fontSize: 210
-        },
-        legend: {
-            display: false,
-            postion: 'right'
-        },
+//     //     // responsive: true,
+//     //     // maintainAspectRatio: false,
+//     //     // scales: {
+//     //     //     y: {
+//     //     //         beginAtZero: true
+//     //     //     }
+//     //     // layout: {
+//     //     //     left:50,
+//     //     //     right:0, 
+//     //     //     bottom:0,
+//     //     //     top:0
+//     //     // },
+//     //     tooltips: {
+//     //         enabled: true,
+//     //         fontSize: 8
+            
+//     //     }
+//     // }
 
-        // responsive: true,
-        // maintainAspectRatio: false,
-        // scales: {
-        //     y: {
-        //         beginAtZero: true
-        //     }
-        // layout: {
-        //     left:50,
-        //     right:0, 
-        //     bottom:0,
-        //     top:0
-        // },
-        tooltips: {
-            enabled: true
+// });
+
+
+
+function updateChart(data){
+    raw_data=data.raw_data;
+    labels = Object.keys(raw_data);
+    //Add shortened day to the labels
+    for (let i=0; i<labels.length; i++){
+        let dateStr=labels[i];
+        let date= new Date(dateStr.slice(6,10), dateStr.slice(3,5)-1, dateStr.slice(0,2));
+        labels[i]=`${getWeekDay(date)}(${dateStr.slice(0,5)})`;
+        // labels[i]=date.toLocaleDateString()+` (${getWeekDay(date)})`;
+    }
+    for (let param of parameters){
+        let boxplot = boxplotCharts[param];
+        boxplot.data.labels = labels;
+        let allData = [];
+        for (let dat in raw_data){
+            allData.push(raw_data[dat][param.toLowerCase()]);
         }
+        boxplot.data.datasets[0].data = allData;
+        boxplot.update();
     }
 
-});
+}
 
-function updateMapMarkers(data){
-        markerFeatureGroup.clearLayers();//Clear existing markers
-        //Add new markers based on filtered data
-        for (let sensor of data.sensors) {
-            let marker = L.marker([sensor.latitude, sensor.longitude]).addTo(markerFeatureGroup);
-            marker.bindPopup(`Sensor ID: ${sensor.sensor_id}<br>NO2: ${sensor.no2}<br>VOC: ${sensor.voc}<br>PM10: ${sensor.particulatepm10}<br>PM2.5: ${sensor.particulatepm2_5}<br>PM1: ${sensor.particulatepm1}`);
-        }
-        //Center map on the markers
-        bounds=markerFeatureGroup.getBounds();
-        if (bounds.isValid()) {
-            mapObject.fitBounds(bounds);
-        }else{
-            mapObject.setView([51.505, -0.09], 13);
-        }
+function getWeekDay(date){
+    let days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    return days[date.getDay()];
+}
+// function updateMapMarkers(data){
+        // markerFeatureGroup.clearLayers();//Clear existing markers
+        // //Add new markers based on filtered data
+        // for (let sensor of data.sensors) {
+        //     let marker = L.marker([sensor.latitude, sensor.longitude]).addTo(markerFeatureGroup);
+        //     marker.bindPopup(`Sensor ID: ${sensor.sensor_id}<br>NO2: ${sensor.no2}<br>VOC: ${sensor.voc}<br>PM10: ${sensor.particulatepm10}<br>PM2.5: ${sensor.particulatepm2_5}<br>PM1: ${sensor.particulatepm1}`);
+        // }
+        // //Center map on the markers
+        // bounds=markerFeatureGroup.getBounds();
+        // if (bounds.isValid()) {
+        //     mapObject.fitBounds(bounds);
+        // }else{
+        //     mapObject.setView([51.505, -0.09], 13);
+        // }
 
-        //Update statistics
-        let meanData = document.getElementById("meanData");
-        mean=data.mean;
-        meanData.innerHTML = "";
-        meanData.innerHTML ="<p>NO2: "+mean.no2+"</p><p>VOC: "+mean.voc+"</p><p>PM10: "+mean.particulatepm10+"</p><p>PM2.5: "+mean.particulatepm2_5+"</p><p>PM1: "+mean.particulatepm1+"</p>";
-
-
-        myChart.data.datasets[0].data = [mean.no2, mean.voc, mean.particulatepm10, mean.particulatepm2_5, mean.particulatepm1];
-        myChart.update();
+        // //Update statistics
+        // let meanData = document.getElementById("meanData");
+        // mean=data.mean;
+        // meanData.innerHTML = "";
+        // meanData.innerHTML ="<p>NO2: "+mean.no2+"</p><p>VOC: "+mean.voc+"</p><p>PM10: "+mean.particulatepm10+"</p><p>PM2.5: "+mean.particulatepm2_5+"</p><p>PM1: "+mean.particulatepm1+"</p>";
+        
 
         // //Update table
         // let tableBody = document.getElementById("tableBody");
@@ -167,13 +251,7 @@ function updateMapMarkers(data){
         //     row.insertCell().innerHTML = sensor.geom;
         // }
 
-}
-
-
-
-
-
-
+// }
 
 // function updateStatistics(filteredData) {
 
