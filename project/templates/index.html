@@ -5,36 +5,49 @@
 {% block content %}
 <!--Date range-->
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-    <!-- Flex container for heading and week filter input -->
+
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+    <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" for="sensor-id-1">
+        Sensor 1
+    </label>
+    <select id="sensor-id-1" name="sensor-id-1" 
+    onchange="sensorChanged()"
+    class="block appearance-none w-40 bg-gray-50 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded focus:outline-none focus:bg-white focus:border-gray-500">
+        {% for sensor_id in sensor_ids %}
+            <option value="{{ sensor_id }}">{{ sensor_id }}</option>
+        {% endfor %}
+    </select>
+<!-- Flex container for heading and week filter input -->
     <div class="flex justify-between items-center mb-6">
       <!-- Placeholder for the central heading, which will be added dynamically -->
-      <div id="weekRangeHeading" class="text-l font-semibold text-gray-900"></div>
+      <div id="weekRangeHeading" class="text-sm font-semibold text-gray-900"></div>
       <!-- <div id="weekRangeHeading" class="text-m font-semibold text-gray-900 bg-white px-2 py-2 rounded shadow">
       </div> -->
       
       <!-- Week Filter Input -->
       <input type="week" id="weekFilter" placeholder="Week" class="px-4 shadow-lg border border-gray-300 rounded focus:outline-none focus:border-indigo-500 focus:shadow-outline-indigo" onchange="weekChanged()">
     </div> 
+    
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
         <div class="p-4 shadow rounded-lg bg-white">
-            <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">NO2 Levels</h2>
+            <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">NO2</h2>
             <div><canvas id="no2Boxplot"></canvas></div>
         </div>
         <div class="p-4 shadow rounded-lg bg-white">
-            <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">VOC Levels</h2>
+            <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">VOC</h2>
             <div><canvas id="vocBoxplot"></canvas></div>
         </div>
         <div class="p-4 shadow rounded-lg bg-white">
-            <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">PM10 Particulate</h2>
+            <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">PM10</h2>
             <div><canvas id="particulatepm10Boxplot"></canvas></div>
         </div>
         <div class="p-4 shadow rounded-lg bg-white">
-            <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">PM2.5 Particulate</h2>
+            <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">PM2.5</h2>
             <div><canvas id="particulatepm2_5Boxplot"></canvas></div>
         </div>
         <div class="p-4 shadow rounded-lg bg-white">
-            <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">PM1 Particulate</h2>
+            <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">PM1</h2>
             <div><canvas id="particulatepm1Boxplot"></canvas></div>
         </div>
     </div>

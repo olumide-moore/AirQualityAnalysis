@@ -5,16 +5,27 @@
     box-sizing: border-box;
 }
 
+body{
+    background-color: #F0ECE4; /* Fallback for old browsers */
+    background-image: linear-gradient(to left, #F0ECE4, #F0ECE4); /* Pure color as gradient for consistency */
+    height: 100vh; /* Full height */
+
+}
+
 header{
-    background-color: #2a2a2a;
+    background-color: #fff;
     /* background-color: rgba(147,197,253,1); */
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Horizontal offset, vertical offset, blur radius, color */
 }
 li{
     list-style: none;
 }
 a{
     text-decoration: none;
-    color: #fff;
+    color: #2a2a2a;
 }
 .navbar{
     min-height: 70px;
@@ -53,7 +64,7 @@ a{
     margin: 5px auto;
     -webkit-transition: all 0.3s ease-in-out;
     transition: all 0.3s ease-in-out;
-    background-color: #fff;
+    background-color: #2a2a2a;
 }
 
 @media(max-width:768px){
@@ -78,7 +89,7 @@ a{
         flex-direction: column;
         gap: 0;
         width: 100%;
-        background-color: #2a2a2a;
+        background-color: #fff;
     /* background-color: rgba(147,197,253,1); */
 
         text-align: center;

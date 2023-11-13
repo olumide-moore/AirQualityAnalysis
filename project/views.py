@@ -1,13 +1,13 @@
 from django.shortcuts import render
-from .models import AllSensorLocations, Users,AllSensorMeasurements
+from .models import AllSensorLocations, Users,AllSensorMeasurements, AllSensorMeasurementsWithLocationsZephyr
 from django.http import HttpResponse, JsonResponse
 from datetime import datetime
 from django.db.models import Avg, Max, Min 
 from django.db.models.functions import TruncDate
 from collections import defaultdict
 
-sensor_id=60
-data_table=AllSensorMeasurements
+sensor_id=None
+data_table= AllSensorMeasurementsWithLocationsZephyr
 #49, 47,29, 11
 def index(request):
     # fields=('sensor_id', 'obs_date', 'obs_time_utc', 'latitude', 'longitude', 'no2', 'voc', 'particulatepm10', 'particulatepm2_5', 'particulatepm1', 'geom')
@@ -22,7 +22,9 @@ def index(request):
     # mean_data = get_mean(all_sensor_locations)
     
     # context = {'all_sensor_locations': list(all_sensor_locations), 'mean_data': mean_data}
-    return render(request, 'index.html')
+    sensor_ids = get_sensor_ids()
+    return render(request, 'index.html',
+                  context={'sensor_ids': sensor_ids})
     # return HttpResponse("Hello, world. You're at the project index.")
 
 # def sensors_ids():
@@ -32,6 +34,10 @@ def index(request):
 #         {'sensors': list(AllSensorLocations.objects.values(*fields).filter(sensor_id=sensor_id))}
 #     )
 
+def get_sensor_ids():
+    sensor_ids = data_table.objects.values('sensor_id').distinct()
+    sensor_ids = list(map(lambda x: x['sensor_id'],sensor_ids))
+    return sensor_ids
 def get_mean(data):
     grouped_data = data.values('obs_date','latitude','longitude').annotate(
         no2=Avg('no2'),
@@ -52,10 +58,10 @@ def get_mean(data):
     return mean_data
 
 def sensors_data(request):
+    global sensor_id
     # start_date, end_date = datetime.strptime(start_date, '%d-%b-%Y'), datetime.strptime(end_date, '%d-%b-%Y')#date format for datepicker
     # data = data_table.objects.values(*fields).filter(sensor_id=sensor_id, obs_date__range=[start_date, end_date])
-    start_date, end_date = request.GET.get('start_date'), request.GET.get('end_date')
-    fields=('sensor_id', 'obs_date', 'obs_time_utc', 'latitude', 'longitude', 'no2', 'voc', 'particulatepm10', 'particulatepm2_5', 'particulatepm1', 'geom')
+    sensor_id, start_date, end_date = request.GET.get('sensor'), request.GET.get('start_date'), request.GET.get('end_date')
     data_by_date=get_raw_data(start_date, end_date)
     # data_by_date = json.dumps(data_by_date, default=str)
     return JsonResponse(

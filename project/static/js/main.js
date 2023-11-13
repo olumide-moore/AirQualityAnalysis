@@ -1,4 +1,25 @@
-    // let sensor_locations = JSON.parse(document.getElementById('sensor_locations').textContent);
+
+//Hamburger menu
+const hamburger = document.querySelector('.hamburger');
+const navMenu = document.querySelector('.nav-menu');
+
+hamburger.addEventListener('click', () => {
+    hamburger.classList.toggle('active');
+    navMenu.classList.toggle('active');
+});
+//Ensure that the hamburger menu is hidden when a menu item is clicked
+const menuLinks = document.querySelectorAll('.nav-link');
+menuLinks.forEach((menuLink) => {
+    menuLink.addEventListener('click', () => {
+        hamburger.classList.remove('active');
+        navMenu.classList.remove('active');
+    });
+});
+
+//Fill the dropdown with sensor ids
+
+   
+   // let sensor_locations = JSON.parse(document.getElementById('sensor_locations').textContent);
 var mapObject=createMap([51.505, -0.09], 13);
 var markerFeatureGroup = L.featureGroup()
 mapObject.addLayer(markerFeatureGroup);
@@ -44,16 +65,26 @@ function createMap(center, zoom){
 //     // // Other logic for updating statistical values, if needed
 //     // updateStatistics(filteredData);
 // }
+function sensorChanged() {
+    // Get selected sensor from input
+    weekChanged();
+}
 const weekRangeHeading = document.getElementById("weekRangeHeading");
 function weekChanged() {
+    // Get selected sensor from input
+
+    let sensorInput = document.getElementById("sensor-id-1").value;
     // Get selected week from input
     let weekInput = document.getElementById("weekFilter").value;
+    if (sensorInput == '' || weekInput == '') {
+        return;
+    }
     let [year, week] = weekInput.split("-W");
     let {startDate, endDate} = getWeekDates(year, week); ///get the start and end date of the week
     // weekRangeHeading.textContent = `Week(${startDate} - ${endDate})`
     weekRangeHeading.textContent = `${startDate} - ${endDate}`
     // console.log(startDate, endDate);
-    fetchSensorsData([startDate, endDate]);
+    fetchSensorsData(sensorInput,[startDate, endDate]);
 }
 function getWeekDates(year, week) {
     let startDate = new Date(year, 0, 2 + ((week - 1) * 7)); 
@@ -64,7 +95,7 @@ function getWeekDates(year, week) {
     }
 
 
-function fetchSensorsData(dateRange){
+function fetchSensorsData(sensor,dateRange){
         //Send request to the server and get the updated data for the date
     // const crsftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
     // fetch(`/sensors-data/`, {
@@ -75,7 +106,7 @@ function fetchSensorsData(dateRange){
     // }
     // })
     // .then(response => response.json()).then(data => {
-    fetch(`/sensors-data/?start_date=${encodeURIComponent(dateRange[0])}&end_date=${encodeURIComponent(dateRange[1])}`)
+    fetch(`/sensors-data/?sensor=${sensor}&start_date=${encodeURIComponent(dateRange[0])}&end_date=${encodeURIComponent(dateRange[1])}`)
     .then(response => response.json()).then(data => {
         // console.log(data);
         updateChart(data);
