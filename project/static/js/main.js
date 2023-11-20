@@ -72,19 +72,17 @@ function sensorChanged() {
 const weekRangeHeading = document.getElementById("weekRangeHeading");
 function weekChanged() {
     // Get selected sensor from input
-
-    let sensorInput = document.getElementById("sensor-id-1").value;
+    let weekInput = weekFilter.value;
+    let sensorInput1 = document.getElementById("sensor-id-1").value;
+    let sensorInput2 = document.getElementById("sensor-id-2").value;
     // Get selected week from input
-    let weekInput = document.getElementById("weekFilter").value;
-    if (sensorInput == '' || weekInput == '') {
+    if ((sensorInput1 == '' && sensorInput2 == '') || weekInput == '') {
         return;
     }
     let [year, week] = weekInput.split("-W");
     let {startDate, endDate} = getWeekDates(year, week); ///get the start and end date of the week
-    // weekRangeHeading.textContent = `Week(${startDate} - ${endDate})`
     weekRangeHeading.textContent = `${startDate} - ${endDate}`
-    // console.log(startDate, endDate);
-    fetchSensorsData(sensorInput,[startDate, endDate]);
+    fetchSensorsData([sensorInput1,sensorInput2],[startDate, endDate]);
 }
 function getWeekDates(year, week) {
     let startDate = new Date(year, 0, 2 + ((week - 1) * 7)); 
@@ -95,7 +93,7 @@ function getWeekDates(year, week) {
     }
 
 
-function fetchSensorsData(sensor,dateRange){
+function fetchSensorsData(sensors,dateRange){
         //Send request to the server and get the updated data for the date
     // const crsftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
     // fetch(`/sensors-data/`, {
@@ -106,7 +104,15 @@ function fetchSensorsData(sensor,dateRange){
     // }
     // })
     // .then(response => response.json()).then(data => {
-    fetch(`/sensors-data/?sensor=${sensor}&start_date=${encodeURIComponent(dateRange[0])}&end_date=${encodeURIComponent(dateRange[1])}`)
+    // sensorsQuery=``
+    // if (sensors[0]!=''){
+    //     sensorsQuery+=`sensor1=${sensors[0]}&`
+    // }
+    // if (sensors[1]!='' && sensors[1]!=sensors[0]){
+    //     sensorsQuery+=`sensor2=${sensors[1]}&`
+    // }
+    sensorsQuery=`sensor_one=${sensors[0]}&sensor_two=${sensors[1]}`
+    fetch(`/sensors-data/?${sensorsQuery}&start_date=${encodeURIComponent(dateRange[0])}&end_date=${encodeURIComponent(dateRange[1])}`)
     .then(response => response.json()).then(data => {
         // console.log(data);
         updateChart(data);
@@ -127,14 +133,25 @@ function createBoxPlotChart(chartId,label, color){
                 // label: label,
                 //disabling the label for now
                 data: [],
-                backgroundColor: color
+                backgroundColor: 'rgba(255, 206, 86, 0.6)'
             //     // borderColor: 'rgb(255, 99, 132)',
             //     // borderWidth: 1,
             //     // barThickness: 10,
             //     // maxBarThickness: 8,
             //     // hoverBorderColor: "rgba(234, 236, 244, 1)",
             //     // hoverBorderWidth: 3
-            }]
+            },
+            {
+                // label: label,
+                type: 'boxplot',
+                data: [],
+                backgroundColor: 'rgba(75, 192, 192, 0.6)'
+                // barThickness: 10,
+                // maxBarThickness: 8,
+                // hoverBorderColor: "rgba(234, 236, 244, 1)",
+                // hoverBorderWidth: 3
+            }        
+        ]
         },
         options: {
             plugins: {
@@ -148,9 +165,9 @@ function createBoxPlotChart(chartId,label, color){
    });
 }
 const parameters = ['NO2', 'VOC', 'ParticulatePM10', 'ParticulatePM2_5', 'ParticulatePM1'];
-const colors = ['rgba(255, 99, 132, 0.2)', 'rgba(255, 159, 64, 0.2)', 'rgba(255, 206, 86, 0.2)', 'rgba(75, 192, 192, 0.2)', 'rgba(54, 162, 235, 0.2)'];
+// const colors = ['rgba(255, 99, 132, 0.6)', 'rgba(255, 159, 64, 0.6)', 'rgba(255, 206, 86, 0.6)', 'rgba(75, 192, 192, 0.6)', 'rgba(54, 162, 235, 0.6)'];
 for (let param of parameters){
-    createBoxPlotChart(`${param.toLowerCase()}Boxplot`, param, colors[parameters.indexOf(param)]);
+    createBoxPlotChart(`${param.toLowerCase()}Boxplot`, param);
 }
 // let ctx = document.getElementById('no2Graph').getContext('2d');
 
@@ -216,25 +233,33 @@ for (let param of parameters){
 
 
 function updateChart(data){
-    raw_data=data.raw_data;
-    labels = Object.keys(raw_data);
-    //Add shortened day to the labels
-    for (let i=0; i<labels.length; i++){
-        let dateStr=labels[i];
-        let date= new Date(dateStr.slice(6,10), dateStr.slice(3,5)-1, dateStr.slice(0,2));
-        labels[i]=`${getWeekDay(date)}(${dateStr.slice(0,5)})`;
-        // labels[i]=date.toLocaleDateString()+` (${getWeekDay(date)})`;
+    raw_data1=data.raw_data1;
+    raw_datas=[raw_data1];
+
+    if (data.raw_data2){
+        raw_datas.push(data.raw_data2);
     }
-    for (let param of parameters){
-        let boxplot = boxplotCharts[param];
-        boxplot.data.labels = labels;
-        let allData = [];
-        for (let dat in raw_data){
-            allData.push(raw_data[dat][param.toLowerCase()]);
+    for (let j=0; j<raw_datas.length; j++){// for each sensor 
+        labels = Object.keys(raw_datas[j]);
+        //Add shortened day to the labels
+        for (let i=0; i<labels.length; i++){
+            let dateStr=labels[i];
+            let date= new Date(dateStr.slice(6,10), dateStr.slice(3,5)-1, dateStr.slice(0,2));
+            labels[i]=`${getWeekDay(date)}(${dateStr.slice(0,5)})`;
+            // labels[i]=date.toLocaleDateString()+` (${getWeekDay(date)})`;
         }
-        boxplot.data.datasets[0].data = allData;
-        boxplot.update();
-    }
+        for (let param of parameters){
+            let boxplot = boxplotCharts[param];
+            boxplot.data.labels = labels;
+            let allData = [];
+            for (let dat in raw_datas[j]){
+                allData.push(raw_datas[j][dat][param.toLowerCase()]);
+            }
+            // boxplot.data.datasets[0].data = allData;
+            boxplot.data.datasets[j].data = allData;
+            boxplot.update();
+        }
+}
 
 }
 
@@ -242,6 +267,27 @@ function getWeekDay(date){
     let days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     return days[date.getDay()];
 }
+
+
+function getCurrentWeek(){
+    let today = new Date();
+    // let today = new Date(2023,1,21);
+    let year = today.getFullYear();
+    let week = getWeekNumber(today);
+    return `${year}-W`+`${week}`.padStart(2, '0');
+}
+function getWeekNumber(date) {
+    let yearStart = new Date(date.getFullYear(), 0, 1);
+    let weekNo = Math.ceil((((date - yearStart) / 86400000) + yearStart.getDay() + 1) / 7);
+    return weekNo;
+}
+//Set the week filter default date and maximum date
+const weekFilter = document.getElementById("weekFilter");
+let curWeek=getCurrentWeek();
+weekFilter.value = curWeek;
+weekFilter.max = curWeek;
+//Call the weekChanged function to update the chart
+weekChanged();
 // function updateMapMarkers(data){
         // markerFeatureGroup.clearLayers();//Clear existing markers
         // //Add new markers based on filtered data

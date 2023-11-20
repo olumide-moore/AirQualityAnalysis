@@ -8,6 +8,9 @@
 
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+    
+    <div class="grid grid-cols-2">
+    <div>
     <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" for="sensor-id-1">
         Sensor 1
     </label>
@@ -18,6 +21,20 @@
             <option value="{{ sensor_id }}">{{ sensor_id }}</option>
         {% endfor %}
     </select>
+    </div>
+    <div>
+    <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" for="sensor-id-1">
+        Sensor 2
+    </label>
+    <select id="sensor-id-2" name="sensor-id-2" 
+    onchange="sensorChanged()"
+    class="block appearance-none w-40 bg-gray-50 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded focus:outline-none focus:bg-white focus:border-gray-500">
+        {% for sensor_id in sensor_ids %}
+            <option value="{{ sensor_id }}">{{ sensor_id }}</option>
+        {% endfor %}
+    </select>
+    </div>
+    </div>
 <!-- Flex container for heading and week filter input -->
     <div class="flex justify-between items-center mb-6">
       <!-- Placeholder for the central heading, which will be added dynamically -->
@@ -26,7 +43,9 @@
       </div> -->
       
       <!-- Week Filter Input -->
-      <input type="week" id="weekFilter" placeholder="Week" class="px-4 shadow-lg border border-gray-300 rounded focus:outline-none focus:border-indigo-500 focus:shadow-outline-indigo" onchange="weekChanged()">
+      <input type="week" id="weekFilter" placeholder="Week" 
+      class="px-4 shadow-lg border border-gray-300 rounded focus:outline-none focus:border-indigo-500 focus:shadow-outline-indigo" 
+      onchange="weekChanged()">
     </div> 
     
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">

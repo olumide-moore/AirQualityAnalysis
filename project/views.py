@@ -1,12 +1,12 @@
 from django.shortcuts import render
 from .models import AllSensorLocations, Users,AllSensorMeasurements, AllSensorMeasurementsWithLocationsZephyr
 from django.http import HttpResponse, JsonResponse
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.db.models import Avg, Max, Min 
 from django.db.models.functions import TruncDate
-from collections import defaultdict
 
-sensor_id=None
+sensor_id1=None
+sensor_id2=None
 data_table= AllSensorMeasurementsWithLocationsZephyr
 #49, 47,29, 11
 def index(request):
@@ -58,37 +58,44 @@ def get_mean(data):
     return mean_data
 
 def sensors_data(request):
-    global sensor_id
+    global sensor_id1, sensor_id2
     # start_date, end_date = datetime.strptime(start_date, '%d-%b-%Y'), datetime.strptime(end_date, '%d-%b-%Y')#date format for datepicker
-    # data = data_table.objects.values(*fields).filter(sensor_id=sensor_id, obs_date__range=[start_date, end_date])
-    sensor_id, start_date, end_date = request.GET.get('sensor'), request.GET.get('start_date'), request.GET.get('end_date')
-    data_by_date=get_raw_data(start_date, end_date)
+    # data = data_table.objects.values(*fields).filter(sensor_id=sensor_id1, obs_date__range=[start_date, end_date])
+    requestGET = request.GET
+    sensor_id1,sensor_id2, start_date, end_date = requestGET.get('sensor_one'),requestGET.get('sensor_two'), requestGET.get('start_date'), requestGET.get('end_date')
+    data_by_date1=get_raw_data(start_date, end_date, sensor_id1)
+    if sensor_id2 and sensor_id1!=sensor_id2:
+        data_by_date2=get_raw_data(start_date, end_date, sensor_id2)
+    else:
+        data_by_date2=None
     # data_by_date = json.dumps(data_by_date, default=str)
     return JsonResponse(
-        {"raw_data":data_by_date}
+        {"raw_data1":data_by_date1,
+         "raw_data2":data_by_date2,}
     )
 
-def get_raw_data(start_date, end_date):
+def get_raw_data(start_date, end_date, id):
     '''Returns raw data for each day within the specified date range'''
     fields=('sensor_id', 'obs_date', 'latitude', 'longitude', 'no2', 'voc', 'particulatepm10', 'particulatepm2_5', 'particulatepm1')
     start_date, end_date = datetime.strptime(start_date, '%d/%m/%Y').date(), datetime.strptime(end_date, '%d/%m/%Y').date() #date format from week range input
 
     # Get the raw data for each day for the sensor id
-    raw_data = data_table.objects.values(*fields).filter(sensor_id=sensor_id, obs_date__range=[start_date, end_date])
+    raw_data = data_table.objects.values(*fields).filter(sensor_id=id, obs_date__range=[start_date, end_date]).order_by('obs_date', 'obs_time_utc')
     raw_data = list(raw_data)
 
 
     # Group the data by date and the no2, voc, as subdicts
     # data_by_date = {}
-    data_by_date = defaultdict(lambda: defaultdict(list))
+    data_by_date ={start_date + timedelta(days=x): {'no2': [], 'voc': [], 'particulatepm10': [], 'particulatepm2_5': [], 'particulatepm1': []} for x in range((end_date - start_date).days + 1)}
 
     for entry in raw_data:
         date = entry['obs_date']
         for sensor_type in ['no2', 'voc', 'particulatepm10', 'particulatepm2_5', 'particulatepm1']:
             data_by_date[date][sensor_type].append(entry[sensor_type])
 
+    data_by_date = {k.strftime('%d/%m/%Y'): v for k, v in data_by_date.items()}
     #Sort the data by date
-    data_by_date = {k.strftime('%d/%m/%Y'): v for k, v in sorted(data_by_date.items(), key=lambda item: item[0])}
+    # data_by_date = {k.strftime('%d/%m/%Y'): v for k, v in sorted(data_by_date.items(), key=lambda item: item[0])}
     return data_by_date 
 def get_avg_max_min(start_date, end_date):
     '''Returns average, max, min of the data for each day'''
@@ -96,7 +103,7 @@ def get_avg_max_min(start_date, end_date):
     start_date, end_date = datetime.strptime(start_date, '%d/%m/%Y').date(), datetime.strptime(end_date, '%d/%m/%Y').date()
 
     #Get the data for each day for the sensor id
-    data= data_table.objects.values(*fields).filter(sensor_id=sensor_id, obs_date__range=[start_date, end_date])
+    data= data_table.objects.values(*fields).filter(sensor_id=sensor_id1, obs_date__range=[start_date, end_date])
 
     #Group the data by date and calculate mean, max, min
     grouped_data = data.values('obs_date').annotate(
