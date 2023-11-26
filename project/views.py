@@ -57,7 +57,7 @@ def get_mean(data):
     mean_data= {k: round(v, 1) if v else 0 for k, v in mean_data.items()}
     return mean_data
 
-def sensors_data(request):
+def weekly_sensors_data(request):
     global sensor_id1, sensor_id2
     # start_date, end_date = datetime.strptime(start_date, '%d-%b-%Y'), datetime.strptime(end_date, '%d-%b-%Y')#date format for datepicker
     # data = data_table.objects.values(*fields).filter(sensor_id=sensor_id1, obs_date__range=[start_date, end_date])
@@ -73,7 +73,6 @@ def sensors_data(request):
         {"raw_data1":data_by_date1,
          "raw_data2":data_by_date2,}
     )
-
 def get_raw_data(start_date, end_date, id):
     '''Returns raw data for each day within the specified date range'''
     fields=('sensor_id', 'obs_date', 'latitude', 'longitude', 'no2', 'voc', 'particulatepm10', 'particulatepm2_5', 'particulatepm1')
@@ -97,40 +96,4 @@ def get_raw_data(start_date, end_date, id):
     #Sort the data by date
     # data_by_date = {k.strftime('%d/%m/%Y'): v for k, v in sorted(data_by_date.items(), key=lambda item: item[0])}
     return data_by_date 
-def get_avg_max_min(start_date, end_date):
-    '''Returns average, max, min of the data for each day'''
-    fields=('sensor_id','obs_date','latitude','longitude','no2','voc','particulatepm10','particulatepm2_5','particulatepm1')
-    start_date, end_date = datetime.strptime(start_date, '%d/%m/%Y').date(), datetime.strptime(end_date, '%d/%m/%Y').date()
 
-    #Get the data for each day for the sensor id
-    data= data_table.objects.values(*fields).filter(sensor_id=sensor_id1, obs_date__range=[start_date, end_date])
-
-    #Group the data by date and calculate mean, max, min
-    grouped_data = data.values('obs_date').annotate(
-        avg_no2=Avg('no2'),
-        max_no2=Max('no2'),
-        min_no2=Min('no2'),
-        avg_voc=Avg('voc'),
-        max_voc=Max('voc'),
-        min_voc=Min('voc'),
-        avg_particulatepm10=Avg('particulatepm10'),
-        max_particulatepm10=Max('particulatepm10'),
-        min_particulatepm10=Min('particulatepm10'),
-        avg_particulatepm2_5=Avg('particulatepm2_5'),
-        max_particulatepm2_5=Max('particulatepm2_5'),
-        min_particulatepm2_5=Min('particulatepm2_5'),
-        avg_particulatepm1=Avg('particulatepm1'),
-        max_particulatepm1=Max('particulatepm1'),
-        min_particulatepm1=Min('particulatepm1')
-    )
-    grouped_data = list(grouped_data)
-    return grouped_data
-    # list(map(lambda x:x['obs_date'].strftime("%Y-%m-%d"), grouped_data))
-    
-def users():
-    fields=('uid','email','role','sensors','username')
-    return JsonResponse(
-        {'users': list(Users.objects.values(*fields))}
-    )
-# users = users()
-# print(users)

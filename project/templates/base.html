@@ -47,7 +47,49 @@
                 <span class="bar"></span>
             </nav>
           </header>
-          <div class="px-6 py-20">
+         
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-2 py-20">
+            <div class="flex justify-end">
+              <button onclick="periodFilterSelected(event)" class="bg-blue-500 text-white font-medium py-1 px-3 text-sm  rounded-l hover:bg-blue-600 focus:outline-none focus:shadow-outline periodFilters">Daily</button>
+              <button onclick="periodFilterSelected(event)" class="bg-gray-200 text-gray-700 font-medium py-1 px-3 text-sm  hover:bg-gray-300 focus:outline-none focus:shadow-outline periodFilters">Weekly</button>
+              <button onclick="periodFilterSelected(event)" class="bg-gray-200 text-gray-700 font-medium py-1 px-3 text-sm  rounded-r hover:bg-gray-300 focus:outline-none focus:shadow-outline periodFilters">Monthly</button>
+            </div>
+              <div id="chartTypes" class="flex justify-end m-6">
+                <button onclick="chartTypeSelected(event)" class="bg-gray-200 text-gray-700 font-medium py-1 px-3 text-sm  rounded-l hover:bg-gray-300 focus:outline-none focus:shadow-outline chartTypes">Boxplot</button>
+                <button onclick="chartTypeSelected(event)" class="bg-gray-200 text-gray-700 font-medium py-1 px-3 text-sm  rounded-r hover:bg-gray-300 focus:outline-none focus:shadow-outline chartTypes">Line</button>
+            </div>
+
+            <div class="flex justify-between mb-4">
+              <div class="flex space-x-2">
+                  <!-- Dropdown for selecting sensors -->
+                  <div>
+                      <label for="sensor1" class="block text-sm font-medium text-gray-700">Select Sensor 1:</label>
+                      <select id="sensor1" name="sensor1" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                      onchange="sensorChanged()">
+                      {% for sensor_id in sensor_ids %}
+                          <option value="{{ sensor_id }}">{{ sensor_id }}</option>
+                      {% endfor %}
+                      </select>
+                  </div>
+                  <div>
+                      <label for="sensor2" class="block text-sm font-medium text-gray-700">Select Sensor 2:</label>
+                      <select id="sensor2" name="sensor2" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                      onchange="sensorChanged()">
+                      {% for sensor_id in sensor_ids %}
+                          <option value="{{ sensor_id }}">{{ sensor_id }}</option>
+                      {% endfor %}
+                      </select>
+                  </div>
+              </div>
+      
+              <!-- Checkbox for comparing against average trend -->
+              <div class="flex items-center h-5">
+                  <input id="compareTrend" name="compareTrend" type="checkbox" class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                  <label for="compareTrend" class="ml-2 block text-sm text-gray-900">
+                      Compare against average trend
+                  </label>
+              </div>
+          </div>
             {% block content %}{% endblock %}
         </div>
 
@@ -71,5 +113,6 @@
      crossorigin="">
  </script>
     <script type="text/javascript" src="{% static 'js/main.js' %}" ></script>
+    <script type="text/javascript" src="{% static 'js/daily.js' %}" ></script>
     </body>
 </html>

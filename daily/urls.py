@@ -19,12 +19,8 @@ from django.urls import path, include
 from . import views
 import debug_toolbar
 
+app_name = 'daily' #this is used to differentiate between the same name of the url in different apps
 urlpatterns = [
-    # path('admin/', admin.site.urls),
-    path('', views.index, name='index'),
-    path('__debug__/', include(debug_toolbar.urls)),
-    # path('/sensors-data', views.sensors_data, name='sensors_data/'),
-    #fetch data for date
-    path('weekly-sensors-data/', views.weekly_sensors_data, name='weekly_sensors_data'),
-    path('daily/', include('daily.urls'))
+    path('', views.daily, name='index'),
+    path('sensors-data/', views.daily_sensors_data, name='daily_sensors_data')
 ]
