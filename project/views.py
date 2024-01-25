@@ -1,90 +1,127 @@
+from typing import Any
 from django.shortcuts import render
-from .models import AllSensorLocations, Users,AllSensorMeasurements, AllSensorMeasurementsWithLocationsZephyr
+from .models import *
 from django.http import HttpResponse, JsonResponse
 from datetime import datetime, timedelta
-from django.db.models import Avg, Max, Min 
-from django.db.models.functions import TruncDate
+from django.db.models import Avg, Max, Min, Count, DateTimeField, ExpressionWrapper, F 
+from django.db.models.functions import TruncDate, TruncHour, Concat, TruncMinute
+from django.db.models.expressions import Func, Value
+from django.utils import timezone
+from django.views import View
 
 sensor_id1=None
 sensor_id2=None
-data_table= AllSensorMeasurementsWithLocationsZephyr
+# data_table= AllSensorMeasurementsWithLocationsZephyr
+# data_table= AllSensorMeasurementsWithLocationsSc
+data_table= AllPlumeMeasurements
 #49, 47,29, 11
 def index(request):
-    # fields=('sensor_id', 'obs_date', 'obs_time_utc', 'latitude', 'longitude', 'no2', 'voc', 'particulatepm10', 'particulatepm2_5', 'particulatepm1', 'geom')
-    #                                                                                                     #a list is well understood json
-    # all_sensor_locations = AllSensorLocations.objects.values(*fields).filter(sensor_id=sensor_id) #.values gives a query set instead of a model object
-    # # print(all_sensor_locations[0]['obs_date'])
-    # # print(sensors_ids())
-    # # all_sensor_locations = filter_by_date('2023-01-22', all_sensor_locations)
-    # # fields=('sensor_id', 'obs_date', 'obs_time_utc', 'latitude', 'longitude', 'no2', 'voc', 'particulatepm10', 'particulatepm2_5', 'particulatepm1')
-    # # all_sensor_locations = AllSensorMeasurements.objects.values(*fields)[:100]
-    # #Calculate mean of the data
-    # mean_data = get_mean(all_sensor_locations)
-    
-    # context = {'all_sensor_locations': list(all_sensor_locations), 'mean_data': mean_data}
     sensor_ids = get_sensor_ids()
     return render(request, 'index.html',
                   context={'sensor_ids': sensor_ids})
-    # return HttpResponse("Hello, world. You're at the project index.")
-
-# def sensors_ids():
-#     fields=('sensor_id', 'obs_date', 'obs_time_utc', 'latitude', 'longitude', 'no2', 'voc', 'particulatepm10', 'particulatepm2_5', 'particulatepm1', 'geom')
-    
-#     return JsonResponse(
-#         {'sensors': list(AllSensorLocations.objects.values(*fields).filter(sensor_id=sensor_id))}
-#     )
-
 def get_sensor_ids():
     sensor_ids = data_table.objects.values('sensor_id').distinct()
     sensor_ids = list(map(lambda x: x['sensor_id'],sensor_ids))
     return sensor_ids
-def get_mean(data):
-    grouped_data = data.values('obs_date','latitude','longitude').annotate(
-        no2=Avg('no2'),
-        voc=Avg('voc'),
-        particulatepm10=Avg('particulatepm10'),
-        particulatepm2_5=Avg('particulatepm2_5'),
-        particulatepm1=Avg('particulatepm1'),
-    )
-    # print(grouped_data)
-    mean_data = {
-        'no2': data.aggregate(Avg('no2'))['no2__avg'],
-        'voc': data.aggregate(Avg('voc'))['voc__avg'],
-        'particulatepm10': data.aggregate(Avg('particulatepm10'))['particulatepm10__avg'],
-        'particulatepm2_5': data.aggregate(Avg('particulatepm2_5'))['particulatepm2_5__avg'],
-        'particulatepm1': data.aggregate(Avg('particulatepm1'))['particulatepm1__avg'],
-    }
-    mean_data= {k: round(v, 1) if v else 0 for k, v in mean_data.items()}
-    return mean_data
 
-def weekly_sensors_data(request):
-    global sensor_id1, sensor_id2
-    # start_date, end_date = datetime.strptime(start_date, '%d-%b-%Y'), datetime.strptime(end_date, '%d-%b-%Y')#date format for datepicker
-    # data = data_table.objects.values(*fields).filter(sensor_id=sensor_id1, obs_date__range=[start_date, end_date])
+
+
+def get_user_input(request):
     requestGET = request.GET
-    sensor_id1,sensor_id2, start_date, end_date = requestGET.get('sensor_one'),requestGET.get('sensor_two'), requestGET.get('start_date'), requestGET.get('end_date')
-    data_by_date1=get_raw_data(start_date, end_date, sensor_id1)
-    if sensor_id2 and sensor_id1!=sensor_id2:
-        data_by_date2=get_raw_data(start_date, end_date, sensor_id2)
-    else:
-        data_by_date2=None
-    # data_by_date = json.dumps(data_by_date, default=str)
+    sensor_one=requestGET.get('sensor_one')
+    sensor_two=requestGET.get('sensor_two')
+    comparing_average_trend=requestGET.get('compare_average_trend')
+    date=requestGET.get('date')
+    if date:    date = datetime.strptime(date, '%Y-%m-%d').date()
+    start_date=requestGET.get('start_date')
+    end_date=requestGET.get('end_date')
+    if start_date and end_date:    start_date, end_date = datetime.strptime(start_date, '%Y-%m-%d').date(), datetime.strptime(end_date, '%Y-%m-%d').date()
+           
+    chart_type=requestGET.get('chart_type')
+    sensorids= [sensor_one, sensor_two] if sensor_two else [sensor_one]
+    data={}
+    if date: 
+        data=get_last_24_hours_data_by_minute(sensorids,date)
+    for sensor_id in sensorids:
+        # if date:
+            # if chart_type=='Boxplot':
+                # data.append(get_daily_data(sensor_id,date))
+            # else:
+            #     data.append(aggregate_daily_mean(sensor_id, date))
+        if start_date and end_date:
+            data.append(get_weekly_data(sensor_id,[start_date, end_date]))
+    # data=[list(d) for d in data]
+    # print(data)
     return JsonResponse(
-        {"raw_data1":data_by_date1,
-         "raw_data2":data_by_date2,}
+        # {'data': data}
+        data 
     )
-def get_raw_data(start_date, end_date, id):
-    '''Returns raw data for each day within the specified date range'''
-    fields=('sensor_id', 'obs_date', 'latitude', 'longitude', 'no2', 'voc', 'particulatepm10', 'particulatepm2_5', 'particulatepm1')
-    start_date, end_date = datetime.strptime(start_date, '%d/%m/%Y').date(), datetime.strptime(end_date, '%d/%m/%Y').date() #date format from week range input
-
-    # Get the raw data for each day for the sensor id
-    raw_data = data_table.objects.values(*fields).filter(sensor_id=id, obs_date__range=[start_date, end_date]).order_by('obs_date', 'obs_time_utc')
-    raw_data = list(raw_data)
 
 
-    # Group the data by date and the no2, voc, as subdicts
-    # data_by_date = {}
+class ConcatDateTime(Func):
+    function = 'TO_TIMESTAMP'
+    template = "%(function)s(CONCAT(%(expressions)s), 'YYYY-MM-DD HH24:MI:SS')"
+    output_field = DateTimeField()
+def get_last_24_hours_data_by_minute(sensor_ids,date):
+    #This fetches the last 24 hours data averaged by minute
+    fields=('sensor_id', 'obs_date', 'obs_time_utc', 'no2', 'voc', 'particulatepm10', 'particulatepm2_5', 'particulatepm1')
+    end_datetime = timezone.now() - timezone.timedelta(days=3)
+    end_datetime=end_datetime.replace(second=0, microsecond=0)
+    start_datetime = end_datetime - timezone.timedelta(hours=24)
+    print(start_datetime)
+
+    print(end_datetime)
+    data={}
+    for sensor_id in sensor_ids:
+        data_template = {datetime.strftime((start_datetime + timezone.timedelta(minutes=x)), '%Y-%m-%d %H:%M:%S')
+                        : {'no2': None, 'voc': None, 'particulatepm10': None, 'particulatepm2_5': None, 'particulatepm1': None} for x in range((24*60)+1)}
+        # print(list(data_template.keys()))
+        data_per_minute = (
+        data_table.objects.values(*fields)
+        .filter(sensor_id=sensor_id).annotate(
+            datetime=ConcatDateTime(
+                F('obs_date'), Value(' '), F('obs_time_utc')
+            )
+        ).filter(datetime__range=[start_datetime, end_datetime])
+        .annotate(minute=TruncMinute('datetime'))
+        .values('minute')
+        .annotate(
+            no2_avg=Avg('no2'),
+            voc_avg=Avg('voc'),
+            particulatepm10_avg=Avg('particulatepm10'),
+            particulatepm2_5_avg=Avg('particulatepm2_5'),
+            particulatepm1_avg=Avg('particulatepm1')
+        )
+        .order_by('minute'))
+        # print(list(data_template.keys())[0],list(data_per_minute)[0]['minute'])
+        # print(list(data_template.keys())[-1],list(data_per_minute)[-1]['minute'])
+        # print(data_per_minute)
+        for entry in data_per_minute:
+            minute = entry['minute']
+            for sensor_type in ['no2', 'voc', 'particulatepm10', 'particulatepm2_5', 'particulatepm1']:
+                data_template[datetime.strftime(minute, '%Y-%m-%d %H:%M:%S')][sensor_type]=entry[f"{sensor_type}_avg"]
+        # print(data_template)
+        data[sensor_id]=data_template
+                
+    return data
+
+def get_daily_data(sensor_id,date):
+    #This fetches the 24 hourly raw data for the specified date
+    fields=('sensor_id', 'obs_date', 'obs_time_utc', 'no2', 'voc', 'particulatepm10', 'particulatepm2_5', 'particulatepm1')
+    raw_data = data_table.objects.values(*fields).filter(sensor_id=sensor_id, obs_date=date).order_by('obs_date', 'obs_time_utc')
+    data_by_hour = {f"{x}:00": {'no2': [], 'voc': [], 'particulatepm10': [], 'particulatepm2_5': [], 'particulatepm1': []} for x in range(24)}
+
+    for entry in raw_data:
+        hour = entry['obs_time_utc'].hour
+        for sensor_type in ['no2', 'voc', 'particulatepm10', 'particulatepm2_5', 'particulatepm1']:
+            data_by_hour[f"{hour}:00"][sensor_type].append(entry[sensor_type])
+
+  
+    return data_by_hour
+def get_weekly_data(sensor_id,date):
+    fields=('sensor_id', 'obs_date', 'obs_time_utc', 'no2', 'voc', 'particulatepm10', 'particulatepm2_5', 'particulatepm1')
+    start_date, end_date = date[0], date[1]
+    raw_data = data_table.objects.values(*fields).filter(sensor_id=sensor_id, obs_date__range=[start_date, end_date])
     data_by_date ={start_date + timedelta(days=x): {'no2': [], 'voc': [], 'particulatepm10': [], 'particulatepm2_5': [], 'particulatepm1': []} for x in range((end_date - start_date).days + 1)}
 
     for entry in raw_data:
@@ -92,8 +129,100 @@ def get_raw_data(start_date, end_date, id):
         for sensor_type in ['no2', 'voc', 'particulatepm10', 'particulatepm2_5', 'particulatepm1']:
             data_by_date[date][sensor_type].append(entry[sensor_type])
 
-    data_by_date = {k.strftime('%d/%m/%Y'): v for k, v in data_by_date.items()}
-    #Sort the data by date
-    # data_by_date = {k.strftime('%d/%m/%Y'): v for k, v in sorted(data_by_date.items(), key=lambda item: item[0])}
-    return data_by_date 
+    data = {k.strftime('%d/%m/%Y'): v for k, v in data_by_date.items()}
+    return data
+
+
+
+def aggregate_daily_mean(sensor_id, date):
+    fields=('sensor_id', 'obs_date', 'no2', 'voc', 'particulatepm10', 'particulatepm2_5', 'particulatepm1')
+    # Combine the date and time into a single datetime field
+    aggregated_data = data_table.objects.values(*fields).filter(sensor_id=sensor_id, obs_date=date).annotate(
+        datetime=ConcatDateTime(
+            F('obs_date'), Value(' '), F('obs_time_utc')
+        )
+    ).annotate(
+        hour_beginning=TruncHour('datetime')
+    ).values(
+        'hour_beginning'
+    ).annotate(
+        # no2_count=Count('no2'),
+        no2_avg=Avg('no2'),
+        # voc_count=Count('voc'),
+        voc_avg=Avg('voc'),
+        # particulatepm10_count=Count('particulatepm10'),
+        particulatepm10_avg=Avg('particulatepm10'),
+        # particulatepm2_5_count=Count('particulatepm2_5'),
+        particulatepm2_5_avg=Avg('particulatepm2_5'),
+        # particulatepm1_count=Count('particulatepm1'),
+        particulatepm1_avg=Avg('particulatepm1')
+    )
+    #Create a list of dicts for hours 1-24 with datetime objects as keys
+
+    data_by_hour = {f"{x}:00": {'no2': None, 'voc': None, 'particulatepm10': None, 'particulatepm2_5': None, 'particulatepm1': None} for x in range(24)}
+    for entry in aggregated_data:
+        hour = entry['hour_beginning'].hour
+        for sensor_type in ['no2', 'voc', 'particulatepm10', 'particulatepm2_5', 'particulatepm1']:
+            data_by_hour[f"{hour}:00"][sensor_type]=entry[f"{sensor_type}_avg"]
+    
+    return data_by_hour
+
+# def get_mean(data):
+#     grouped_data = data.values('obs_date','latitude','longitude').annotate(
+#         no2=Avg('no2'),
+#         voc=Avg('voc'),
+#         particulatepm10=Avg('particulatepm10'),
+#         particulatepm2_5=Avg('particulatepm2_5'),
+#         particulatepm1=Avg('particulatepm1'),
+#     )
+#     # print(grouped_data)
+#     mean_data = {
+#         'no2': data.aggregate(Avg('no2'))['no2__avg'],
+#         'voc': data.aggregate(Avg('voc'))['voc__avg'],
+#         'particulatepm10': data.aggregate(Avg('particulatepm10'))['particulatepm10__avg'],
+#         'particulatepm2_5': data.aggregate(Avg('particulatepm2_5'))['particulatepm2_5__avg'],
+#         'particulatepm1': data.aggregate(Avg('particulatepm1'))['particulatepm1__avg'],
+#     }
+#     mean_data= {k: round(v, 1) if v else 0 for k, v in mean_data.items()}
+#     return mean_data
+
+# def weekly_sensors_data(request):
+#     global sensor_id1, sensor_id2
+#     # start_date, end_date = datetime.strptime(start_date, '%d-%b-%Y'), datetime.strptime(end_date, '%d-%b-%Y')#date format for datepicker
+#     # data = data_table.objects.values(*fields).filter(sensor_id=sensor_id1, obs_date__range=[start_date, end_date])
+#     requestGET = request.GET
+#     sensor_id1,sensor_id2, start_date, end_date = requestGET.get('sensor_one'),requestGET.get('sensor_two'), requestGET.get('start_date'), requestGET.get('end_date')
+#     data_by_date1=get_raw_data(start_date, end_date, sensor_id1)
+#     if sensor_id2 and sensor_id1!=sensor_id2:
+#         data_by_date2=get_raw_data(start_date, end_date, sensor_id2)
+#     else:
+#         data_by_date2=None
+#     # data_by_date = json.dumps(data_by_date, default=str)
+#     return JsonResponse(
+#         {"raw_data1":data_by_date1,
+#          "raw_data2":data_by_date2,}
+    # )
+# def get_raw_data(start_date, end_date, id):
+#     '''Returns raw data for each day within the specified date range'''
+#     fields=('sensor_id', 'obs_date', 'no2', 'voc', 'particulatepm10', 'particulatepm2_5', 'particulatepm1')
+#     start_date, end_date = datetime.strptime(start_date, '%d/%m/%Y').date(), datetime.strptime(end_date, '%d/%m/%Y').date() #date format from week range input
+
+#     # Get the raw data for each day for the sensor id
+#     raw_data = data_table.objects.values(*fields).filter(sensor_id=id, obs_date__range=[start_date, end_date]).order_by('obs_date', 'obs_time_utc')
+#     raw_data = list(raw_data)
+
+
+#     # Group the data by date and the no2, voc, as subdicts
+#     # data_by_date = {}
+#     data_by_date ={start_date + timedelta(days=x): {'no2': [], 'voc': [], 'particulatepm10': [], 'particulatepm2_5': [], 'particulatepm1': []} for x in range((end_date - start_date).days + 1)}
+
+#     for entry in raw_data:
+#         date = entry['obs_date']
+#         for sensor_type in ['no2', 'voc', 'particulatepm10', 'particulatepm2_5', 'particulatepm1']:
+#             data_by_date[date][sensor_type].append(entry[sensor_type])
+
+#     data_by_date = {k.strftime('%d/%m/%Y'): v for k, v in data_by_date.items()}
+#     #Sort the data by date
+#     # data_by_date = {k.strftime('%d/%m/%Y'): v for k, v in sorted(data_by_date.items(), key=lambda item: item[0])}
+#     return data_by_date 
 
