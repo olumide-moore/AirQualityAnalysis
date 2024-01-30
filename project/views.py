@@ -7,6 +7,7 @@ from django.db.models import Avg, Max, Min, Count, DateTimeField, ExpressionWrap
 from django.db.models.functions import TruncDate, TruncHour, Concat, TruncMinute
 from django.db.models.expressions import Func, Value
 from django.utils import timezone
+import pytz
 from django.views import View
 
 sensor_id1=None
@@ -25,6 +26,41 @@ def get_sensor_ids():
     return sensor_ids
 
 
+class SensorDataView(View):
+    def get(self, request):
+        requestGET = request.GET
+        sensor_one=requestGET.get('sensor_one')
+        sensor_two=requestGET.get('sensor_two')
+        comparing_average_trend=requestGET.get('compare_average_trend')
+        date=requestGET.get('date')
+        start_date=requestGET.get('start_date')
+        end_date=requestGET.get('end_date')
+        chart_type=requestGET.get('chart_type')
+        if date:    date = datetime.strptime(date, '%Y-%m-%d')
+        date = pytz.timezone('UTC').localize(date)
+        # print(date)
+        
+        if start_date and end_date:    start_date, end_date = datetime.strptime(start_date, '%Y-%m-%d').date(), datetime.strptime(end_date, '%Y-%m-%d').date()
+
+        sensorids= [sensor_one, sensor_two] if sensor_two else [sensor_one] 
+        
+        if date: 
+            
+            if comparing_average_trend==True:
+                daily_average_data=get_daily_average_data(sensorids,date)
+                sensor1_data=get_daily_data(sensorids[0],date)
+                sensor2_data=get_daily_data(sensorids[1],date)
+            else:
+                # print(date)
+                # print(timezone.now() - timezone.timedelta(days=9))
+                # date=datetime(2024, 1,21)
+                data=get_24_hours_data_by_minute(sensorids,date)
+
+                return JsonResponse(
+                    {'data': data}
+                )
+
+            # data=get_24_hours_data_by_minute(sensorids,date)
 
 def get_user_input(request):
     requestGET = request.GET
@@ -41,7 +77,7 @@ def get_user_input(request):
     sensorids= [sensor_one, sensor_two] if sensor_two else [sensor_one]
     data={}
     if date: 
-        data=get_last_24_hours_data_by_minute(sensorids,date)
+        data=get_24_hours_data_by_minute(sensorids,date)
     for sensor_id in sensorids:
         # if date:
             # if chart_type=='Boxplot':
@@ -62,20 +98,18 @@ class ConcatDateTime(Func):
     function = 'TO_TIMESTAMP'
     template = "%(function)s(CONCAT(%(expressions)s), 'YYYY-MM-DD HH24:MI:SS')"
     output_field = DateTimeField()
-def get_last_24_hours_data_by_minute(sensor_ids,date):
+
+def get_24_hours_data_by_minute(sensor_ids,date):
     #This fetches the last 24 hours data averaged by minute
     fields=('sensor_id', 'obs_date', 'obs_time_utc', 'no2', 'voc', 'particulatepm10', 'particulatepm2_5', 'particulatepm1')
-    end_datetime = timezone.now() - timezone.timedelta(days=3)
-    end_datetime=end_datetime.replace(second=0, microsecond=0)
-    start_datetime = end_datetime - timezone.timedelta(hours=24)
-    print(start_datetime)
-
-    print(end_datetime)
-    data={}
+    start_datetime=date
+    end_datetime = start_datetime + timezone.timedelta(days=1)
+    data=[]
     for sensor_id in sensor_ids:
         data_template = {datetime.strftime((start_datetime + timezone.timedelta(minutes=x)), '%Y-%m-%d %H:%M:%S')
                         : {'no2': None, 'voc': None, 'particulatepm10': None, 'particulatepm2_5': None, 'particulatepm1': None} for x in range((24*60)+1)}
         # print(list(data_template.keys()))
+        #Fetch the minute average data for the last 24 hours from the database
         data_per_minute = (
         data_table.objects.values(*fields)
         .filter(sensor_id=sensor_id).annotate(
@@ -93,16 +127,13 @@ def get_last_24_hours_data_by_minute(sensor_ids,date):
             particulatepm1_avg=Avg('particulatepm1')
         )
         .order_by('minute'))
-        # print(list(data_template.keys())[0],list(data_per_minute)[0]['minute'])
-        # print(list(data_template.keys())[-1],list(data_per_minute)[-1]['minute'])
-        # print(data_per_minute)
+        
+        #Feed the data into the data template
         for entry in data_per_minute:
             minute = entry['minute']
             for sensor_type in ['no2', 'voc', 'particulatepm10', 'particulatepm2_5', 'particulatepm1']:
                 data_template[datetime.strftime(minute, '%Y-%m-%d %H:%M:%S')][sensor_type]=entry[f"{sensor_type}_avg"]
-        # print(data_template)
-        data[sensor_id]=data_template
-                
+        data.append({sensor_id:data_template})
     return data
 
 def get_daily_data(sensor_id,date):

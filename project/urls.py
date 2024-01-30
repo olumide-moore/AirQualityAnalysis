@@ -23,8 +23,5 @@ urlpatterns = [
     # path('admin/', admin.site.urls),
     path('', views.index, name='index'),
     path('__debug__/', include(debug_toolbar.urls)),
-    # path('/sensors-data', views.sensors_data, name='sensors_data/'),
-    #fetch data for date
-    path('weekly-sensors-data/', views.weekly_sensors_data, name='weekly_sensors_data'),
-    path('daily/', include('daily.urls'))
+    path('sensors-data/', views.SensorDataView.as_view(), name='sensors_data/'),
 ]

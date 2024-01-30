@@ -13,7 +13,10 @@
         <!--Chart.js CDN-->
         <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
         <script type="text/javascript" src="https://unpkg.com/@sgratzl/chartjs-chart-boxplot@3.6.0/build/index.umd.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/2.0.1/chartjs-plugin-zoom.min.js" integrity="sha512-wUYbRPLV5zs6IqvWd88HIqZU/b8TBx+I8LEioQ/UC0t5EMCLApqhIAnUg7EsAzdbhhdgW07TqYDdH3QEXRcPOQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 
+       
         <!-- Custom CSS -->
         <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
 
@@ -48,48 +51,85 @@
             </nav>
           </header>
          
+          <!--Period filter change-->
           <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-2 py-20">
             <div class="flex justify-end">
-              <button onclick="periodFilterSelected(event)" class="bg-blue-500 text-white font-medium py-1 px-3 text-sm  rounded-l hover:bg-blue-600 focus:outline-none focus:shadow-outline periodFilters">Daily</button>
-              <button onclick="periodFilterSelected(event)" class="bg-gray-200 text-gray-700 font-medium py-1 px-3 text-sm  hover:bg-gray-300 focus:outline-none focus:shadow-outline periodFilters">Weekly</button>
-              <button onclick="periodFilterSelected(event)" class="bg-gray-200 text-gray-700 font-medium py-1 px-3 text-sm  rounded-r hover:bg-gray-300 focus:outline-none focus:shadow-outline periodFilters">Monthly</button>
-            </div>
-              <div id="chartTypes" class="flex justify-end m-6">
-                <button onclick="chartTypeSelected(event)" class="bg-gray-200 text-gray-700 font-medium py-1 px-3 text-sm  rounded-l hover:bg-gray-300 focus:outline-none focus:shadow-outline chartTypes">Boxplot</button>
-                <button onclick="chartTypeSelected(event)" class="bg-gray-200 text-gray-700 font-medium py-1 px-3 text-sm  rounded-r hover:bg-gray-300 focus:outline-none focus:shadow-outline chartTypes">Line</button>
+              <button onclick="periodFilterChanged(event)" class="bg-blue-500 text-white font-medium py-1 px-3 text-sm  rounded-l hover:bg-blue-600 focus:outline-none focus:shadow-outline periodFilters">Daily</button>
+              <button onclick="periodFilterChanged(event)" class="bg-gray-200 text-gray-700 font-medium py-1 px-3 text-sm  hover:bg-gray-300 focus:outline-none focus:shadow-outline periodFilters">Weekly</button>
+              <!-- <button onclick="periodFilterChanged(event)" class="bg-gray-200 text-gray-700 font-medium py-1 px-3 text-sm  rounded-r hover:bg-gray-300 focus:outline-none focus:shadow-outline periodFilters">Monthly</button> -->
             </div>
 
-            <div class="flex justify-between mb-4">
+
+          <div class="flex justify-between items-center m-6">
+            <!-- Placeholder for the central heading, which will be added dynamically -->
+            <div id="weekRangeHeading" class="text-sm font-semibold text-gray-900"></div>
+
+
+            <div>
+            <!-- Date Filter Input -->
+            <input type="date" id="dateFilter"
+              class="px-4 shadow-lg border border-gray-300 rounded focus:outline-none focus:border-indigo-500 focus:shadow-outline-indigo" 
+              onchange="dateChanged()">
+            
+            <!-- Week Filter Input -->
+            <input type="week" id="weekFilter" placeholder="Week" 
+            class="px-4 shadow-lg border border-gray-300 rounded focus:outline-none focus:border-indigo-500 focus:shadow-outline-indigo hidden" 
+            onchange="weekChanged()">
+            </div>
+          </div> 
+          
+            
+
+            <div class="flex justify-between">
               <div class="flex space-x-2">
-                  <!-- Dropdown for selecting sensors -->
-                  <div>
-                      <label for="sensor1" class="block text-sm font-medium text-gray-700">Select Sensor 1:</label>
-                      <select id="sensor1" name="sensor1" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-                      onchange="sensorChanged()">
-                      {% for sensor_id in sensor_ids %}
-                          <option value="{{ sensor_id }}">{{ sensor_id }}</option>
+                <!-- Sensor selection dropdown -->
+                <div id="sensor1div">
+                  <label for="sensor1" class="block text-sm font-medium text-gray-700">Sensor ID:</label>
+                  <select id="sensor1" name="sensor1" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                  onchange="sensorIdChanged()">
+                    {% for sensor_id in sensor_ids %}
+                      <option value="{{ sensor_id }}">{{ sensor_id }}</option>
                       {% endfor %}
-                      </select>
-                  </div>
-                  <div>
-                      <label for="sensor2" class="block text-sm font-medium text-gray-700">Select Sensor 2:</label>
-                      <select id="sensor2" name="sensor2" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-                      onchange="sensorChanged()">
-                      {% for sensor_id in sensor_ids %}
-                          <option value="{{ sensor_id }}">{{ sensor_id }}</option>
-                      {% endfor %}
-                      </select>
-                  </div>
+                  </select>
+                </div>
+                
+                <!-- Second sensor dropdown, hidden by default -->
+                <div id="sensor2div" class="hidden">
+                  <label for="sensor2" class="block text-sm font-medium text-gray-700">Sensor ID 2:</label>
+                  <select id="sensor2" name="sensor2" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                  onchange="sensorIdChanged()">
+                    {% for sensor_id in sensor_ids %}
+                        <option value="{{ sensor_id }}">{{ sensor_id }}</option>
+                    {% endfor %}
+                  </select>
               </div>
-      
-              <!-- Checkbox for comparing against average trend -->
+            </div>
+            <div>
+              <!-- Toggle for comparing two sensors -->
               <div class="flex items-center h-5">
-                  <input id="compareTrend" name="compareTrend" type="checkbox" class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
-                  <label for="compareTrend" class="ml-2 block text-sm text-gray-900">
-                      Compare against average trend
-                  </label>
+                <input id="compareTwoSensors" type="checkbox" class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded" onchange="toggleSensorComparison(this)">
+                <label for="compareTwoSensors" class="ml-2 block text-sm text-gray-900">
+                    Compare two sensors
+                </label>
               </div>
+                <!-- Checkbox for comparing against average trend -->
+              <div class="flex items-center h-5">
+                <input id="compareAverageTrend" name="compareAverageTrend" type="checkbox" class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded" onchange="toggleCompareAverageTrend(this)" >
+                <label for="compareAverageTrend" class="ml-2 block text-sm text-gray-900">
+                    Compare against average trend
+                </label>
+              </div>
+            </div>
           </div>
+          <!-- Chart type change -->
+          <div class="flex justify-end">
+            <button onclick="chartTypeChanged(event)" class="bg-gray-200 text-gray-700 font-medium py-1 px-3 text-sm  rounded-l hover:bg-gray-300 focus:outline-none focus:shadow-outline chartTypes">Line</button>
+            <button onclick="chartTypeChanged(event)" class="bg-gray-200 text-gray-700 font-medium py-1 px-3 text-sm  rounded-l hover:bg-gray-300 focus:outline-none focus:shadow-outline chartTypes">Bar</button>
+            <button onclick="chartTypeChanged(event)" class="bg-gray-200 text-gray-700 font-medium py-1 px-3 text-sm  rounded-r hover:bg-gray-300 focus:outline-none focus:shadow-outline chartTypes">Boxplot</button>
+          </div>
+
+
+          
             {% block content %}{% endblock %}
         </div>
 
@@ -113,6 +153,5 @@
      crossorigin="">
  </script>
     <script type="text/javascript" src="{% static 'js/main.js' %}" ></script>
-    <script type="text/javascript" src="{% static 'js/daily.js' %}" ></script>
     </body>
 </html>
