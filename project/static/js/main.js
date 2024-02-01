@@ -189,6 +189,8 @@ function getWeekStartEndDate(weekInput) {
     return {startDate, endDate};
     }
 
+
+
 let chartsArray = {};
 function newChartObj(chartId,label, color){
     let ctx= document.getElementById(chartId).getContext('2d');
@@ -207,15 +209,6 @@ function newChartObj(chartId,label, color){
                 lineTension: 0.3,
                 radius: 0,
                 fill: true,
-
-
-                // backgroundColor: 'rgba(75, 75, 240, 0.8)',
-                // borderColor: 'rgb(255, 99, 132)',
-                // borderWidth: 1,
-                // barThickness: 10,
-                // maxBarThickness: 8,
-                // hoverBorderColor: "rgba(234, 236, 244, 1)",
-                // hoverBorderWidth: 3
             },
             {
                 label: "",
@@ -229,11 +222,6 @@ function newChartObj(chartId,label, color){
                 lineTension: 0.3,
                 radius: 0,
                 fill: true,
-
-                // barThickness: 10,
-                // maxBarThickness: 8,
-                // hoverBorderColor: "rgba(234, 236, 244, 1)",
-                // hoverBorderWidth: 3
             }        
         ]
         },
@@ -257,20 +245,7 @@ function newChartObj(chartId,label, color){
                         text: 'µg/m³'
                     }
                 },
-                // y2: {
-                //     type: 'linear',
-                //     display: true,
-                //     position: 'right',
-                //     grid: {
-                //         drawOnChartArea: false, 
-                //     },
-                //     title: {
-                //         display: true,
-                //         text: 'µg/m³'
-                //     }
-                // }
             }, 
-            
             plugins: {
                 legend: {
                     display: true,
@@ -289,11 +264,38 @@ function newChartObj(chartId,label, color){
             responsive: true,
             maintainAspectRatio: false,
             aspectRatio: 1,
-            
-
             }
    });
+    chartsArray[label].update();
 }
+
+// var data= [{
+//     x: 10,
+//     y: 20
+// }, {
+//     x: 15,
+//     y: 10
+// }]
+// function newChartObj(chartId,label, color){
+//     let ctx= document.getElementById(chartId).getContext('2d');
+//     chartsArray[label] = new Chart(ctx, {
+//             type: 'scatter',
+//             data: {
+//                 datasets: [{
+//                     data: data,
+//                     options: {
+//                         scales: {
+//                             x: {
+//                                 type: 'linear',
+//                                 position: 'bottom'
+//                             }
+//                         }
+//                     }
+//                 }]
+//             }
+//           });
+//     chartsArray[label].update();
+// }
 
 const parameters = ['NO2', 'VOC', 'ParticulatePM10', 'ParticulatePM2_5', 'ParticulatePM1'];
 

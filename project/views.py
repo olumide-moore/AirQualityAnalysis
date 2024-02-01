@@ -53,7 +53,7 @@ class SensorDataView(View):
             else:
                 # print(date)
                 # print(timezone.now() - timezone.timedelta(days=9))
-                # date=datetime(2024, 1,21)
+                date=datetime(2024, 1,20)
                 data=get_24_hours_data_by_minute(sensorids,date)
 
                 return JsonResponse(
