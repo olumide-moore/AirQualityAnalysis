@@ -351,7 +351,7 @@ function updateCharts(data){
                 }
             }
             else{
-                let time= Object.keys(data[0][Object.keys(data[0])[0]]);
+                let time= Object.values(data[0])[0].time;
                 // console.log(time);
                 for (let param of parameters){
                     let chartObj = chartsArray[param];
@@ -403,9 +403,8 @@ function updateCharts(data){
                     }
                     }
                 for (var i=0; i<data.length; i++){
-                    let sensorData = data[i];
-                    let sensor= Object.keys(sensorData)[0];
-                    let curData = Object.values(sensorData)[0];
+                    let sensor= Object.keys(data[i])[0];
+                    let curData = Object.values(data[i])[0];
                     // let curData = time.map(label => sensorData[label]);
                     // console.log(sensorData);
                     for (let param of parameters){
@@ -414,8 +413,8 @@ function updateCharts(data){
                         chartObj.data.datasets[i].label = `${sensor}`
                         // chartObj.data.labels = time.map(label => label.slice(5,16)); //x-axis labels
                         //Map the time as JS Date objects
-                        chartObj.data.labels = time.map(label => new Date(label));
-                        chartObj.data.datasets[i].data = time.map(label => curData[label][param.toLowerCase()]); //y-axis data
+                        chartObj.data.labels = time.map(x => new Date(x));
+                        chartObj.data.datasets[i].data = curData[param.toLowerCase()]; //x-axis data
                         chartObj.data.datasets[i].type=chartType.toLowerCase(); //set the chart type
 
                         chartObj.update();

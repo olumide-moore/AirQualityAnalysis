@@ -9,6 +9,9 @@ from django.db.models.expressions import Func, Value
 from django.utils import timezone
 import pytz
 from django.views import View
+from django.db import connection
+import pandas as pd
+import numpy as np
 
 sensor_id1=None
 sensor_id2=None
@@ -51,9 +54,8 @@ class SensorDataView(View):
                 sensor1_data=get_daily_data(sensorids[0],date)
                 sensor2_data=get_daily_data(sensorids[1],date)
             else:
-                # print(date)
-                # print(timezone.now() - timezone.timedelta(days=9))
-                date=datetime(2024, 1,20)
+                # sensorids= ['24']
+                # date=pytz.timezone('UTC').localize(datetime(2024, 1, 20))
                 data=get_24_hours_data_by_minute(sensorids,date)
 
                 return JsonResponse(
@@ -106,9 +108,6 @@ def get_24_hours_data_by_minute(sensor_ids,date):
     end_datetime = start_datetime + timezone.timedelta(days=1)
     data=[]
     for sensor_id in sensor_ids:
-        data_template = {datetime.strftime((start_datetime + timezone.timedelta(minutes=x)), '%Y-%m-%d %H:%M:%S')
-                        : {'no2': None, 'voc': None, 'particulatepm10': None, 'particulatepm2_5': None, 'particulatepm1': None} for x in range((24*60)+1)}
-        # print(list(data_template.keys()))
         #Fetch the minute average data for the last 24 hours from the database
         data_per_minute = (
         data_table.objects.values(*fields)
@@ -127,13 +126,43 @@ def get_24_hours_data_by_minute(sensor_ids,date):
             particulatepm1_avg=Avg('particulatepm1')
         )
         .order_by('minute'))
+
+        if not data_per_minute:
+            data.append({sensor_id:{'time':[],'no2':[],'voc':[],'particulatepm10':[],'particulatepm2_5':[],'particulatepm1':[]}})
+            continue
+        df=pd.DataFrame(data_per_minute)
+        df.set_index('minute', inplace=True)
+        index=pd.date_range(start=start_datetime, end=end_datetime, freq='min', tz='UTC')
+        df=df.reindex(index)
+        df.index=df.index.strftime('%Y-%m-%d %H:%M:%S')
+        #convert nan to None
+        df=df.replace(np.nan,None)
+        this_data = {'time': df.index.tolist()}
+        this_data.update({
+            k.replace('_avg',''): df[k].values.tolist() for k in df
+        })
         
-        #Feed the data into the data template
-        for entry in data_per_minute:
-            minute = entry['minute']
-            for sensor_type in ['no2', 'voc', 'particulatepm10', 'particulatepm2_5', 'particulatepm1']:
-                data_template[datetime.strftime(minute, '%Y-%m-%d %H:%M:%S')][sensor_type]=entry[f"{sensor_type}_avg"]
-        data.append({sensor_id:data_template})
+        # print(df)
+        data.append({sensor_id:this_data})
+        # #Feed the data into the data template
+        # for entry in data_per_minute:
+        #     minute = entry['minute']
+        #     for sensor_type in ['no2', 'voc', 'particulatepm10', 'particulatepm2_5', 'particulatepm1']:
+        #         data_template[datetime.strftime(minute, '%Y-%m-%d %H:%M:%S')][sensor_type]=entry[f"{sensor_type}_avg"]
+        # data.append({sensor_id:data_template})
+
+    # data_table.objects.raw(f"SELECT * FROM {data_table} WHERE sensor_id IN {sensor_ids} AND obs_date BETWEEN %s AND %s", [start_datetime, end_datetime])
+    # cursor=connection.cursor()
+    # # cursor.execute('''SELECT * FROM  all_plume_measurements LIMIT 10''')
+    # cursor.execute('''SELECT * FROM %s LIMIT 2''',['all_plume_measurements'])
+    # # cursor.execute('''SELECT DATE_TRUNC(minute, TO_TIMESTAMP(CONCAT(obs_date, ' ' , obs_time_utc), 'YYYY-MM-DD HH24:MI:SS') AT TIME ZONE UTC) AS minute,
+    # #                 AVG(NO2) AS no2_avg, AVG(VOC) AS voc_avg, AVG(particulatePM10) AS particulatepm10_avg, AVG(particulatePM2.5) AS particulatepm2_5_avg, AVG(particulatePM1) AS particulatepm1_avg FROM all_plume_measurements 
+    # #                WHERE (sensor_id = 24 AND TO_TIMESTAMP(CONCAT(obs_date,  , obs_time_utc), 'YYYY-MM-DD HH24:MI:SS') BETWEEN 2024-01-20 00:00:00+00:00 AND 2024-01-21 00:00:00+00:00) GROUP BY 1 ORDER BY 1 ASC''',
+    # #                [])
+    # cursor.fetchall()
+    # cursor.close()
+    # cursor.execute(f"SELECT * FROM {data_table} WHERE sensor_id IN {sensor_ids} AND obs_date BETWEEN %s AND %s", [start_datetime, end_datetime])
+
     return data
 
 def get_daily_data(sensor_id,date):
