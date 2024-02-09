@@ -417,9 +417,9 @@ function updateCharts(data){
                         chartObj.data.datasets[i].data = curData[param.toLowerCase()]; //x-axis data
                         chartObj.data.datasets[i].type=chartType.toLowerCase(); //set the chart type
 
-                        chartObj.update();
                     }
                 }
+                parameters.forEach(param => { chartsArray[param].update();});
             }
         }
         }else if(periodObj.periodFilter=='Weekly'){

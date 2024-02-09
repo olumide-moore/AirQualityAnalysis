@@ -128,7 +128,8 @@ def get_24_hours_data_by_minute(sensor_ids,date):
         .order_by('minute'))
 
         if not data_per_minute:
-            data.append({sensor_id:{'time':[],'no2':[],'voc':[],'particulatepm10':[],'particulatepm2_5':[],'particulatepm1':[]}})
+            data.append({sensor_id:{'time': pd.date_range(start=start_datetime, end=end_datetime, freq='min', tz='UTC').strftime('%Y-%m-%d %H:%M:%S').tolist(),
+                                    'no2':[],'voc':[],'particulatepm10':[],'particulatepm2_5':[],'particulatepm1':[]}})
             continue
         df=pd.DataFrame(data_per_minute)
         df.set_index('minute', inplace=True)
