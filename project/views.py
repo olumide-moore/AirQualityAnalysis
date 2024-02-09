@@ -101,47 +101,55 @@ class ConcatDateTime(Func):
     template = "%(function)s(CONCAT(%(expressions)s), 'YYYY-MM-DD HH24:MI:SS')"
     output_field = DateTimeField()
 
+def get_minute_average_data(sensor_id, start_datetime, end_datetime):
+    #This fetches the minute average data for the date range from the database and returns it as a pandas dataframe
+    fields=('sensor_id', 'obs_date', 'obs_time_utc', 'no2', 'voc', 'particulatepm10', 'particulatepm2_5', 'particulatepm1')
+    data_per_minute = (
+    data_table.objects.values(*fields)
+    .filter(sensor_id=sensor_id).annotate(
+        datetime=ConcatDateTime(
+            F('obs_date'), Value(' '), F('obs_time_utc')
+        )
+    ).filter(datetime__range=[start_datetime, end_datetime])
+    .annotate(minute=TruncMinute('datetime'))
+    .values('minute')
+    .annotate(
+        no2_avg=Avg('no2'),
+        voc_avg=Avg('voc'),
+        particulatepm10_avg=Avg('particulatepm10'),
+        particulatepm2_5_avg=Avg('particulatepm2_5'),
+        particulatepm1_avg=Avg('particulatepm1')
+    )
+    .order_by('minute'))
+    if not data_per_minute:
+        return None
+            
+    df=pd.DataFrame(data_per_minute)
+    df.set_index('minute', inplace=True)
+    index=pd.date_range(start=start_datetime, end=end_datetime, freq='min', tz='UTC')
+    df=df.reindex(index)
+    df.index=df.index.strftime('%Y-%m-%d %H:%M:%S')
+    #convert nan to None
+    df=df.replace(np.nan,None)
+    return df
+
 def get_24_hours_data_by_minute(sensor_ids,date):
     #This fetches the last 24 hours data averaged by minute
-    fields=('sensor_id', 'obs_date', 'obs_time_utc', 'no2', 'voc', 'particulatepm10', 'particulatepm2_5', 'particulatepm1')
     start_datetime=date
     end_datetime = start_datetime + timezone.timedelta(days=1)
+    
     data=[]
     for sensor_id in sensor_ids:
-        #Fetch the minute average data for the last 24 hours from the database
-        data_per_minute = (
-        data_table.objects.values(*fields)
-        .filter(sensor_id=sensor_id).annotate(
-            datetime=ConcatDateTime(
-                F('obs_date'), Value(' '), F('obs_time_utc')
-            )
-        ).filter(datetime__range=[start_datetime, end_datetime])
-        .annotate(minute=TruncMinute('datetime'))
-        .values('minute')
-        .annotate(
-            no2_avg=Avg('no2'),
-            voc_avg=Avg('voc'),
-            particulatepm10_avg=Avg('particulatepm10'),
-            particulatepm2_5_avg=Avg('particulatepm2_5'),
-            particulatepm1_avg=Avg('particulatepm1')
-        )
-        .order_by('minute'))
-
-        if not data_per_minute:
-            data.append({sensor_id:{'time': pd.date_range(start=start_datetime, end=end_datetime, freq='min', tz='UTC').strftime('%Y-%m-%d %H:%M:%S').tolist(),
-                                    'no2':[],'voc':[],'particulatepm10':[],'particulatepm2_5':[],'particulatepm1':[]}})
-            continue
-        df=pd.DataFrame(data_per_minute)
-        df.set_index('minute', inplace=True)
-        index=pd.date_range(start=start_datetime, end=end_datetime, freq='min', tz='UTC')
-        df=df.reindex(index)
-        df.index=df.index.strftime('%Y-%m-%d %H:%M:%S')
-        #convert nan to None
-        df=df.replace(np.nan,None)
-        this_data = {'time': df.index.tolist()}
-        this_data.update({
-            k.replace('_avg',''): df[k].values.tolist() for k in df
-        })
+        df= get_minute_average_data(sensor_id, start_datetime, end_datetime)
+        if df is not None:
+            this_data = {'time': df.index.tolist()}
+            this_data.update({
+                k.replace('_avg',''): df[k].values.tolist() for k in df
+            })
+        else:
+            this_data= {'time': pd.date_range(start=start_datetime, end=end_datetime, freq='min', tz='UTC').strftime('%Y-%m-%d %H:%M:%S').tolist(),
+                                        'no2':[],'voc':[],'particulatepm10':[],'particulatepm2_5':[],'particulatepm1':[]}
+            
         
         # print(df)
         data.append({sensor_id:this_data})
