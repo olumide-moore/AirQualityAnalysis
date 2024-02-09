@@ -192,60 +192,70 @@ function getWeekStartEndDate(weekInput) {
 
 
 let chartsArray = {};
+
+// var data= [{
+//     x: 10,
+//     y: 20
+// }, {
+//     x: 15,
+//     y: 10
+// }]
+
+
 function newChartObj(chartId,label, color){
     let ctx= document.getElementById(chartId).getContext('2d');
     chartsArray[label] = new Chart(ctx, {
-        type: 'line', //bar, horizontalBar, pie, line, doughnut, radar, polarArea//bar, horizontalBar, pie, line, doughnut, radar, polarArea
+        type: 'scatter', //bar, horizontalBar, pie, line, doughnut, radar, polarArea//bar, horizontalBar, pie, line, doughnut, radar, polarArea
         data: {
             datasets: [{
                 label: "",
                 //disabling the label for now
-                type: 'line',
+                // type: 'line',
                 data: [],
-                borderColor: 'green',
-                borderWidth: 1.5,
+                // borderColor: 'green',
+                // borderWidth: 1.5,
                 backgroundColor: 'rgba(0, 255, 0, 0.1)',
-                yAxisID: 'y',
-                lineTension: 0.3,
-                radius: 0,
-                fill: true,
+                // yAxisID: 'y',
+                // lineTension: 0.3,
+                // radius: 0,
+                // fill: true,
             },
             {
                 label: "",
-                type: 'line',
+                // type: 'line',
                 data: [],
-                backgroundColor: 'rgba(240, 75, 75, 0.8)',
-                borderColor: 'orange',
-                borderWidth: 1.5,
+                // backgroundColor: 'rgba(240, 75, 75, 0.8)',
+                // borderColor: 'orange',
+                // // borderWidth: 1.5,
                 backgroundColor: 'rgba(255, 165, 0, 0.1)',
-                // yAxisID: 'y2',
-                lineTension: 0.3,
-                radius: 0,
-                fill: true,
+                // // yAxisID: 'y2',
+                // lineTension: 0.3,
+                // radius: 0,
+                // fill: true,
             }        
         ]
         },
         options: {
 
-            scales: {
-                x: {
-                    type: 'time'
-                    // ticks: {
-                    //     maxRotation: 90,
-                    //     minRotation: 90
-                    // }
-                },
+            // scales: {
+            //     x: {
+            //         type: 'time'
+            //         // ticks: {
+            //         //     maxRotation: 90,
+            //         //     minRotation: 90
+            //         // }
+            //     },
                 
-                y: {
-                    type: 'linear',
-                    display: true,
-                    position: 'left',
-                    title: {
-                        display: true,
-                        text: 'µg/m³'
-                    }
-                },
-            }, 
+            //     y: {
+            //         type: 'linear',
+            //         display: true,
+            //         position: 'left',
+            //         title: {
+            //             display: true,
+            //             text: 'µg/m³'
+            //         }
+            //     },
+            // }, 
             plugins: {
                 legend: {
                     display: true,
@@ -269,13 +279,7 @@ function newChartObj(chartId,label, color){
     chartsArray[label].update();
 }
 
-// var data= [{
-//     x: 10,
-//     y: 20
-// }, {
-//     x: 15,
-//     y: 10
-// }]
+
 // function newChartObj(chartId,label, color){
 //     let ctx= document.getElementById(chartId).getContext('2d');
 //     chartsArray[label] = new Chart(ctx, {
@@ -286,8 +290,8 @@ function newChartObj(chartId,label, color){
 //                     options: {
 //                         scales: {
 //                             x: {
-//                                 type: 'linear',
-//                                 position: 'bottom'
+//                                 // type: 'linear',
+//                                 // position: 'bottom'
 //                             }
 //                         }
 //                     }
@@ -311,8 +315,10 @@ function updateCharts(data){
     if (!comparingSensors){
         for (let param of parameters){
             let chartObj = chartsArray[param];
-            chartObj.data.datasets[1].data = [];
-            chartObj.update();
+            if (chartObj.data.datasets[1]){
+                chartObj.data.datasets[1].data = [];
+                chartObj.update();
+            }
         }
     }
     if (periodObj.periodFilter=='Daily'){
@@ -320,61 +326,123 @@ function updateCharts(data){
         // chartsArray['NO2'].data.labels = [...Array(24).keys()].map(i => `${i}`.padStart(2, '0')+':00');
         // console.log(data);
         if (data.length>0){
-            let time= Object.keys(data[0][Object.keys(data[0])[0]]);
-            // console.log(time);
-            for (var i=0; i<data.length; i++){
-                let sensorData = data[i];
-                let sensor= Object.keys(sensorData)[0];
-                let curData = Object.values(sensorData)[0];
-                // let curData = time.map(label => sensorData[label]);
-                // console.log(sensorData);
+            // console.log(data);
+            if (chartType=='Scatter' && data.length==2){
+                let id1 =Object.values(Object.values(data[0])[0])
+                let id2 =Object.values(Object.values(data[1])[0])
                 for (let param of parameters){
                     let chartObj = chartsArray[param];
-                    chartObj.data.datasets[i].label = `${sensor}`
-                    // chartObj.data.labels = time.map(label => label.slice(5,16)); //x-axis labels
-                    //Map the time as JS Date objects
-                    chartObj.data.labels = time.map(label => new Date(label));
-                    chartObj.data.datasets[i].data = time.map(label => curData[label][param.toLowerCase()]); //y-axis data
-                    chartObj.data.datasets[i].type=chartType.toLowerCase(); //set the chart type
+                    let no2X= id1.map(x => x[param.toLowerCase()])
+                    let no2Y= id2.map(x => x[param.toLowerCase()])
+                    let scatterData = [];   
+                    for (let i=0; i<no2X.length; i++){
+                        scatterData.push({x: no2X[i], y: no2Y[i]});
+                    // }
+                    }
+                    chartObj.data.datasets= [{
+                        'type': 'scatter',
+                        'label': 'Scatter Plot'
+                    }]
+                    chartObj.options.scales= {}
+
+                    chartObj.data.datasets[0].data = scatterData;
+
                     chartObj.update();
                 }
-            // for (let sensorData in data){
-            //     let sensor= Object.keys(sensorData)[0];
-            //     // let curData = time.map(label => sensorData[label]);
-            //     // console.log(sensorData);
-            //     for (let param of parameters){
-            //         let chartObj = chartsArray[param];
-            //         chartObj.data.datasets[i].label = `${sensor}`
-            //         chartObj.data.labels = time.map(label => label.slice(5,16)); //x-axis labels
-            //         chartObj.data.datasets[i].data = time.map(label => sensorData[label][param.toLowerCase()]); //y-axis data
-            //         // chartObj.data.datasets[i].data = time.map(label => curData[label][param.toLowerCase()]); //y-axis data
-            //         chartObj.data.datasets[i].type=chartType.toLowerCase(); //set the chart type
-            //         chartObj.update();
-            //     }
-            //     i++;
-
-                }
             }
-        }else if(periodObj.periodFilter=='Weekly'){
-        if (data && data.data && data.data.length>0){
-            // console.log(data.data);
-            for (let i = 0; i < data.data.length; i++) {
-            labels = Object.keys(data.data[i]);
+            else{
+                let time= Object.keys(data[0][Object.keys(data[0])[0]]);
+                // console.log(time);
+                for (let param of parameters){
+                    let chartObj = chartsArray[param];
+                    chartObj.data.datasets= [{
+                        label: "",
+                        //disabling the label for now
+                        // type: 'line',
+                        data: [],
+                        borderColor: 'green',
+                        borderWidth: 1.5,
+                        backgroundColor: 'rgba(0, 255, 0, 0.1)',
+                        yAxisID: 'y',
+                        lineTension: 0.3,
+                        radius: 0,
+                        fill: true,
+                    },
+                    {
+                        label: "",
+                        // type: 'line',
+                        data: [],
+                        backgroundColor: 'rgba(240, 75, 75, 0.8)',
+                        borderColor: 'orange',
+                        borderWidth: 1.5,
+                        backgroundColor: 'rgba(255, 165, 0, 0.1)',
+                        // yAxisID: 'y2',
+                        lineTension: 0.3,
+                        radius: 0,
+                        fill: true,
+                    }        
+                ]
+                    chartObj.options.scales= {
+                        x: {
+                            type: 'time'
+                            // ticks: {
+                            //     maxRotation: 90,
+                            //     minRotation: 90
+                            // }
+                        },
+                        
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'µg/m³'
+                            }
+                        },
+                    }
+                    }
+                for (var i=0; i<data.length; i++){
+                    let sensorData = data[i];
+                    let sensor= Object.keys(sensorData)[0];
+                    let curData = Object.values(sensorData)[0];
+                    // let curData = time.map(label => sensorData[label]);
+                    // console.log(sensorData);
+                    for (let param of parameters){
+                        let chartObj = chartsArray[param];
+                       
+                        chartObj.data.datasets[i].label = `${sensor}`
+                        // chartObj.data.labels = time.map(label => label.slice(5,16)); //x-axis labels
+                        //Map the time as JS Date objects
+                        chartObj.data.labels = time.map(label => new Date(label));
+                        chartObj.data.datasets[i].data = time.map(label => curData[label][param.toLowerCase()]); //y-axis data
+                        chartObj.data.datasets[i].type=chartType.toLowerCase(); //set the chart type
 
-            for (let param of parameters){
-                let chartObj = chartsArray[param];
-                chartObj.data.labels = labels;
-                let allData = [];
-                for (let dat in data.data[i]){
-                    allData.push(data.data[i][dat][param.toLowerCase()]);
-                }
-                // chartObj.data.datasets[0].data = allData;
-                chartObj.data.datasets[i].data = allData;
-                chartObj.data.datasets[i].type=chartType.toLowerCase();
-                chartObj.update();
+                        chartObj.update();
                     }
                 }
+            }
         }
+        }else if(periodObj.periodFilter=='Weekly'){
+            if (data && data.data && data.data.length>0){
+                // console.log(data.data);
+                for (let i = 0; i < data.data.length; i++) {
+                labels = Object.keys(data.data[i]);
+
+                for (let param of parameters){
+                    let chartObj = chartsArray[param];
+                    chartObj.data.labels = labels;
+                    let allData = [];
+                    for (let dat in data.data[i]){
+                        allData.push(data.data[i][dat][param.toLowerCase()]);
+                    }
+                    // chartObj.data.datasets[0].data = allData;
+                    chartObj.data.datasets[i].data = allData;
+                    chartObj.data.datasets[i].type=chartType.toLowerCase();
+                    chartObj.update();
+                        }
+                    }
+            }
     }
 
     // if (data.raw_data2){
