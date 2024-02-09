@@ -328,15 +328,14 @@ function updateCharts(data){
         if (data.length>0){
             // console.log(data);
             if (chartType=='Scatter' && data.length==2){
-                let id1 =Object.values(Object.values(data[0])[0])
-                let id2 =Object.values(Object.values(data[1])[0])
+                let id1 =Object.values(data[0])[0]
+                let id2 =Object.values(data[1])[0]
                 for (let param of parameters){
                     let chartObj = chartsArray[param];
-                    let no2X= id1.map(x => x[param.toLowerCase()])
-                    let no2Y= id2.map(x => x[param.toLowerCase()])
                     let scatterData = [];   
-                    for (let i=0; i<no2X.length; i++){
-                        scatterData.push({x: no2X[i], y: no2Y[i]});
+                    let param_lower = param.toLowerCase();
+                    for (let i=0; i<id1[param_lower].length; i++){
+                        scatterData.push({x: id1[param_lower][i], y: id2[param_lower][i]});
                     // }
                     }
                     chartObj.data.datasets= [{
@@ -346,6 +345,7 @@ function updateCharts(data){
                     chartObj.options.scales= {}
 
                     chartObj.data.datasets[0].data = scatterData;
+                    chartObj.data.datasets[0].backgroundColor = 'rgba(0, 0, 0, 0.1)';
 
                     chartObj.update();
                 }
