@@ -157,8 +157,8 @@ function fetchData(){
     chartQuery = `&chart_type=${chartType}`; //get the chart type
 
     fetch(`/sensors-data/?${sensorQuery}${periodQuery}${chartQuery}`)
-    .then(response => response.json()).then(data => {
-        updateCharts(data.data); // once the data is fetched, update the chart
+    .then(response => response.json()).then(receivedData => {
+            updateCharts(receivedData)
     }).catch(error => {
         console.error('Error fetching data:', error)});
 }
@@ -207,7 +207,8 @@ function newChartObj(chartId,label, color){
     chartsArray[label] = new Chart(ctx, {
         type: 'scatter', //bar, horizontalBar, pie, line, doughnut, radar, polarArea//bar, horizontalBar, pie, line, doughnut, radar, polarArea
         data: {
-            datasets: [{
+            datasets: [
+                {
                 label: "",
                 //disabling the label for now
                 // type: 'line',
@@ -273,7 +274,7 @@ function newChartObj(chartId,label, color){
             },
             responsive: true,
             maintainAspectRatio: false,
-            aspectRatio: 1,
+            aspectRatio: 1
             }
    });
     chartsArray[label].update();
@@ -311,7 +312,33 @@ if (document.getElementById('allCharts')) {
 }
 
 
-function updateCharts(data){
+function updateCharts(receivedData){
+    let data=receivedData.data;
+    let correlations=receivedData.correlations;
+    // for (let param of parameters){
+    //     let correlationDiv = document.getElementById(`${param.toLowerCase()}Correlation`);
+    //     correlationDiv.textContent = '';
+    //     let chartObj = chartsArray[param];
+    //     chartObj.data.datasets[0].data = [];
+    //     chartObj.data.datasets[1].data = [];
+    //     chartObj.update();
+    // }
+
+    if (correlations){
+        for (let param of parameters){
+            let correlation = correlations[param.toLowerCase()];
+            if (correlation){
+                let correlationDiv = document.getElementById(`${param.toLowerCase()}Correlation`);
+                correlationDiv.textContent = `Correlation: ${correlation}`;
+            }
+            else{
+                let correlationDiv = document.getElementById(`${param.toLowerCase()}Correlation`);
+                correlationDiv.textContent = '';
+            }
+        }
+    }
+    // else{
+    // }
     if (!comparingSensors){
         for (let param of parameters){
             let chartObj = chartsArray[param];
@@ -325,7 +352,7 @@ function updateCharts(data){
         // //Set the labels hours 00:00 to 23:00
         // chartsArray['NO2'].data.labels = [...Array(24).keys()].map(i => `${i}`.padStart(2, '0')+':00');
         // console.log(data);
-        if (data.length>0){
+        if (data){
             // console.log(data);
             if (chartType=='Scatter' && data.length==2){
                 let id1 =Object.values(data[0])[0]
@@ -350,7 +377,52 @@ function updateCharts(data){
                     chartObj.update();
                 }
             }
+            else if (chartType=='Bar' && comparingSensors){
+                console.log(data);
+                // let labels=Object.keys(data);
+                for (let param of parameters){
+
+                    let chartObj = chartsArray[param];
+                    // chartObj.type= 'bar';
+                    chartObj.data.labels = Object.keys(data[param.toLowerCase()]).map( x => parseFloat(x));
+                    chartObj.data.datasets= [{
+                        label: `Difference in ${param}`,
+                        type: 'bar',
+                        data: Object.values(data[param.toLowerCase()]),
+                        backgroundColor: 'rgba(0, 255, 0, 0.4)',
+                        // borderColor: 'green',
+                        // borderWidth: 1.5,
+                        // lineTension: 0.3,
+                        // radius: 0,
+                        // fill: true,
+                    }]
+                    chartObj.options.scales= {
+                        xAxes: [{
+                            display: false,
+                            barPercentage: 1.3,
+                            ticks: {
+                              max: 3,
+                            }
+                          }, {
+                            display: true,
+                            ticks: {
+                              autoSkip: false,
+                              max: 4,
+                            }
+                          }],
+                          yAxes: [{
+                            ticks: {
+                              beginAtZero: true
+                            }
+                          }]
+                    }
+                    chartObj.update();
+                }
+                // chartObj.data.datasets[i].type=chartType.toLowerCase(); //set the chart type
+
+            }
             else{
+                // console.log('here');
                 let time= Object.values(data[0])[0].time;
                 // console.log(time);
                 for (let param of parameters){
@@ -367,7 +439,7 @@ function updateCharts(data){
                         lineTension: 0.3,
                         radius: 0,
                         fill: true,
-                    },
+                        },
                     {
                         label: "",
                         // type: 'line',
@@ -380,15 +452,11 @@ function updateCharts(data){
                         lineTension: 0.3,
                         radius: 0,
                         fill: true,
-                    }        
+                        }        
                 ]
                     chartObj.options.scales= {
                         x: {
                             type: 'time'
-                            // ticks: {
-                            //     maxRotation: 90,
-                            //     minRotation: 90
-                            // }
                         },
                         
                         y: {
@@ -401,7 +469,7 @@ function updateCharts(data){
                             }
                         },
                     }
-                    }
+                }
                 for (var i=0; i<data.length; i++){
                     let sensor= Object.keys(data[i])[0];
                     let curData = Object.values(data[i])[0];
@@ -415,6 +483,7 @@ function updateCharts(data){
                         //Map the time as JS Date objects
                         chartObj.data.labels = time.map(x => new Date(x));
                         chartObj.data.datasets[i].data = curData[param.toLowerCase()]; //x-axis data
+                        // chartObj.data.datasets[i].type='bar'; //set the chart type
                         chartObj.data.datasets[i].type=chartType.toLowerCase(); //set the chart type
 
                     }
@@ -441,33 +510,8 @@ function updateCharts(data){
                     chartObj.update();
                         }
                     }
-            }
+        }
     }
-
-    // if (data.raw_data2){
-    //     raw_datas.push(data.raw_data2);
-    // }
-    // for (let j=0; j<raw_datas.length; j++){// for each sensor 
-    //     labels = Object.keys(raw_datas[j]);
-    //     //Add shortened day to the labels
-    //     for (let i=0; i<labels.length; i++){
-    //         let dateStr=labels[i];
-    //         let date= new Date(dateStr.slice(6,10), dateStr.slice(3,5)-1, dateStr.slice(0,2));
-    //         labels[i]=`${getWeekDay(date)}(${dateStr.slice(0,5)})`;
-    //         // labels[i]=date.toLocaleDateString()+` (${getWeekDay(date)})`;
-    //     }
-    //     for (let param of parameters){
-    //         let chartObj = chartsArray[param];
-    //         chartObj.data.labels = labels;
-    //         let allData = [];
-    //         for (let dat in raw_datas[j]){
-    //             allData.push(raw_datas[j][dat][param.toLowerCase()]);
-    //         }
-    //         // chartObj.data.datasets[0].data = allData;
-    //         chartObj.data.datasets[j].data = allData;
-    //         chartObj.update();
-    //     }
-// }
 
 }
 
