@@ -6,72 +6,60 @@
 
           <!--Period filter change-->
           <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-2 py-20">
-            <div class="flex justify-end">
-              <button onclick="periodFilterChanged(event)" class="bg-blue-500 text-white font-medium py-1 px-3 text-sm  rounded-l hover:bg-blue-600 focus:outline-none focus:shadow-outline periodFilters">Daily</button>
-              <button onclick="periodFilterChanged(event)" class="bg-gray-200 text-gray-700 font-medium py-1 px-3 text-sm  hover:bg-gray-300 focus:outline-none focus:shadow-outline periodFilters">Weekly</button>
-              <!-- <button onclick="periodFilterChanged(event)" class="bg-gray-200 text-gray-700 font-medium py-1 px-3 text-sm  rounded-r hover:bg-gray-300 focus:outline-none focus:shadow-outline periodFilters">Monthly</button> -->
-            </div>
+            <div class="flex justify-between items-center m-6">
+              <div class="text-sm font-semibold text-gray-900">
+              </div>
 
 
-          <div class="flex justify-between items-center m-6">
-            <!-- Placeholder for the central heading, which will be added dynamically -->
-            <div id="weekRangeHeading" class="text-sm font-semibold text-gray-900"></div>
-
-
-            <div>
-            <!-- Date Filter Input -->
-            <input type="date" id="dateFilter"
-              class="px-4 shadow-lg border border-gray-300 rounded focus:outline-none focus:border-indigo-500 focus:shadow-outline-indigo" 
-              onchange="dateChanged()">
-            
-            <!-- Week Filter Input -->
-            <input type="week" id="weekFilter" placeholder="Week" 
-            class="px-4 shadow-lg border border-gray-300 rounded focus:outline-none focus:border-indigo-500 focus:shadow-outline-indigo hidden" 
-            onchange="weekChanged()">
-            </div>
-          </div> 
+              <div>
+              <!-- Date Filter Input -->
+              <input type="date" id="dateFilter"
+                class="px-4 shadow-lg border border-gray-300 rounded focus:outline-none focus:border-indigo-500 focus:shadow-outline-indigo" 
+                onchange="fetchData()">
+              </div>
+            </div> 
 
             <div class="flex justify-between">
               <div class="flex space-x-2 mb-10">
-                <!-- Sensor selection dropdown -->
-                <div id="sensor1div">
-                  <label for="sensor1" class="block text-sm font-medium text-gray-700">Sensor ID:</label>
-                  <select id="sensor1" name="sensor1" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-                  onchange="sensorIdChanged()">
-                    {% for sensor_id in sensor_ids %}
-                      <option value="{{ sensor_id }}">{{ sensor_id }}</option>
-                      {% endfor %}
-                  </select>
-                </div>
-                
-                <!-- Second sensor dropdown, hidden by default -->
-                <div id="sensor2div" class="hidden">
-                  <label for="sensor2" class="block text-sm font-medium text-gray-700">Sensor ID 2:</label>
-                  <select id="sensor2" name="sensor2" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-                  onchange="sensorIdChanged()">
-                    {% for sensor_id in sensor_ids %}
+                  <!-- Sensor selection dropdown -->
+                  <div id="sensor1div">
+                    <label for="sensor1" class="block text-sm font-medium text-gray-700">Sensor ID:</label>
+                    <select id="sensor1" name="sensor1" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                    onchange="sensorIdChanged()">
+                      {% for sensor_id in sensor_ids %}
                         <option value="{{ sensor_id }}">{{ sensor_id }}</option>
-                    {% endfor %}
-                  </select>
+                        {% endfor %}
+                    </select>
+                  </div>
+                  
+                  <!-- Second sensor dropdown, hidden by default -->
+                  <div id="sensor2div" class="hidden">
+                    <label for="sensor2" class="block text-sm font-medium text-gray-700">Sensor ID 2:</label>
+                    <select id="sensor2" name="sensor2" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                    onchange="sensorIdChanged()">
+                      {% for sensor_id in sensor_ids %}
+                          <option value="{{ sensor_id }}">{{ sensor_id }}</option>
+                      {% endfor %}
+                    </select>
+                </div>
+              </div>
+              <div>
+                <!-- Toggle for comparing two sensors -->
+                <div class="flex items-center h-5">
+                  <input id="compareTwoSensors" type="checkbox" class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded" onchange="toggleSensorComparison(this)">
+                  <label for="compareTwoSensors" class="ml-2 block text-sm text-gray-900">
+                      Compare two sensors
+                  </label>
+                </div>
+                  <!-- Checkbox for comparing against average trend -->
+                <div class="flex items-center h-5">
+                  <input id="compareAverageTrend" name="compareAverageTrend" type="checkbox" class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded" onchange="toggleCompareAverageTrend(this)" >
+                  <label for="compareAverageTrend" class="ml-2 block text-sm text-gray-900">
+                      Compare against average trend
+                  </label>
+                </div>
               </div>
             </div>
-            <div>
-              <!-- Toggle for comparing two sensors -->
-              <div class="flex items-center h-5">
-                <input id="compareTwoSensors" type="checkbox" class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded" onchange="toggleSensorComparison(this)">
-                <label for="compareTwoSensors" class="ml-2 block text-sm text-gray-900">
-                    Compare two sensors
-                </label>
-              </div>
-                <!-- Checkbox for comparing against average trend -->
-              <div class="flex items-center h-5">
-                <input id="compareAverageTrend" name="compareAverageTrend" type="checkbox" class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded" onchange="toggleCompareAverageTrend(this)" >
-                <label for="compareAverageTrend" class="ml-2 block text-sm text-gray-900">
-                    Compare against average trend
-                </label>
-              </div>
-            </div>
-          </div>
 
 
           <div class="flex p-5 gap-4 bg-white">
@@ -160,7 +148,11 @@
 
     <!-- Charts -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6" id="allCharts">
-        
+        <div class="p-4 shadow rounded-lg bg-white">
+          <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">NO2</h2>
+          <div><canvas id="no2Chart" class="chartsCanvas"></canvas></div>
+          <div id="no2Correlation"></div>
+        </div>
         <div class="p-4 shadow rounded-lg bg-white">
             <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">PM2.5</h2>
             <div><canvas id="particulatepm2_5Chart" class="chartsCanvas"></canvas></div>
@@ -171,21 +163,7 @@
             <div><canvas id="particulatepm10Chart" class="chartsCanvas"></canvas></div>
             <div id="particulatepm10Correlation"></div>
         </div>
-        <div class="p-4 shadow rounded-lg bg-white">
-            <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">NO2</h2>
-            <div><canvas id="no2Chart" class="chartsCanvas"></canvas></div>
-            <div id="no2Correlation"></div>
-        </div>
-        <div class="p-4 shadow rounded-lg bg-white">
-            <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">VOC</h2>
-            <div><canvas id="vocChart" class="chartsCanvas"></canvas></div>
-            <div id="vocCorrelation"></div>
-        </div>
-        <div class="p-4 shadow rounded-lg bg-white">
-            <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">PM1</h2>
-            <div><canvas id="particulatepm1Chart" class="chartsCanvas"></canvas></div>
-            <div id="particulatepm1Correlation"></div>
-        </div>
+        
     </div>
 
 

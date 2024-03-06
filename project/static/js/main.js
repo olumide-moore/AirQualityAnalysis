@@ -21,11 +21,10 @@ var sensor1=document.getElementById("sensor1").value;
 var sensor2;
 var comparingSensors=false;
 var comparingAverageTrend=false;
-const periodObj ={
-    periodFilter: 'Daily',
-    date: new Date().toISOString().slice(0,10),
-    week: [],
-}
+
+let currentDate = new Date();
+
+
 fetchData();
 // Function to handle the sensor comparison toggle
 function toggleSensorComparison(checkbox) {
@@ -79,32 +78,15 @@ function sensorIdChanged() {
     fetchData();
 }
 
-function periodFilterChanged(event) {
-    // Remove active class from all buttons
-    document.querySelectorAll('.periodFilters').forEach((btn) => {
-      btn.classList.remove('bg-blue-500', 'text-white');
-      btn.classList.add('bg-gray-200', 'text-gray-700');
-    });
+function dateRange() {
+    let date = document.getElementById("dateFilter").value;
+    let start_datetime = `${date} 00:00:00`;
+    let end_datetime = `${date} 23:59:59`;
+    return [start_datetime, end_datetime];
+}
 
-    // Add active class to the clicked button
-    event.currentTarget.classList.remove('bg-gray-200', 'text-gray-700');
-    event.currentTarget.classList.add('bg-blue-500', 'text-white');
-    //Get the selected period
-    periodObj.periodFilter = event.currentTarget.textContent;
-    if (periodObj.periodFilter == 'Daily'){
-        document.getElementById("dateFilter").classList.remove('hidden');
-        document.getElementById("weekFilter").classList.add('hidden');
-        periodObj.date = document.getElementById("dateFilter").value;
-    }else if(periodObj.periodFilter == 'Weekly'){
-        document.getElementById("dateFilter").classList.add('hidden');
-        document.getElementById("weekFilter").classList.remove('hidden');
-        let weekInput = document.getElementById("weekFilter").value;
-        let {startDate, endDate} = getWeekStartEndDate(weekInput); ///get the start and end date of the week
-        periodObj.week = [startDate, endDate];
-    }
-    fetchData();
-  }
-  
+
+
 
 function chartTypeChanged(event) {
     // Remove active class from all buttons
@@ -140,54 +122,21 @@ function fetchData(){
     else { //if only one sensor is selected
         sensorQuery = `sensor_one=${sensor1}`;
     }
-    if (periodObj.periodFilter == 'Daily'){ //if the period filter is daily
-        let date = periodObj.date; //get the selected date
-        if (date == ''){ //if no date is selected, return
+    let period = dateRange();
+    if (period.length !=2){ //if period range is not 2, return
             return;
         }
-    periodQuery = `&date=${date}`; 
-    // periodQuery = `&date=${encodeURIComponent(date)}`;
-    }else if(periodObj.periodFilter == 'Weekly'){ //if the period filter is weekly
-        let week = periodObj.week; //get the selected week
-        if (week.length !=2){ //if no week is selected, return
-            return;
-        }
-    periodQuery = `&start_date=${week[0]}&end_date=${week[1]}`; //get the start and end date of the week
-    }
+    periodQuery = `&start_date=${period[0]}&end_date=${period[1]}`; //get the start and end date of the period
     chartQuery = `&chart_type=${chartType}`; //get the chart type
 
     fetch(`/sensors-data/?${sensorQuery}${periodQuery}${chartQuery}`)
-    .then(response => response.json()).then(receivedData => {
-            updateCharts(receivedData)
+    .then(response => response.json()).then(data => 
+        {   if (data && data.minutely_data){
+                updateCharts(data.minutely_data);
+            }
     }).catch(error => {
         console.error('Error fetching data:', error)});
 }
-
-// const weekRangeHeading = document.getElementById("weekRangeHeading");
-function dateChanged() {
-    let date = document.getElementById("dateFilter").value;
-    // window.location.href = "/daily/" + date;
-    periodObj.date = date;
-    fetchData();
-}
-function weekChanged() {
-    // Get selected sensor from input
-    let weekInput = document.getElementById("weekFilter").value;
-    let {startDate, endDate} = getWeekStartEndDate(weekInput); ///get the start and end date of the week
-    periodObj.week = [startDate, endDate];
-    // weekRangeHeading.textContent = `${startDate} - ${endDate}`
-    fetchData();
-    // fetchWeeklyData([sensorInput1,sensorInput2],[startDate, endDate]);
-}
-
-function getWeekStartEndDate(weekInput) {
-    let [year, week] = weekInput.split("-W");
-    let startDate = new Date(year, 0, 2 + ((week - 1) * 7)); 
-    let endDate = new Date(year, 0, 2 + ((week - 1) * 7) + 6);
-    startDate=startDate.toISOString().slice(0,10);
-    endDate=endDate.toISOString().slice(0,10);
-    return {startDate, endDate};
-    }
 
 
 
@@ -302,7 +251,7 @@ function newChartObj(chartId,label, color){
 //     chartsArray[label].update();
 // }
 
-const parameters = ['NO2', 'VOC', 'ParticulatePM10', 'ParticulatePM2_5', 'ParticulatePM1'];
+const parameters = ['NO2','ParticulatePM10', 'ParticulatePM2_5'];
 
 if (document.getElementById('allCharts')) {
     // const colors = ['rgba(255, 99, 132, 0.6)', 'rgba(255, 159, 64, 0.6)', 'rgba(255, 206, 86, 0.6)', 'rgba(75, 192, 192, 0.6)', 'rgba(54, 162, 235, 0.6)'];
@@ -312,31 +261,30 @@ if (document.getElementById('allCharts')) {
 }
 
 
-function updateCharts(receivedData){
-    let data=receivedData.data;
-    let correlations=receivedData.correlations;
-    // for (let param of parameters){
-    //     let correlationDiv = document.getElementById(`${param.toLowerCase()}Correlation`);
-    //     correlationDiv.textContent = '';
-    //     let chartObj = chartsArray[param];
-    //     chartObj.data.datasets[0].data = [];
-    //     chartObj.data.datasets[1].data = [];
-    //     chartObj.update();
-    // }
+function updateCharts(data){
+    // let correlations=receivedData.correlations;
+    // // for (let param of parameters){
+    // //     let correlationDiv = document.getElementById(`${param.toLowerCase()}Correlation`);
+    // //     correlationDiv.textContent = '';
+    // //     let chartObj = chartsArray[param];
+    // //     chartObj.data.datasets[0].data = [];
+    // //     chartObj.data.datasets[1].data = [];
+    // //     chartObj.update();
+    // // }
 
-    if (correlations){
-        for (let param of parameters){
-            let correlation = correlations[param.toLowerCase()];
-            if (correlation){
-                let correlationDiv = document.getElementById(`${param.toLowerCase()}Correlation`);
-                correlationDiv.textContent = `Correlation: ${correlation}`;
-            }
-            else{
-                let correlationDiv = document.getElementById(`${param.toLowerCase()}Correlation`);
-                correlationDiv.textContent = '';
-            }
-        }
-    }
+    // if (correlations){
+    //     for (let param of parameters){
+    //         let correlation = correlations[param.toLowerCase()];
+    //         if (correlation){
+    //             let correlationDiv = document.getElementById(`${param.toLowerCase()}Correlation`);
+    //             correlationDiv.textContent = `Correlation: ${correlation}`;
+    //         }
+    //         else{
+    //             let correlationDiv = document.getElementById(`${param.toLowerCase()}Correlation`);
+    //             correlationDiv.textContent = '';
+    //         }
+    //     }
+    // }
     // else{
     // }
     if (!comparingSensors){
@@ -348,10 +296,7 @@ function updateCharts(receivedData){
             }
         }
     }
-    if (periodObj.periodFilter=='Daily'){
         // //Set the labels hours 00:00 to 23:00
-        // chartsArray['NO2'].data.labels = [...Array(24).keys()].map(i => `${i}`.padStart(2, '0')+':00');
-        // console.log(data);
         if (data){
             // console.log(data);
             if (chartType=='Scatter' && data.length==2){
@@ -421,9 +366,9 @@ function updateCharts(receivedData){
                 // chartObj.data.datasets[i].type=chartType.toLowerCase(); //set the chart type
 
             }
-            else{
+            else if (chartType=='Line'){
                 // console.log('here');
-                let time= Object.values(data[0])[0].time;
+                let time= Object.values(data)[0];
                 // console.log(time);
                 for (let param of parameters){
                     let chartObj = chartsArray[param];
@@ -470,78 +415,31 @@ function updateCharts(receivedData){
                         },
                     }
                 }
-                for (var i=0; i<data.length; i++){
-                    let sensor= Object.keys(data[i])[0];
-                    let curData = Object.values(data[i])[0];
                     // let curData = time.map(label => sensorData[label]);
                     // console.log(sensorData);
                     for (let param of parameters){
                         let chartObj = chartsArray[param];
-                       
-                        chartObj.data.datasets[i].label = `${sensor}`
+                        chartObj.data.datasets[0].label = `${sensor1}`
                         // chartObj.data.labels = time.map(label => label.slice(5,16)); //x-axis labels
                         //Map the time as JS Date objects
                         chartObj.data.labels = time.map(x => new Date(x));
-                        chartObj.data.datasets[i].data = curData[param.toLowerCase()]; //x-axis data
+                        chartObj.data.datasets[0].data = data[param.toLowerCase()]; //x-axis data
                         // chartObj.data.datasets[i].type='bar'; //set the chart type
-                        chartObj.data.datasets[i].type=chartType.toLowerCase(); //set the chart type
+                        chartObj.data.datasets[0].type=chartType.toLowerCase(); //set the chart type
 
                     }
-                }
                 parameters.forEach(param => { chartsArray[param].update();});
             }
         }
-        }else if(periodObj.periodFilter=='Weekly'){
-            if (data && data.data && data.data.length>0){
-                // console.log(data.data);
-                for (let i = 0; i < data.data.length; i++) {
-                labels = Object.keys(data.data[i]);
-
-                for (let param of parameters){
-                    let chartObj = chartsArray[param];
-                    chartObj.data.labels = labels;
-                    let allData = [];
-                    for (let dat in data.data[i]){
-                        allData.push(data.data[i][dat][param.toLowerCase()]);
-                    }
-                    // chartObj.data.datasets[0].data = allData;
-                    chartObj.data.datasets[i].data = allData;
-                    chartObj.data.datasets[i].type=chartType.toLowerCase();
-                    chartObj.update();
-                        }
-                    }
-        }
-    }
 
 }
 
-function getWeekDay(date){
-    let days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    return days[date.getDay()];
-}
-
-function getDateWeek(date){
-    // let today = new Date(2023,1,21);
-    let year = date.getFullYear();
-    let week = getWeekNumber(date);
-    return `${year}-W`+`${week}`.padStart(2, '0');
-}
-function getWeekNumber(date) {
-    let yearStart = new Date(date.getFullYear(), 0, 1);
-    let weekNo = Math.ceil((((date - yearStart) / 86400000) + yearStart.getDay() + 1) / 7);
-    return weekNo;
-}
 
 //Set the date filter to default date
 document.getElementById("dateFilter").value = new Date().toISOString().slice(0,10);
+fetchData();
 
 
-//Set the week filter default date and maximum date
-let weekFilter = document.getElementById("weekFilter");
-let curWeek=getDateWeek(new Date());
-weekFilter.value = curWeek;
-weekFilter.max = curWeek;
-    
 
 
    // let sensor_locations = JSON.parse(document.getElementById('sensor_locations').textContent);
