@@ -85,9 +85,36 @@ function dateRange() {
     return [start_datetime, end_datetime];
 }
 
+function getAQIColor(aqi){
+if (aqi==1) return '#a0fc9c'; //Low
+if (aqi==2) return '#38fc04'; //Low
+if (aqi==3) return '#38cc04'; //Low
+if (aqi==4) return '#fffc04'; //Moderate
+if (aqi==5) return '#fccc04'; //Moderate
+if (aqi==6) return '#ff9c04'; //Moderate
+if (aqi==7) return '#ff6464'; //High
+if (aqi==8) return '#ff0404'; //High
+if (aqi==9) return '#a00404'; //High
+if (aqi==10) return '#d034fc'; //Very High
+return '#626262'; //Unknown or no data
+}
+
+// function getAQIDescription(aqi){
+//     if (aqi==1) return 'Good'; //Low
+//     if (aqi==2) return 'Good'; //Low
 
 
-
+function updateAQICards(aqi_data){
+    let no2Div = document.getElementById('no2card');
+    let pm2_5Div = document.getElementById('pm2_5card');
+    let pm10Div = document.getElementById('pm10card');
+    no2aqi= getAQIColor(aqi_data.no2);
+    pm2_5aqi= getAQIColor(aqi_data.pm2_5);
+    pm10aqi= getAQIColor(aqi_data.pm10);
+    no2Div.style.backgroundColor = no2aqi;
+    pm2_5Div.style.backgroundColor = pm2_5aqi;
+    pm10Div.style.backgroundColor = pm10aqi;
+}
 function chartTypeChanged(event) {
     // Remove active class from all buttons
     document.querySelectorAll('.chartTypes').forEach((btn) => {
@@ -132,7 +159,9 @@ function fetchData(){
     fetch(`/sensors-data/?${sensorQuery}${periodQuery}${chartQuery}`)
     .then(response => response.json()).then(data => 
         {   if (data && data.minutely_data){
-                updateCharts(data.minutely_data);
+                updateAQICards(data.aqi_data);
+                updateLineCharts(data.minutely_data);
+                updateHourlyAvgCharts(data.hourly_avgs, data.hourly_aqis);
             }
     }).catch(error => {
         console.error('Error fetching data:', error)});
@@ -140,7 +169,7 @@ function fetchData(){
 
 
 
-let chartsArray = {};
+let lineChartsObjsArray = {};
 
 // var data= [{
 //     x: 10,
@@ -153,7 +182,7 @@ let chartsArray = {};
 
 function newChartObj(chartId,label, color){
     let ctx= document.getElementById(chartId).getContext('2d');
-    chartsArray[label] = new Chart(ctx, {
+    lineChartsObjsArray[label] = new Chart(ctx, {
         type: 'scatter', //bar, horizontalBar, pie, line, doughnut, radar, polarArea//bar, horizontalBar, pie, line, doughnut, radar, polarArea
         data: {
             datasets: [
@@ -226,13 +255,13 @@ function newChartObj(chartId,label, color){
             aspectRatio: 1
             }
    });
-    chartsArray[label].update();
+    lineChartsObjsArray[label].update();
 }
 
 
 // function newChartObj(chartId,label, color){
 //     let ctx= document.getElementById(chartId).getContext('2d');
-//     chartsArray[label] = new Chart(ctx, {
+//     lineChartsObjsArray[label] = new Chart(ctx, {
 //             type: 'scatter',
 //             data: {
 //                 datasets: [{
@@ -248,25 +277,24 @@ function newChartObj(chartId,label, color){
 //                 }]
 //             }
 //           });
-//     chartsArray[label].update();
+//     lineChartsObjsArray[label].update();
 // }
 
-const parameters = ['NO2','ParticulatePM10', 'ParticulatePM2_5'];
+const parameters = ['NO2','PM10', 'PM2_5'];
 
-if (document.getElementById('allCharts')) {
+if (document.getElementById('lineCharts')) {
     // const colors = ['rgba(255, 99, 132, 0.6)', 'rgba(255, 159, 64, 0.6)', 'rgba(255, 206, 86, 0.6)', 'rgba(75, 192, 192, 0.6)', 'rgba(54, 162, 235, 0.6)'];
     for (let param of parameters){
-        newChartObj(`${param.toLowerCase()}Chart`, param);
+        newChartObj(`${param.toLowerCase()}lineChart`, param);
     }
 }
 
-
-function updateCharts(data){
+function updateLineCharts(data){
     // let correlations=receivedData.correlations;
     // // for (let param of parameters){
     // //     let correlationDiv = document.getElementById(`${param.toLowerCase()}Correlation`);
     // //     correlationDiv.textContent = '';
-    // //     let chartObj = chartsArray[param];
+    // //     let chartObj = lineChartsObjsArray[param];
     // //     chartObj.data.datasets[0].data = [];
     // //     chartObj.data.datasets[1].data = [];
     // //     chartObj.update();
@@ -289,7 +317,7 @@ function updateCharts(data){
     // }
     if (!comparingSensors){
         for (let param of parameters){
-            let chartObj = chartsArray[param];
+            let chartObj = lineChartsObjsArray[param];
             if (chartObj.data.datasets[1]){
                 chartObj.data.datasets[1].data = [];
                 chartObj.update();
@@ -303,7 +331,7 @@ function updateCharts(data){
                 let id1 =Object.values(data[0])[0]
                 let id2 =Object.values(data[1])[0]
                 for (let param of parameters){
-                    let chartObj = chartsArray[param];
+                    let chartObj = lineChartsObjsArray[param];
                     let scatterData = [];   
                     let param_lower = param.toLowerCase();
                     for (let i=0; i<id1[param_lower].length; i++){
@@ -327,7 +355,7 @@ function updateCharts(data){
                 // let labels=Object.keys(data);
                 for (let param of parameters){
 
-                    let chartObj = chartsArray[param];
+                    let chartObj = lineChartsObjsArray[param];
                     // chartObj.type= 'bar';
                     chartObj.data.labels = Object.keys(data[param.toLowerCase()]).map( x => parseFloat(x));
                     chartObj.data.datasets= [{
@@ -371,7 +399,7 @@ function updateCharts(data){
                 let time= Object.values(data)[0];
                 // console.log(time);
                 for (let param of parameters){
-                    let chartObj = chartsArray[param];
+                    let chartObj = lineChartsObjsArray[param];
                     chartObj.data.datasets= [{
                         label: "",
                         //disabling the label for now
@@ -418,7 +446,7 @@ function updateCharts(data){
                     // let curData = time.map(label => sensorData[label]);
                     // console.log(sensorData);
                     for (let param of parameters){
-                        let chartObj = chartsArray[param];
+                        let chartObj = lineChartsObjsArray[param];
                         chartObj.data.datasets[0].label = `${sensor1}`
                         // chartObj.data.labels = time.map(label => label.slice(5,16)); //x-axis labels
                         //Map the time as JS Date objects
@@ -428,10 +456,68 @@ function updateCharts(data){
                         chartObj.data.datasets[0].type=chartType.toLowerCase(); //set the chart type
 
                     }
-                parameters.forEach(param => { chartsArray[param].update();});
+                parameters.forEach(param => { lineChartsObjsArray[param].update();});
             }
         }
 
+}
+
+
+const hourlyavgChartsObjsArray = {};
+for (let param of parameters){
+    let ctx= document.getElementById(`${param.toLowerCase()}HourlyAvgChart`).getContext('2d');
+    let chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: [],
+            datasets: [ {
+                label: `Average ${param.toUpperCase()}` ,
+                data: []
+            }]
+        },
+        options : {
+            scales: {
+                x: {
+                    type: 'time'
+                },
+                y: {
+                    beginAtZero: true
+                }
+            },
+            plugins: {
+                tooltip: {
+                    enabled: true
+                },
+                legend: {
+                    display: true
+                }
+            }
+        }
+    });
+    hourlyavgChartsObjsArray[param] = chart;
+}
+
+
+
+function updateHourlyAvgCharts(avgData,aqiData){
+
+    if (avgData){
+        let time= avgData.time;
+        if (time){
+            time = time.map(x => new Date(x));
+            for (let param of parameters){
+                let chartObj = hourlyavgChartsObjsArray[param];
+                if (chartObj){
+                    chartObj.data.labels = time;
+                    if (avgData[param.toLowerCase()]){
+                        chartObj.data.datasets[0].data = avgData[param.toLowerCase()];
+                        chartObj.data.datasets[0].backgroundColor = aqiData[param.toLowerCase()].map(x => getAQIColor(x));
+                        chartObj.update();
+                    }
+                }
+            }
+        }
+    }
 }
 
 
@@ -458,80 +544,3 @@ function createMap(center, zoom){
     return map;
 }
 
-
-
-// const ctx = document.getElementById('no2Chart').getContext('2d');
-
-// // Example labels for each hour of the day
-// const labels = [
-//     '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00', 
-//     '00:00', '01:00', '02:00', '03:00', '04:00', '05:00', '06:00', '07:00', 
-//     '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00'
-//   ];
-  
-//   // Example data for PM2.5
-//   const pm25Data = [
-//     5, 4, 6, 3, 5, 4, 6, 3, 5, 4, 6, 3, 7, 8, 9, 7, 
-//     8, 9, 10, 9, 8, 10, 11, 9
-//   ];
-  
-//   // Example data for PM10
-//   const pm10Data = [
-//     20, 22, 19, 18, 21, 20, 22, 19, 21, 20, 19, 18, 23, 24, 25, 23, 
-//     24, 25, 26, 25, 24, 26, 27, 25
-//   ];
-  
-//   // Chart.js configuration
-//   const airQualityChart = new Chart(ctx, {
-//       type: 'line',
-//       data: {
-//           labels: labels,
-//           datasets: [{
-//                 label: 'PM2.5',
-//                 data: pm25Data,
-//                 borderColor: 'green',
-//                 borderWidth: 1.5,
-//                 backgroundColor: 'rgba(0, 255, 0, 0.1)',
-//                 yAxisID: 'y',
-//                 lineTension: 0.4,
-//                 radius: 0,
-//                 fill: true,
-//           }, {
-//                 label: 'PM10',
-//                 data: pm10Data,
-//                 borderColor: 'orange',
-//                 borderWidth: 1.5,
-//                 backgroundColor: 'rgba(255, 165, 0, 0.1)',
-//                 yAxisID: 'y1',
-//                 lineTension: 0.4,
-//                 radius: 0,
-//                 fill: true, 
-//           }]
-//       },
-//       options: {
-//           scales: {
-//               y: {
-//                   type: 'linear',
-//                   display: true,
-//                   position: 'left',
-//                   title: {
-//                     display: true,
-//                     text: 'Concentration (µg/m³)'
-//                   }
-//               },
-//               y1: {
-//                   type: 'linear',
-//                   display: true,
-//                   position: 'right',
-//                   grid: {
-//                     drawOnChartArea: false, // only want the grid lines for one axis to show up
-//                   },
-//                   title: {
-//                     display: true,
-//                     text: 'Concentration (µg/m³)'
-//                   }
-//               }
-//           }
-//       }
-//   });
-  
