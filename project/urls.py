@@ -21,7 +21,9 @@ import debug_toolbar
 
 urlpatterns = [
     # path('admin/', admin.site.urls),
-    path('', views.index, name='index'),
+    path('', views.home, name='home'),
+    path('compare/', views.compare, name='compare'),
     path('__debug__/', include(debug_toolbar.urls)),
-    path('sensors-data/', views.SensorDataView.as_view(), name='sensors_data/'),
+    path("sensors_ids/<int:type_id>/", views.get_sensor_ids, name='sensors_ids'),
+    path('sensors-data/<str:sensor_type>/<int:sensor_id>/<str:start>/<str:end>/', views.get_sensor_data, name='sensors_data/'),
 ]

@@ -29,8 +29,8 @@
         </select>
       </div>
         
-      <!-- Second sensor dropdown, hidden by default -->
-      <div id="sensor2div" class="hidden">
+      <!-- Second sensor dropdown -->
+      <div id="sensor2div">
         <label for="sensor2" class="block text-sm font-medium text-gray-700">Sensor ID 2:</label>
         <select id="sensor2" name="sensor2" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
         onchange="sensorIdChanged()">
@@ -62,7 +62,7 @@
             <td class="px-4 py-2">24</td>
           </tr>
           <tr class="bg-gray-100">
-            <td class="px-4 py-2">Last recorded</td>
+            <td class="px-4 py-2">Last updated</td>
             <td class="px-4 py-2">2 days ago</td>
           </tr>
           <!-- <tr>
@@ -119,26 +119,15 @@
     </div>
   </div>
 
-    
-
-  
-  <!-- Hourly averages bars-->
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mt-5" id="lineCharts">
-    <div class="p-4 shadow rounded-lg bg-white">
-      <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">NO2 Hourly averages</h2>
-      <div><canvas id="no2HourlyAvgChart" class="chartsCanvas"></canvas></div>
-    </div>
-    <div class="p-4 shadow rounded-lg bg-white">
-      <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">PM2.5 Hourly averages</h2>
-      <div><canvas id="pm2_5HourlyAvgChart" class="chartsCanvas"></canvas></div>
-    </div>
-    <div class="p-4 shadow rounded-lg bg-white">
-      <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">PM10 Hourly averages</h2>
-      <div><canvas id="pm10HourlyAvgChart" class="chartsCanvas"></canvas></div>
-    </div>
-  </div>
-
   <!-- Charts -->
+      <!-- Toggle for comparing two sensors -->
+    <div class="flex h-5 justify-end mt-5">
+        <div class="ml-5">
+            <button onclick="chartTypeChanged(event)" class="bg-gray-200 text-gray-700 font-medium py-1 px-3 text-sm  rounded-l hover:bg-gray-300 focus:outline-none focus:shadow-outline chartTypes">Line</button>
+            <button onclick="chartTypeChanged(event)" class="bg-gray-200 text-gray-700 font-medium py-1 px-3 text-sm  rounded-l hover:bg-gray-300 focus:outline-none focus:shadow-outline chartTypes">Scatter</button>
+            <button onclick="chartTypeChanged(event)" class="bg-gray-200 text-gray-700 font-medium py-1 px-3 text-sm  rounded-r hover:bg-gray-300 focus:outline-none focus:shadow-outline chartTypes">Bar</button>
+        </div>
+    </div>
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mt-5" id="lineCharts">
     <div class="p-4 shadow rounded-lg bg-white">
       <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">NO2</h2>
@@ -156,35 +145,5 @@
       <div id="pm10Correlation"></div>
     </div>
   </div>
-
-  <!-- Comparison toggles -->
-  <div class="flex flex-col m-6 space-y-4 ">
-    <!-- Toggle for comparing two sensors -->
-    <div class="flex items-center h-5">
-      <input id="compareTwoSensors" type="checkbox" class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded" onchange="toggleSensorComparison(this)">
-      <label for="compareTwoSensors" class="ml-2 block text-sm text-gray-900">
-          Compare two sensors
-      </label>
-      <div class="ml-5">
-        <button onclick="chartTypeChanged(event)" class="bg-gray-200 text-gray-700 font-medium py-1 px-3 text-sm  rounded-l hover:bg-gray-300 focus:outline-none focus:shadow-outline chartTypes">Line</button>
-        <button onclick="chartTypeChanged(event)" class="bg-gray-200 text-gray-700 font-medium py-1 px-3 text-sm  rounded-l hover:bg-gray-300 focus:outline-none focus:shadow-outline chartTypes">Scatter</button>
-        <button onclick="chartTypeChanged(event)" class="bg-gray-200 text-gray-700 font-medium py-1 px-3 text-sm  rounded-r hover:bg-gray-300 focus:outline-none focus:shadow-outline chartTypes">Bar</button>
-      </div>
-    </div>
-      <!-- Checkbox for comparing against average trend -->
-    <div class="flex items-center h-5">
-      <input id="compareAverageTrend" name="compareAverageTrend" type="checkbox" class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded" onchange="toggleCompareAverageTrend(this)" >
-      <label for="compareAverageTrend" class="ml-2 block text-sm text-gray-900">
-          Compare against average trend
-      </label>
-    </div>
-  </div>
-
-    <!--Compare against average-->
-    <!-- <h4 class="text-2xl text-gray-900 my-4 bg-white p-4 shadow rounded-lg">Compare against average</h4> -->
-  
-<!-- Map -->
-<div id="map" class="z-0"></div>
-
 </div>
 {% endblock %}

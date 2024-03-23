@@ -32,10 +32,13 @@
     <!-- <body style="background: linear-gradient(to right, #b4bccd, #889ebc);"> -->
         <header>
             <nav class="navbar">
-              <a href="#" class="nav-branding">Sensors</a>
-              <ul class="nav-menu">
+              <a href="{% url 'home' %}" class="nav-branding">Sensors</a>
+              <ul class="nav-menu"> 
                 <li class="nav-item">
-                  <a href="#" class="nav-link">Home</a>
+                  <a href="{% url 'home' %}" class="nav-link">Home</a>
+                </li>
+                <li class="nav-item">
+                  <a href="{% url 'compare' %}" class="nav-link">Compare sensors</a>
                 </li>
                 <li class="nav-item">
                   <a href="#" class="nav-link">Sign up</a>
@@ -65,7 +68,7 @@
                 <h3 class="mb-5 font-semibold text-gray-400">Menu</h3>
                 <ul class="space-y-2">
                     <li><a href="#" class="text-lg text-green-300 hover:text-green-300">About</li>
-                    <li><a href="{% url 'index' %}" class="text-lg text-green-300 hover:text-green-300">Contact</li>
+                    <li><a href="#" class="text-lg text-green-300 hover:text-green-300">Contact</li>
                     <li><a href="#" class="text-lg text-green-300 hover:text-green-300">Privacy policy</li>
                     <li><a href="#" class="text-lg text-green-300 hover:text-green-300">Term of use</li>
                 </ul>
@@ -75,6 +78,8 @@
      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
      crossorigin="">
  </script>
-    <script type="text/javascript" src="{% static 'js/main.js' %}" ></script>
+    <script type="text/javascript" src="{% static 'js/base.js' %}" ></script>
+    <script type="text/javascript" src="{% static 'js/home.js' %}" ></script>
+    <script type="text/javascript" src="{% static 'js/compare.js' %}" ></script>
     </body>
 </html>
