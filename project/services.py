@@ -6,6 +6,7 @@ from django.db.models.expressions import Func, Value
 
 import pandas as pd
 import numpy as np
+from datetime import datetime, timedelta
 
 
 TABLE= None
@@ -25,9 +26,7 @@ class Sensor():
     def __init__(self, sensor_id, requiredConcentrations):
         self.SENSOR_ID = sensor_id
         self.requiredConcentrations = requiredConcentrations
-        self.cachedRawData = None
-        self.cacheStartTime = None
-        self.cacheEndTime = None
+        self.cachedRawData = {}
     
     def getLastUpdatedTime(self):
         if TABLE is None: return None
@@ -38,12 +37,46 @@ class Sensor():
 
         return last_updated
 
-    def getRawData(self, start, end):
-        if TABLE is None: return None
-        if start == self.cacheStartTime and end == self.cacheEndTime and self.cachedRawData is not None:
-            return self.cachedRawData
+    # def getRawData(self, start, end):
+    #     ''' param start: datetime
+    #         param end: datetime
+    #         return: pd.DataFrame
+    #         This function fetches the raw data from the database for the given sensor_id and the required concentrations between the start and end datetime
+    #         '''
+    #     if TABLE:
+    #         rawdata = (
+    #         TABLE.objects.values('obs_date', 'obs_time_utc', *self.requiredConcentrations)
+    #         .filter(sensor_id=self.SENSOR_ID)
+    #         .annotate( 
+    #             datetime = ConcatDateTime(
+    #             F('obs_date'), 
+    #             Value(' '), 
+    #             F('obs_time_utc')
+    #             )
+    #         ).filter(datetime__range=(start, end)).order_by('datetime')
+    #         )
+    #     else:
+    #         rawdata = {'datetime': []}
+    #         rawdata.update({c: [] for c in self.requiredConcentrations})
+    #     rawdata = pd.DataFrame(rawdata, columns=['datetime', *self.requiredConcentrations]) #convert the queryset to a pandas dataframe
+    #     rawdata.rename(columns={'particulatepm2_5':'pm2_5', 'particulatepm10':'pm10', 'particulatepm1':'pm1'}, inplace=True)
+    #     rawdata['datetime'] = pd.to_datetime(rawdata['datetime']) #convert the datetime column to a pandas datetime object
+    #     rawdata.set_index('datetime', inplace=True)
+    #     self.cachedRawData = rawdata
+    #     # print(rawdata)
+    #     return rawdata
+    def getRawData_forSetDates(self, dates):
+        ''' param dates: list of datetime
+            return: pd.DataFrame
+            This function fetches the raw data from the database for the given sensor_id and the required concentrations for the given dates
+            '''
+        for date in list(self.cachedRawData.keys()): 
+            if date not in dates: 
+                del self.cachedRawData[date] #delete the cached data that is not in the last 7 days
+            else:
+                dates.remove(date)  #remove the dates that are already cached
         if TABLE:
-            raw_data = (
+            rawdata = (
             TABLE.objects.values('obs_date', 'obs_time_utc', *self.requiredConcentrations)
             .filter(sensor_id=self.SENSOR_ID)
             .annotate( 
@@ -52,83 +85,105 @@ class Sensor():
                 Value(' '), 
                 F('obs_time_utc')
                 )
-            ).filter(datetime__range=(start, end)).order_by('datetime')
+            ).filter(obs_date__in=dates).order_by('datetime')
             )
         else:
-            raw_data = {'datetime': []}
-            raw_data.update({c: [] for c in self.requiredConcentrations})
-        raw_data = pd.DataFrame(raw_data, columns=['datetime', *self.requiredConcentrations]) #convert the queryset to a pandas dataframe
-        raw_data.rename(columns={'particulatepm2_5':'pm2_5', 'particulatepm10':'pm10', 'particulatepm1':'pm1'}, inplace=True)
-        raw_data['datetime'] = pd.to_datetime(raw_data['datetime']) #convert the datetime column to a pandas datetime object
-        raw_data.set_index('datetime', inplace=True)
-        # print(raw_data)
-        self.cacheStartTime = start
-        self.cacheEndTime = end
-        self.cachedRawData = raw_data
-        return raw_data
+            rawdata = {'datetime': []}
+            rawdata.update({c: [] for c in self.requiredConcentrations})
+        rawdata = pd.DataFrame(rawdata, columns=['datetime', *self.requiredConcentrations]) #convert the queryset to a pandas dataframe
+        rawdata.rename(columns={'particulatepm2_5':'pm2_5', 'particulatepm10':'pm10', 'particulatepm1':'pm1'}, inplace=True)
+        rawdata['datetime'] = pd.to_datetime(rawdata['datetime']) #convert the datetime column to a pandas datetime object
+        rawdata.set_index('datetime', inplace=True)
+        data_by_day = {}
+        for date in dates:
+            data_by_day[date] = rawdata[rawdata.index.date == date]
+        self.cachedRawData = data_by_day
+        return data_by_day
     
-    def getMinutelyAverages(self, start, end):
+    def getRawData_Last7Days(self, end):
+        ''' param end: datetime
+            return: pd.DataFrame
+            This function fetches the raw data from the database for the given sensor_id and the required concentrations for last 7 days till the end datetime and the end datetime
+            '''
+        dates= [end.date() - timedelta(days=i) for i in range(7)]
+        return self.getRawData_forSetDates(dates)
+
+        
+    def getRawData_SameDayLast7Weeks(self, end):
+        ''' param end: datetime
+            return: pd.DataFrame
+            This function fetches the raw data from the database for the given sensor_id and the required concentrations for the same day of the week for the last 7 weeks till the end datetime and the end datetime
+            '''
+        dates= [end.date() - timedelta(weeks=i) for i in range(7)] #This gets the dates for the same day of the week for the last 7 weeks
+        return self.getRawData_forSetDates(dates)
+
+
+    def getMinutelyAverages(self, rawdata, start, end):
         '''
+        param rawdata: pd.DataFrame
         param start: datetime
         param end: datetime
         param returnType: str
         return: pd.DataFrame
         This function calculates the average concentration of the pollutants for each minute between the start and end datetime
         '''
-        raw_data = self.getRawData(start, end)
         index=pd.date_range(start=start, end=end, freq='min', tz='UTC')
         #group the data by minute and calculate the average concentration for each minute
-        data_per_minute = raw_data.resample('min').mean()
+        data_per_minute = rawdata.resample('min').mean()
         #insert missing minutes with None values
         data_per_minute = data_per_minute.reindex(index)
         data_per_minute.replace(np.nan, None, inplace=True) #replace nan values with None
         return data_per_minute
     
-    def getHourlyAverages(self, start, end, minute_threshold=45):
+    def getHourlyAverages(self, rawdata, start, end, minute_threshold=45):
         '''
+        param rawdata: pd.DataFrame
         param start: datetime
         param end: datetime
         param returnType: str
         return: pd.DataFrame
         This function calculates the average concentration of the pollutants for each hour between the start and end datetime
         '''
-        raw_data = self.getRawData(start, end)
         index=pd.date_range(start=start, end=end, freq='h', tz='UTC')
         #group the data by hour and calculate the average concentration for each hour
-        data_grouped_by_hour = raw_data.resample('h')
+        data_grouped_by_hour = rawdata.resample('h')
         data_per_hour = data_grouped_by_hour.apply(lambda x: x.mean() if x.count() >= minute_threshold else None)
         #insert missing hours with None values
         data_per_hour = data_per_hour.reindex(index)
         data_per_hour.replace(np.nan, None, inplace=True)
         return data_per_hour        
     
-    def getNO2_HourlyAvgs(self, minute_threshold=45):
+    def getNO2_HourlyAvgs(self, no2_rawdata, minute_threshold=45):
         '''
+        param no2_rawdata: pd.Series
+        param minute_threshold: int
         return: float - the average NO2 concentration
         This function checks if there is atleast 75% (45minutes) of no2 data of the hourly data required, then calculates the average hourly no2 concentration and returns the maximum value
         '''
-        no2_grouped_by_hour = self.cachedRawData['no2'].resample('h')
+        no2_grouped_by_hour = no2_rawdata.resample('h')
         #get the hourly mean of the hours >= 45 minutes
         no2_hourlyavgs = no2_grouped_by_hour.apply(lambda x: x.mean() if x.count() >= minute_threshold else None)
         return no2_hourlyavgs
     
-    def getPM2_5_24HourAvg(self, minute_threshold=1080):
+    def getPM2_5_24HourAvg(self, pm2_5_rawdata, minute_threshold=1080):
         '''
-        param df: pd.DataFrame
+        param pm2_5_rawdata: pd.Series
+        param minute_threshold: int
         return: float - the average PM2.5 concentration
         This function checks if there is atleast 75% (1080mins or 18hours ) of pm2.5 data of the 24hour data required, then calculates the average pm2.5 concentration
         '''
-        if self.cachedRawData['pm2_5'].count() >= minute_threshold:
-            return self.cachedRawData['pm2_5'].mean()
+        if pm2_5_rawdata.count() >= minute_threshold:
+            return pm2_5_rawdata.mean()
         
-    def getPM10_24HourAvg(self, minute_threshold=1080):
+    def getPM10_24HourAvg(self, pm10_rawdata, minute_threshold=1080):
         '''
-        param df: pd.DataFrame
+        param pm10_rawdata: pd.Series
+        param minute_threshold: int
         return: float - the average PM10 concentration
         This function checks if there is atleast 75% (1080mins or 18hours ) of pm10 data of the 24hour data required, then calculates the average pm10 concentration
         '''
-        if self.cachedRawData['pm10'].count() >= minute_threshold:
-            return self.cachedRawData['pm10'].mean()
+        if pm10_rawdata.count() >= minute_threshold:
+            return pm10_rawdata.mean()
    
 
 class ConcatDateTime(Func):
@@ -145,20 +200,6 @@ class AQI:
         self.NO2_BREAKPOINTS = [67, 134, 200, 267, 334, 400, 467, 534, 600]
         self.PM2_5_BREAKPOINTS = [11, 23, 35, 41, 47, 53, 58, 64, 70]
         self.PM10_BREAKPOINTS = [16, 33, 50, 58, 66, 75, 83, 91, 100]
-
-    
-    # def get_no2_average(self, df):
-    #     '''
-    #     param df: pd.DataFrame
-    #     return: float - the average NO2 concentration
-    #     This function checks if there is atleast 75% (45minutes) of no2 data of the hourly data required, then calculates the average no2 concentration
-    #     '''
-        #remove the nan values and count the number of non-nan values for the given hour
-    #     if df['no2'].count() >= 45:
-    #         return df['no2'].mean()
-    #     else:
-    #         return None
-        
     
     def getNO2Index(self, no2_avg):
         '''
@@ -193,43 +234,6 @@ class AQI:
                 return index+1
         return 10
          
-    def compute_aqi(self, no2_hourly_max, pm2_5_24_hour_avg, pm10_24_hour_avg):
-        '''
-        return: dict - a dictionary of key- value pairs representing the AQI values for the 3 pollutants
-        '''
-        # #This function computes the AQI values for the 3 pollutants
-        # #The AQI values are computed using the formulae provided by the EPA
-        # #The AQI values are then categorized into the appropriate AQI category
-        # #The AQI values and their corresponding categories are then returned as a dictionary
-        # for pollutant in ['no2', 'pm2_5', 'pm10']:
-        #     aqi_data[pollutant] = self.compute_aqi_for_pollutant(df[pollutant])
-        # return aqi_data
-        aqi_data = {}
-        # print/("\n")
-        if no2_hourly_max is None:
-            aqi_data['no2'] = None
-        else:
-            aqi_data['no2'] = self.getNO2Index(no2_hourly_max)
-            # print(f"no2 avg: {no2_hourly_avgs.max()} time: {no2_hourly_avgs.idxmax().hour}")
-        if pm2_5_24_hour_avg is None:
-            aqi_data['pm2_5'] = None
-        else:
-            # print(f"pm2.5 avg: {pm2_5_24_hour_avg}")
-            aqi_data['pm2_5'] = self.getPM2_5Index(pm2_5_24_hour_avg)
-        if pm10_24_hour_avg is None:
-            aqi_data['pm10'] = None
-        else:
-            # print(f"pm10 avg: {pm10_24_hour_avg}")
-            aqi_data['pm10'] = self.getPM10Index(pm10_24_hour_avg)
-        # print(aqi_data)
-        # print("\n")
-
-        for k, v in aqi_data.items(): #convert the aqi values to python int as numpy int is not serializable
-            if v is not None:
-                aqi_data[k] = int(v)
-        # aqi_data= {'no2': 7, 'pm2_5': 8, 'pm10': 9}
-        return aqi_data
-    
     def compute_hourly_aqis(self, hourly_avgs):
         '''
         param hourly_avgs: dict
