@@ -1,51 +1,52 @@
+
 function fetchSensorIDs() {
-  let object = document.getElementById("sensortype");
-  let selectedOption = object.options[object.selectedIndex];
+  let sensorType = document.getElementById("sensortype");
+  let selectedOption = sensorType.options[sensorType.selectedIndex];
   let typeid = selectedOption.getAttribute("data-id");
-  fetch(`/sensors_ids/${typeid}`)
-    .then((response) => response.json())
-    .then((data) => {
-      let sensorSelect = document.getElementById("sensorid");
-      sensorSelect.innerHTML = "";
+  fetch(`/sensors-ids/${typeid}`)
+      .then((response) => response.json())
+      .then((data) => {
+      let sensorIdSelect = document.getElementById("sensorid");
+      if (sensorIdSelect) sensorIdSelect.innerHTML = "";
       data.sensors.forEach((sensor) => {
-        let option = document.createElement("option");
-        option.value = sensor.id;
-        option.text = sensor.id;
-        sensorSelect.add(option);
+          let option = document.createElement("option");
+          option.value = sensor.id;
+          option.text = sensor.id;
+          if (sensorIdSelect) sensorIdSelect.add(option);
       });
       fetchData();
-    })
-    .catch((error) => {
+      })
+      .catch((error) => {
       console.error("Error fetching sensor IDs:", error);
-    });
-}
+      });
+  }
 
-function dateRange() {
-  let date = document.getElementById("dateFilter").value;
-  let start_datetime = `${date} 00:00:00`;
-  let end_datetime = `${date} 23:59:59`;
-  return [start_datetime, end_datetime];
-}
-
-// dateChanged();
 function fetchData() {
   let sensortype = document.getElementById("sensortype").value;
   let sensorid = document.getElementById("sensorid").value;
 
-  if (!sensorid) return; //if no sensor is selected, return
-  let period = dateRange();
-  if (period.length != 2) return; //if period range is not 2
-  fetch(`/sensors-data/${sensortype}/${sensorid}/${period[0]}/${period[1]}`)
+  if (!sensortype || !sensorid)  return;
+
+  let date=document.getElementById("dateFilter").value;
+  fetch(`/sensor-data/${sensortype}/${sensorid}/${date}`)
     .then((response) => response.json())
     .then((data) => {
       if (data) {
-        updateAQICards(data.aqi_data);
+        if (data.last_updated) {
+          let lastUpdated = new Date(
+            `${data.last_updated["obs_date"]} ${data.last_updated["obs_time_utc"]}`
+          );
+          document.getElementById("lastUpdated").textContent =
+            relativeTime(lastUpdated);
+        } else {
+          document.getElementById("lastUpdated").textContent = "No data";
+        }
         updateLineCharts(data.minutely_avgs);
         updateHourlyAvgCharts(data.hourly_avgs, data.hourly_aqis);
-        document.getElementById("sensorType").textContent = sensortype;
-        document.getElementById("sensorId").textContent = sensorid;
+        updateAQICards(data.aqi_data);
         avgData = data.avg_data;
         if (avgData) {
+          //Update the average values in the aqi card and the table
           Array.from(document.getElementsByClassName("no2Value")).forEach(
             (element) => {
               element.textContent = avgData.no2;
@@ -64,57 +65,15 @@ function fetchData() {
             }
           );
         }
-        // console.log(data);
-        if (data.last_updated) {
-          let lastUpdated = new Date(
-            `${data.last_updated["obs_date"]} ${data.last_updated["obs_time_utc"]}`
-          );
-          document.getElementById("lastUpdated").textContent =
-            relativeTime(lastUpdated);
-        } else {
-          document.getElementById("lastUpdated").textContent = "No data";
-        }
-        if (data.hourly_avgs_7lastdays) {
-          updateComparisonMultiCharts(data.hourly_avgs_7lastdays);
-        //   hourly_avgs_samedaylast7weeks
-        }
+        //Update the sensor type and id in the table
+        document.getElementById("sensorType").textContent = sensortype;
+        document.getElementById("sensorId").textContent = sensorid;
 
-        // document.getElementById('no2Value').textContent = data.a
       }
     })
     .catch((error) => {
       console.error("Error fetching data:", error);
     });
-}
-
-function relativeTime(date) {
-  var seconds = Math.floor((new Date() - date) / 1000);
-  var interval = seconds / 31536000;
-
-  if (interval > 1) {
-    return (
-      Math.floor(interval) + " years ago (" + date.toLocaleDateString() + ")"
-    );
-  }
-  interval = seconds / 2592000;
-  if (interval > 1) {
-    return (
-      Math.floor(interval) + " months ago (" + date.toLocaleDateString() + ")"
-    );
-  }
-  interval = seconds / 86400;
-  if (interval > 1) {
-    return Math.floor(interval) + " days ago";
-  }
-  interval = seconds / 3600;
-  if (interval > 1) {
-    return Math.floor(interval) + " hours ago";
-  }
-  interval = seconds / 60;
-  if (interval > 1) {
-    return Math.floor(interval) + " minutes ago";
-  }
-  return Math.floor(seconds) + " seconds ago";
 }
 
 function getAQIColor(aqi) {
@@ -147,75 +106,49 @@ function updateAQICards(aqi_data) {
   pm10Div.style.backgroundColor = pm10aqi;
 }
 
-// var data= [{
-//     x: 10,
-//     y: 20
-// }, {
-//     x: 15,
-//     y: 10
-// }]
 
 function switchDaysComparisonTab(event, tabName) {
-    //Restyle the tabs
-    var tabs = document.querySelectorAll(".multiChartCompoarisonTabs");
-    tabs.forEach((tab) => {
-      tab.className = tab.className.replace("text-blue-500 border-blue-500", "");
-    });
-    // Highlight the current tab
-    event.currentTarget.className += " text-blue-500 border-blue-500";
-}
-
-
-function createMinutelyChartObj(chartId) {
-  let canvas = document.getElementById(chartId);
-  let ctx = canvas.getContext("2d");
-  canvas.chartInstance = new Chart(ctx, {
-    type: "line", //bar, horizontalBar, pie, line, doughnut, radar, polarArea//bar, horizontalBar, pie, line, doughnut, radar, polarArea
-    data: {
-      datasets: [
-        {
-          label: "",
-          //disabling the label for now
-          // type: 'line',
-          data: [],
-          borderColor: "rgba(168,220,84, 1)",
-          borderWidth: 1.5,
-          backgroundColor: "rgba(168,220,84, 0.3)",
-          yAxisID: "y",
-          lineTension: 0.3,
-          radius: 0,
-          fill: true,
-        },
-      ],
-    },
-    options: {
-      scales: {
-        x: {
-          type: "time",
-        },
-
-        y: {
-          type: "linear",
-          display: true,
-          position: "left",
-          title: {
-            display: true,
-            text: "µg/m³",
-          },
-        },
-      },
-      plugins: {
-        legend: {
-          display: false,
-        },
-      },
-      responsive: true,
-      maintainAspectRatio: false,
-      aspectRatio: 1,
-    },
+  //Restyle the tabs
+  var tabs = document.querySelectorAll(".multiChartCompoarisonTabs");
+  tabs.forEach((tab) => {
+    tab.className = tab.className.replace("text-blue-500 border-blue-500", "");
   });
-  canvas.chartInstance.update();
+  // Highlight the current tab
+  event.currentTarget.className += " text-blue-500 border-blue-500";
+
+  let sensortype = document.getElementById("sensortype").value;
+  let sensorid = document.getElementById("sensorid").value;
+  let date = document.getElementById("dateFilter").value;
+ 
+  let dates = [date];
+  let dateObj = new Date(date);
+  if (tabName == "Last7Days") {
+    //Get the last 7 days
+    for (let i = 1; i < 7; i++) {
+      let newDate = new Date(dateObj);
+      newDate.setDate(dateObj.getDate() - i);
+      dates.push(newDate.toISOString().slice(0, 10));
+    }
+  }else if(tabName == "SameDayLast7Weeks"){
+    //Get the same day of the week for the last 7 weeks
+    for (let i = 1; i < 7; i++) {
+      let newDate = new Date(dateObj);
+      newDate.setDate(dateObj.getDate() - i*7);
+      dates.push(newDate.toISOString().slice(0, 10));
+    }
+  }
+  dates=dates.join(',');
+  fetch(`/compare-days/${sensortype}/${sensorid}/${dates}`)
+    .then((response) => response.json())
+    .then((data) => { 
+      if (data.data) {
+        updateComparisonMultiCharts(data.data);
+      }
+      // console.log(data);
+      // updateComparisonMultiCharts(data);
+    })   
 }
+
 
 function createComparisonMultiChart(chartId) {
   let canvas = document.getElementById(chartId);
@@ -340,13 +273,6 @@ function createComparisonMultiChart(chartId) {
   canvas.chartInstance.update();
 }
 
-const parameters = ["NO2", "PM10", "PM2_5"];
-
-for (let param of parameters) {
-  createMinutelyChartObj(`${param.toLowerCase()}LineChart`);
-  createComparisonMultiChart(`${param.toLowerCase()}ComparisonMultiChart`);
-}
-
 function updateLineCharts(data) {
   // //Set the labels hours 00:00 to 23:00
   if (data) {
@@ -386,6 +312,12 @@ function updateComparisonMultiCharts(data) {
       chartObj.update();
     }
   }
+}
+
+
+for (let param of parameters) {
+  createLineChartObj(`${param.toLowerCase()}LineChart`);
+  createComparisonMultiChart(`${param.toLowerCase()}ComparisonMultiChart`);
 }
 
 const hourlyavgChartsObjsArray = {};
@@ -453,13 +385,8 @@ function updateHourlyAvgCharts(avgData, aqiData) {
   }
 }
 
-
-//Set the date filter to default date
-document.getElementById("dateFilter").value = new Date()
-  .toISOString()
-  .slice(0, 10);
-
 fetchSensorIDs();
+
 
 // let sensor_locations = JSON.parse(document.getElementById('sensor_locations').textContent);
 if (document.getElementById("map")) {

@@ -1,3 +1,206 @@
+function fetchSensorIDs() {
+  let sensorType = document.getElementById("sensortype");
+  let selectedOption = sensorType.options[sensorType.selectedIndex];
+  let typeid = selectedOption.getAttribute("data-id");
+  fetch(`/sensors-ids/${typeid}`)
+      .then((response) => response.json())
+      .then((data) => {
+      let sensorIdSelect1 = document.getElementById("sensorid1");
+      let sensorIdSelect2 = document.getElementById("sensorid2");
+      if (sensorIdSelect1) sensorIdSelect1.innerHTML = "";
+      if (sensorIdSelect2) sensorIdSelect2.innerHTML = "";
+      data.sensors.forEach((sensor) => {
+          let option = document.createElement("option");
+          option.value = sensor.id;
+          option.text = sensor.id;
+          if (sensorIdSelect1) sensorIdSelect1.add(option);
+          if (sensorIdSelect2) sensorIdSelect2.add(option.cloneNode(true));
+      });
+      fetchComparisonData();
+      })
+      .catch((error) => {
+      console.error("Error fetching sensor IDs:", error);
+      });
+  }
+
+function fetchComparisonData() {
+    let sensortype = document.getElementById("sensortype").value;
+    let sensorid = document.getElementById("sensorid1").value;
+
+    let sensortype2 = document.getElementById("sensortype").value;
+    let sensorid2 = document.getElementById("sensorid2").value;
+
+
+    if (!sensortype || !sensorid || !sensortype2 || !sensorid2) return; //if no sensor is selected, return
+    
+    let date=document.getElementById("dateFilter").value;
+    fetch(`/compare-sensors-data/${sensortype}/${sensorid}/${sensortype2}/${sensorid2}/${date}`)
+      .then((response) => response.json())
+      .then((data) => {
+        if (data) {
+            // if (data.last_updated) {
+            //     let lastUpdated = new Date(
+            //       `${data.last_updated["obs_date"]} ${data.last_updated["obs_time_utc"]}`
+            //     );
+            //     document.getElementById("lastUpdated").textContent =
+            //       relativeTime(lastUpdated);
+            //   } else {
+            //     document.getElementById("lastUpdated").textContent = "No data";
+            //   }
+              let sensor1info= data.sensors_info['sensor1'];
+              let sensor2info= data.sensors_info['sensor2'];
+              document.getElementById("sensorType1").textContent = sensor1info.type;
+              document.getElementById("sensorId1").textContent = sensor1info.id;
+              if (sensor1info.last_updated){
+                let last_updated = new Date(`${sensor1info.last_updated["obs_date"]} ${sensor1info.last_updated["obs_time_utc"]}`);
+                document.getElementById("lastUpdated1").textContent = relativeTime(last_updated);
+              }else{
+                document.getElementById("lastUpdated1").textContent = "No data";
+              }
+              document.getElementById("sensorType2").textContent = sensor2info.type;
+              document.getElementById("sensorId2").textContent = sensor2info.id;
+              if (sensor2info.last_updated){
+                last_updated = new Date(`${sensor2info.last_updated["obs_date"]} ${sensor2info.last_updated["obs_time_utc"]}`);
+                document.getElementById("lastUpdated2").textContent = relativeTime(last_updated);
+              }else{
+                document.getElementById("lastUpdated2").textContent = "No data";
+              }
+              updateCompareLineCharts(data.minutely_avgs);
+              updateScatterPlot(data.minutely_avgs);
+              // updateHourlyAvgCharts(data.hourly_avgs, data.hourly_aqis);
+              // updateAQICards(data.aqi_data);
+              // avgData = data.avg_data;
+              // if (avgData) {
+              //   //Update the average values in the aqi card and the table
+              //   Array.from(document.getElementsByClassName("no2Value")).forEach(
+              //     (element) => {
+              //       element.textContent = avgData.no2;
+              //     }
+              //   );
+      
+              //   Array.from(document.getElementsByClassName("pm2_5Value")).forEach(
+              //     (element) => {
+              //       element.textContent = avgData.pm2_5;
+              //     }
+              //   );
+      
+              //   Array.from(document.getElementsByClassName("pm10Value")).forEach(
+              //     (element) => {
+              //       element.textContent = avgData.pm10;
+              //     }
+              //   );
+              // }
+              // //Update the sensor type and id in the table
+              // document.getElementById("sensorType").textContent = sensortype;
+              // document.getElementById("sensorId").textContent = sensorid;
+      
+            }
+            })
+      .catch((error) => {
+        console.error("Error fetching data:", error);
+      });
+  }
+
+function updateCompareLineCharts(data) {
+
+  if (data) {
+      if (!data.sensor1 || !data.sensor2) return;
+      let sensor1data = data.sensor1;
+      let sensor2data = data.sensor2;
+      let time = sensor1data.time;
+      for (let param of parameters) {
+          let chartObj = document.getElementById(
+              `${param.toLowerCase()}LineChart`
+          ).chartInstance;
+          chartObj.data.labels = time.map((x) => new Date(x)); //x-axis labels
+          let curData= sensor1data[param.toLowerCase()];
+          let curData2= sensor2data[param.toLowerCase()];
+          chartObj.data.datasets[0].data = curData.map((x) => x==null? Number.NaN: x); //y-axis data
+          chartObj.data.datasets[1].data = curData2.map((x) => x==null? Number.NaN: x); //y-axis data
+          chartObj.data.datasets[0].label = `ID: ${sensor1data.id}`; //label
+          chartObj.data.datasets[1].label = `ID: ${sensor2data.id}`; //label
+          chartObj.options.plugins.legend.display = true;
+          // chartObj.options.spanGaps = true;
+          chartObj.update();
+  }  
+
+      // let time = data.time;
+      // // console.log(time);
+      // // let curData = time.map(label => sensorData[label]);
+      // // console.log(sensorData);
+      // for (let param of parameters) {
+      //   let chartObj = document.getElementById(
+      //     `${param.toLowerCase()}LineChart`
+      //   ).chartInstance;
+      // //   chartObj.data.datasets[0].label = `Minutely ${param.toUpperCase()}`; //label
+      //   // chartObj.data.labels = time.map(label => label.slice(5,16)); //x-axis labels
+      //   //Map the time as JS Date objects
+      //   chartObj.data.labels = time.map((x) => new Date(x)); //x-axis labels
+      //   chartObj.data.datasets[0].data = data[param.toLowerCase()]; //y-axis data
+      //   chartObj.update();
+      // }
+  }
+}
+
+
+function createScatterPlotObj(chartId) {
+  let canvas = document.getElementById(chartId);
+  let ctx = canvas.getContext("2d");
+  canvas.chartInstance = new Chart(ctx, {
+    type: "scatter", //bar, horizontalBar, pie, line, doughnut, radar, polarArea//bar, horizontalBar, pie, line, doughnut, radar, polarArea
+    data: {
+      datasets: [
+        {
+          label: "Scatter Plot",
+          data: [],
+          backgroundColor: "rgba(0, 0, 0, 0.1)",
+        },
+      ],
+    },
+    options: {
+      scales: {
+        x: {
+          // type: 'linear',
+          // position: 'bottom'
+        },
+      },
+    },
+  });
+  canvas.chartInstance.update();
+}
+
+function updateScatterPlot(data) {
+  if (data) {
+    let sensor1data = data.sensor1;
+    let sensor2data = data.sensor2;
+    for (let param of parameters) {
+        let chartObj = document.getElementById(
+            `${param.toLowerCase()}ScatterPlot`
+        ).chartInstance;
+        let scatterData = [];
+        let param_lower = param.toLowerCase();
+        for (let i = 0; i < sensor1data[param_lower].length; i++) {
+            scatterData.push({
+                x: sensor1data[param_lower][i],
+                y: sensor2data[param_lower][i],
+            });
+        }
+        chartObj.data.datasets[0].data = scatterData;
+        chartObj.update();
+      
+    }
+  }
+}
+    
+
+
+
+for (let param of parameters) {
+  createLineChartObj(`${param.toLowerCase()}LineChart`);
+  createScatterPlotObj(`${param.toLowerCase()}ScatterPlot`);
+}
+
+fetchSensorIDs();
 
 // //Hamburger menu
 // const hamburger = document.querySelector('.hamburger');

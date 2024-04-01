@@ -107,7 +107,6 @@
       crossorigin=""
     ></script>
     <script type="text/javascript" src="{% static 'js/base.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/home.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/compare.js' %}"></script>
+    {% block scripts %}{% endblock %}
   </body>
 </html>

@@ -1,5 +1,7 @@
 {% extends 'base.html' %}
 
+{% load static %}
+
 {% block title %}Welcome{% endblock %}
 
 {% block content %}
@@ -41,22 +43,10 @@
       <label for="period" class="block text-sm font-medium text-gray-700"
         >Period:</label
       >
-      <select
-        id="period"
-        name="period"
-        class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-        onchange="fetchData()"
-      >
-        <!-- <option value="1">1 hour</option> -->
-        <!-- <option value="6">6 hours</option> -->
-        <!-- <option value="12">12 hours</option> -->
-        <option value="24">Last 24 hours</option>
-        <!-- <option value="48">48 hours</option> -->
-        <!-- <option value="72">72 hours</option> -->
-      </select>
       <!-- Date Filter Input -->
       <input
         type="date"
+        min="2000-01-01"
         id="dateFilter"
         class="px-4 shadow-lg border border-gray-300 rounded focus:outline-none focus:border-indigo-500 focus:shadow-outline-indigo"
         onchange="fetchData()"
@@ -167,19 +157,19 @@
       <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">
         NO2 Hourly averages
       </h2>
-      <div><canvas id="no2HourlyAvgChart" class="chartsCanvas"></canvas></div>
+      <div><canvas id="no2HourlyAvgChart"></canvas></div>
     </div>
     <div class="p-4 shadow rounded-lg bg-white">
       <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">
         PM2.5 Hourly averages
       </h2>
-      <div><canvas id="pm2_5HourlyAvgChart" class="chartsCanvas"></canvas></div>
+      <div><canvas id="pm2_5HourlyAvgChart"></canvas></div>
     </div>
     <div class="p-4 shadow rounded-lg bg-white">
       <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">
         PM10 Hourly averages
       </h2>
-      <div><canvas id="pm10HourlyAvgChart" class="chartsCanvas"></canvas></div>
+      <div><canvas id="pm10HourlyAvgChart"></canvas></div>
     </div>
   </div>
 
@@ -189,15 +179,15 @@
     id="lineCharts">
     <div class="p-4 shadow rounded-lg bg-white">
       <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">NO2 Data</h2>
-      <div><canvas id="no2LineChart" class="chartsCanvas"></canvas></div>
+      <div><canvas id="no2LineChart"></canvas></div>
     </div>
     <div class="p-4 shadow rounded-lg bg-white">
       <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">PM2.5 Data</h2>
-      <div><canvas id="pm2_5LineChart" class="chartsCanvas"></canvas></div>
+      <div><canvas id="pm2_5LineChart"></canvas></div>
     </div>
     <div class="p-4 shadow rounded-lg bg-white">
       <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">PM10 Data</h2>
-      <div><canvas id="pm10LineChart" class="chartsCanvas"></canvas></div>
+      <div><canvas id="pm10LineChart"></canvas></div>
     </div>
   </div>
 
@@ -231,7 +221,7 @@
           NO2 Comparison
         </h2>
         <div>
-          <canvas id="no2ComparisonMultiChart" class="chartsCanvas"></canvas>
+          <canvas id="no2ComparisonMultiChart"></canvas>
         </div>
       </div>
       <div class="p-4 shadow rounded-lg bg-white">
@@ -239,7 +229,7 @@
           PM2.5 Comparison
         </h2>
         <div>
-          <canvas id="pm2_5ComparisonMultiChart" class="chartsCanvas"></canvas>
+          <canvas id="pm2_5ComparisonMultiChart"></canvas>
         </div>
       </div>
       <div class="p-4 shadow rounded-lg bg-white">
@@ -247,7 +237,7 @@
           PM10 Comparison
         </h2>
         <div>
-          <canvas id="pm10ComparisonMultiChart" class="chartsCanvas"></canvas>
+          <canvas id="pm10ComparisonMultiChart"></canvas>
         </div>
       </div>
     </div>
@@ -256,4 +246,8 @@
   <!-- Map -->
   <div id="map" class="z-0"></div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript" src="{% static 'js/home.js' %}"></script>
 {% endblock %}

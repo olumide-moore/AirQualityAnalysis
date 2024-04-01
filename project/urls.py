@@ -16,14 +16,16 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from . import views
+from . import views, compare_views
 import debug_toolbar
 
 urlpatterns = [
     # path('admin/', admin.site.urls),
-    path('', views.home, name='home'),
-    path('compare/', views.compare, name='compare'),
-    path('__debug__/', include(debug_toolbar.urls)),
-    path("sensors_ids/<int:type_id>/", views.get_sensor_ids, name='sensors_ids'),
-    path('sensors-data/<str:sensor_type>/<int:sensor_id>/<str:start>/<str:end>/', views.get_sensor_data, name='sensors_data/'),
+    path("", views.home, name="home"),
+    path("compare/", views.compare, name="compare"),
+    path("__debug__/", include(debug_toolbar.urls)),
+    path("sensors-ids/<int:type_id>/", views.get_sensor_ids, name="sensors_ids"),
+    path("sensor-data/<str:sensor_type>/<int:sensor_id>/<str:date>/", views.get_sensor_data, name="sensor_data/"),
+    path("compare-days/<str:sensor_type>/<int:sensor_id>/<str:dates>/", views.compare_days, name="compare_days"),
+    path("compare-sensors-data/<str:sensor_type1>/<int:sensor_id1>/<str:sensor_type2>/<int:sensor_id2>/<str:date>/", compare_views.compare_sensors_data, name="compare_sensors_data"),
 ]
