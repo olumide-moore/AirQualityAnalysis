@@ -8,62 +8,7 @@
 
 
 <div class="mx-auto px-10 sm:px-6 lg:px-10 py-20">
-  <div class="flex gap-2 my-4">
-    <!-- Sensor selection dropdown -->
-    <div>
-      <label for="sensortype" class="block text-sm font-medium text-gray-700"
-        >Sensor Type:</label
-      >
-      <select
-        id="sensortype"
-        name="sensortype"
-        class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-        onchange="fetchSensorIDs()"
-      >
-        {% if sensor_types %} {% for id, sensor_type in sensor_types.items %}
-        <option value="{{ sensor_type }}" data-id="{{ id }}">
-          {{ sensor_type }}
-        </option>
-        {% endfor %} {% endif %}
-      </select>
-    </div>
-    <div>
-      <label for="sensorid1" class="block text-sm font-medium text-gray-700"
-        >Sensor ID:</label>
-      <select
-        id="sensorid1"
-        name="sensorid1"
-        class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-        onchange="fetchComparisonData()"
-      ></select>
-    </div>
-    <div>
-      <label for="sensorid2" class="block text-sm font-medium text-gray-700"
-        >Compare with:</label
-      >
-      <select
-        id="sensorid2"
-        name="sensorid2"
-        class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-        onchange="fetchComparisonData()"
-      ></select>
-    </div>
-    <!--Period filter change-->
-    <div class="ml-20">
-      <label for="period" class="block text-sm font-medium text-gray-700"
-        >Period:</label
-      >
-      <!-- Date Filter Input -->
-      <input
-        type="date"
-        min="2000-01-01"
-        id="dateFilter"
-        class="px-4 shadow-lg border border-gray-300 rounded focus:outline-none focus:border-indigo-500 focus:shadow-outline-indigo"
-        onchange="fetchComparisonData()"
-      />
-    </div>
-  </div>
-
+  {% include 'inputs.html' %}
   <div class="flex p-5 gap-4 bg-white">
     <!-- Table-->
     <div class="bg-white p-6 rounded-2xl shadow-lg">
@@ -78,18 +23,18 @@
           </tr>
           <tr class="bg-gray-100">
             <td class="px-4 py-2">Sensor Type</td>
-            <td id="sensorType1" class="sensorType px-4 py-2"></td>
-            <td id="sensorType2" class="sensorType px-4 py-2"></td>
+            <td id="table-sensorType1" class="sensorType px-4 py-2"></td>
+            <td id="table-sensorType2" class="sensorType px-4 py-2"></td>
           </tr>
           <tr>
             <td class="px-4 py-2">ID</td>
-            <td id="sensorId1" class="px-4 py-2"></td>
-            <td id="sensorId2" class="px-4 py-2"></td>
+            <td id="table-sensorId1" class="px-4 py-2"></td>
+            <td id="table-sensorId2" class="px-4 py-2"></td>
           </tr>
           <tr class="bg-gray-100">
             <td class="px-4 py-2">Last updated</td>
-            <td id="lastUpdated1" class="px-4 py-2"></td>
-            <td id="lastUpdated2" class="px-4 py-2"></td>
+            <td id="table-lastUpdated1" class="px-4 py-2"></td>
+            <td id="table-lastUpdated2" class="px-4 py-2"></td>
           </tr>
           <!-- <tr>
             <td class="px-4 py-2">Aggregated missing ticks</td>
@@ -97,24 +42,22 @@
           </tr> -->
           <tr>
             <td class="px-4 py-2">NO2</td>
-            <td class="no2Value px-4 py-2"></td>
+            <td class="table-no2Value px-4 py-2"></td>
           </tr>
           <tr>
             <td class="px-4 py-2">PM2.5</td>
-            <td class="pm2_5Value px-4 py-2"></td>
+            <td class="table-pm2_5Value px-4 py-2"></td>
           </tr>
           <tr>
             <td class="px-4 py-2">PM10</td>
-            <td class="pm10Value px-4 py-2"></td>
+            <td class="table-pm10Value px-4 py-2"></td>
           </tr>
         </tbody>
       </table>
     </div>
     <!-- Card container -->
     <div
-      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 lg:pt-20 gap-8"
-      id="kub=="
-    >
+      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 lg:pt-20 gap-8">
       <!-- <div class="flex space-x-4"> -->
       <!-- NO2 card-->
       <div
@@ -163,7 +106,7 @@
     </div>
   </div>
 
-  <!-- Minutely Line Charts -->
+  <!-- Raw Data Line Charts -->
   <div
     class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-5"
     id="lineCharts">
@@ -258,4 +201,25 @@
 
 {% block scripts %}
 <script type="text/javascript" src="{% static 'js/compare.js' %}"></script>
+<script type="text/javascript">
+  let sensorType1="{{ sensorType1|escapejs }}";
+  let sensorId1="{{ sensorId1|escapejs }}";
+  let date="{{ date|escapejs }}";
+    document.addEventListener('DOMContentLoaded', function() {
+  let sensorTypeSelect = document.getElementById("sensorTypeSelect1"); //get select of sensor type list
+  sensorTypeSelect.value = sensorType1; //set sensor type 1
+  //get the type id of selected sensor type
+  let selectedType = sensorTypeSelect.options[sensorTypeSelect.selectedIndex];
+  let typeid1 = selectedType.getAttribute("data-id"); //get sensor type id 1
+  let sensorIdSelect1 = document.getElementById("sensorIdSelect1"); //get select of sensor id list
+  fetchSensorIDs(typeid1).then((sensorData1) => {
+    populateSensorOptions(sensorIdSelect1, sensorData1); //populate sensor ids of first sensor list
+    console.log(`Finished popluating sensor ids for sensor 1`)
+    sensorIdSelect1.value = `${sensorId1}`; //set sensor id 1
+    sensorTypeChanged(2);
+  });
+  console.log('About to set date input value')
+  document.getElementById('dateInput').value = date;
+  });
+</script>
 {% endblock %}

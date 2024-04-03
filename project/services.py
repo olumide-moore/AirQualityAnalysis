@@ -1,13 +1,74 @@
 from .models import *
 
 from django.db.models import Avg, DateTimeField, F 
-from django.db.models.functions import TruncMinute
 from django.db.models.expressions import Func, Value
 
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 
+
+# class SensorTypeAndIdFetcher():
+#     def __init__(self):
+#         '''Initializes the SensorTypeAndIdFetcher object
+#         variables: sensor_types: dict --> {sensor_type_id: sensor_type_name}
+#                     sensor_types_with_ids: dict --> {sensor_type_id: [sensor_id1, sensor_id2, ...]}
+        
+#         '''
+#         self.sensor_types = self.__fetchAllSensorTypes() 
+#         self.sensor_types_with_ids= {type_id: self.__fetchSensorIds(type_id) for type_id in self.sensor_types.keys()}
+
+#     def __fetchAllSensorTypes(self) -> dict:
+#         """
+#         Fetches all the sensor types from the database and returns them as a dictionary with id as the key and name as the value
+        
+#         :return: dict --> {sensor_type_id: sensor_type_name}
+#         """
+#         sensor_types = Sensortypes.objects.values('id','name').distinct()
+#         self.sensor_types = dict(map(lambda x: (x['id'], x['name']),sensor_types))
+#         return self.sensor_types
+    
+#     def __fetchSensorIds(self, sensor_type_id: int) -> list:
+#         """
+#         Fetches the sensor ids for the given sensor_type_id from the database and returns them as a list
+        
+#         :param sensor_type_id: int
+#         :return: list --> [sensor_id1, sensor_id2, ...]
+#         """
+#         try:
+#             sensor_ids = Sensors.objects.values('id').filter(type_id=sensor_type_id)
+#         except Sensors.DoesNotExist:
+#             sensor_ids = []
+#         return list(map(lambda x: x['id'], sensor_ids))
+    
+#     def getSensorTypes(self) -> dict:
+#         """
+#         Returns the sensor types from the cache
+        
+#         :return: dict --> {sensor_type_id: sensor_type_name}
+#         """
+#         return self.sensor_types
+    
+#     def getSensorIdsOfType(self, sensor_type:str) -> list:
+#         """
+#         Returns the sensor ids for the given sensor_type from the cache
+        
+#         :param sensor_type: str
+#         :return: list --> [sensor_id1, sensor_id2, ...]
+#         """
+#         sensor_type_id = [type_id for type_id, type_name in self.sensor_types.items() if type_name == sensor_type]
+#         if sensor_type_id:
+#             return self.getSensorIdsOfTypeId(sensor_type_id[0])
+#         return []
+    
+#     def getSensorIdsOfTypeId(self, sensor_type_id: int) -> list:
+#         """
+#         Returns the sensor ids for the given sensor_type_id from the cache
+        
+#         :param sensor_type_id: int
+#         :return: list --> [sensor_id1, sensor_id2, ...]
+#         """
+#         return self.sensor_types_with_ids.get(sensor_type_id, [])
 
 class SensorDataFetcher():
     def __init__(self, requiredConcentrations):
@@ -122,6 +183,7 @@ class SensorDataFetcher():
         rawdata.rename(columns={'particulatepm2_5':'pm2_5', 'particulatepm10':'pm10', 'particulatepm1':'pm1'}, inplace=True) #Rename the columns
         rawdata['datetime'] = pd.to_datetime(rawdata['datetime']) #convert the datetime column to a pandas datetime object
         rawdata.set_index('datetime', inplace=True) #set the datetime column as the index
+        rawdata.replace(np.nan, None, inplace=True) #replace nan values with None
         data_by_date = {} #Store the data for each date in a dictionary
         for date in dates:
             data_by_date[date] = rawdata[rawdata.index.date == date]
@@ -158,27 +220,7 @@ class SensorDataFetcher():
         """
         dates= {end.date() - timedelta(weeks=i) for i in range(7)} #This gets the dates for the same day of the week for the last 7 weeks
         return self.getRawData(dates)
-
-    def getMinutelyAverages(self, rawdata, date) -> pd.DataFrame:
-        """
-        Calculates the average concentration of the pollutants for each minute between the start and end datetime.
         
-        :param rawdata: pd.DataFrame
-        :param date: datetime
-        :return: pd.DataFrame
-        """
-        # start = datetime.combine(date, datetime.min.time()) #start of the day
-        # end = datetime.combine(date, datetime.max.time())   #end of the day
-        # index=pd.date_range(start=start, end=end, freq='min', tz='UTC')
-        # #group the data by minute and calculate the average concentration for each minute
-        # data_per_minute = rawdata.resample('min').mean()
-        #insert missing minutes with None values
-        # data_per_minute = data_per_minute.reindex(index)
-        data_per_minute=rawdata
-        data_per_minute.replace(np.nan, None, inplace=True) #replace nan values with None
-        data_per_minute = self.convert_df_to_dict(data_per_minute)
-        return data_per_minute
-    
     def getHourlyAverages(self, rawdata, date, minute_threshold=45) -> pd.DataFrame:
         """
         Calculates the average concentration of the pollutants for each hour between the start and end datetime.

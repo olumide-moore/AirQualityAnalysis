@@ -50,6 +50,9 @@ a {
 .nav-link {
   transition: 0.7s ease;
 }
+.nav-link.active {
+  border-bottom: 2px solid #000;
+}
 .nav-link:hover {
   color: dodgerblue;
 }
@@ -114,4 +117,27 @@ a {
 #map {
   height: 480px;
   /* height: 100vh; */
+}
+
+
+
+.aqi-legend-container {
+  width: 100%;
+  overflow: auto;
+}
+
+.aqi-legend {
+  display: flex;
+  justify-content: space-between;
+}
+
+.aqi-range {
+  text-align: center;
+  flex-grow: 1;
+}
+
+.color-box {
+  width: 100%;
+  height: 20px;
+  margin-bottom: 4px;
 }

@@ -15,6 +15,23 @@ menuLinks.forEach((menuLink) => {
     });
 });
 
+
+function navigateToPage(page) {
+  //Get sensor type1, sensor id1, and date selected on the page if found
+  let sensorType1 = document.getElementById("sensorTypeSelect1");
+  let sensorId1 = document.getElementById("sensorIdSelect1");
+  let date = document.getElementById("dateInput");
+
+  if (sensorType1 && sensorId1 && date) {
+    let sensorType1Value = sensorType1.value;
+    let sensorId1Value = sensorId1.value;
+    let dateValue = date.value;
+    window.location.href=`/${page}?sensorType1=${sensorType1Value}&sensorId1=${sensorId1Value}&date=${dateValue}`;
+  } else {
+      window.location.href=`/${page}`;
+  }
+}
+
 function relativeTime(date) {
     var seconds = Math.floor((new Date() - date) / 1000);
     var interval = seconds / 31536000;
@@ -112,5 +129,5 @@ function relativeTime(date) {
 const parameters = ["NO2", "PM10", "PM2_5"];
 
 //Set the date filter to default date
-document.getElementById("dateFilter").value = new Date().toISOString().slice(0, 10);
+document.getElementById("dateInput").value = new Date().toISOString().slice(0, 10);
 

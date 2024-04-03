@@ -52,16 +52,16 @@
         <a href="{% url 'home' %}" class="nav-branding">Sensors</a>
         <ul class="nav-menu">
           <li class="nav-item">
-            <a href="{% url 'home' %}" class="nav-link">Home</a>
+            <a href="#" class="nav-link {% if request.path == '/' %}active{% endif %}" onclick="navigateToPage('home')">Home</a>
           </li>
           <li class="nav-item">
-            <a href="{% url 'compare' %}" class="nav-link">Compare sensors</a>
+            <a href="#" class="nav-link {% if request.path == '/compare/' %}active{% endif %}" onclick="navigateToPage('compare')">Compare</a>
           </li>
           <li class="nav-item">
-            <a href="#" class="nav-link">Sign up</a>
+            <a href="#" class="nav-link {% if request.path == '/signup/' %}active{% endif %}">Sign up</a>
           </li>
           <li class="nav-item">
-            <a href="#" class="nav-link">Log in</a>
+            <a href="#" class="nav-link {% if request.path == '/login/' %}active{% endif %}">Login</a>
           </li>
         </ul>
         <div class="hamburger">
@@ -107,6 +107,7 @@
       crossorigin=""
     ></script>
     <script type="text/javascript" src="{% static 'js/base.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/inputs.js' %}"></script>
     {% block scripts %}{% endblock %}
   </body>
 </html>

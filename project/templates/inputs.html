@@ -1,0 +1,69 @@
+
+
+<div class="flex gap-10 my-4">
+    <div class="flex flex-col gap-2">
+      <!-- Sensor1 selection dropdown -->
+      <div id="sensorDiv1" class="flex gap-2">
+        <div>
+          <label for="sensorTypeSelect1" class="block text-sm font-medium text-gray-700">Sensor Type:</label>
+          <select id="sensorTypeSelect1" name="sensorTypeSelect1" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md" onchange="sensorTypeChanged(1)">
+            {% if sensor_types %} {% for id, sensor_type in sensor_types.items %}
+            <option value="{{ sensor_type }}" data-id="{{ id }}">
+              {{ sensor_type }}
+            </option>
+            {% endfor %} {% endif %}         
+          </select>
+        </div>
+        <div>
+          <label for="sensorIdSelect1" class="block text-sm font-medium text-gray-700"
+            >Sensor ID:</label>
+          <select
+            id="sensorIdSelect1"
+            name="sensorIdSelect1"
+            class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+            onchange="fetchData()"
+          ></select>
+        </div>
+      </div>
+      <!-- Sensor2 selection dropdown -->
+      <div id="sensorDiv2" class="flex gap-2">
+        <div>
+          <label for="sensorTypeSelect2" class="block text-sm font-medium text-gray-700">Sensor Type 2:</label>
+          <select id="sensorTypeSelect2" name="sensorTypeSelect2" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md" onchange="sensorTypeChanged(2)">
+            {% if sensor_types %} 
+              {% for id, sensor_type in sensor_types.items %}
+              <option value="{{ sensor_type }}" data-id="{{ id }}">
+                  {{ sensor_type }}
+              </option>
+              {% endfor %} 
+            {% endif %}
+          </select>
+        </div>
+        <div>
+          <label for="sensorIdSelect2" class="block text-sm font-medium text-gray-700"
+            >Sensor ID 2:</label
+          >
+          <select
+            id="sensorIdSelect2"
+            name="sensorIdSelect2"
+            class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+            onchange="fetchData()"
+          ></select>
+        </div>
+      </div>
+    </div>
+    <!--Date filter change-->
+    <div class="ml-20">
+      <label for="dateInput" class="block text-sm font-medium text-gray-700"
+        >Date:</label
+      >
+      <!-- Date Filter Input -->
+      <input
+        type="date"
+        min="2000-01-01"
+        id="dateInput"
+        class="px-4 shadow-lg border border-gray-300 rounded focus:outline-none focus:border-indigo-500 focus:shadow-outline-indigo"
+        onchange="fetchData()"
+      />
+    </div>
+  </div>

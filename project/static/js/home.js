@@ -1,81 +1,4 @@
 
-function fetchSensorIDs() {
-  let sensorType = document.getElementById("sensortype");
-  let selectedOption = sensorType.options[sensorType.selectedIndex];
-  let typeid = selectedOption.getAttribute("data-id");
-  fetch(`/sensors-ids/${typeid}`)
-      .then((response) => response.json())
-      .then((data) => {
-      let sensorIdSelect = document.getElementById("sensorid");
-      if (sensorIdSelect) sensorIdSelect.innerHTML = "";
-      data.sensors.forEach((sensor) => {
-          let option = document.createElement("option");
-          option.value = sensor.id;
-          option.text = sensor.id;
-          if (sensorIdSelect) sensorIdSelect.add(option);
-      });
-      fetchData();
-      })
-      .catch((error) => {
-      console.error("Error fetching sensor IDs:", error);
-      });
-  }
-
-function fetchData() {
-  let sensortype = document.getElementById("sensortype").value;
-  let sensorid = document.getElementById("sensorid").value;
-
-  if (!sensortype || !sensorid)  return;
-
-  let date=document.getElementById("dateFilter").value;
-  fetch(`/sensor-data/${sensortype}/${sensorid}/${date}`)
-    .then((response) => response.json())
-    .then((data) => {
-      if (data) {
-        if (data.last_updated) {
-          let lastUpdated = new Date(
-            `${data.last_updated["obs_date"]} ${data.last_updated["obs_time_utc"]}`
-          );
-          document.getElementById("lastUpdated").textContent =
-            relativeTime(lastUpdated);
-        } else {
-          document.getElementById("lastUpdated").textContent = "No data";
-        }
-        updateLineCharts(data.minutely_avgs);
-        updateHourlyAvgCharts(data.hourly_avgs, data.hourly_aqis);
-        updateAQICards(data.aqi_data);
-        avgData = data.avg_data;
-        if (avgData) {
-          //Update the average values in the aqi card and the table
-          Array.from(document.getElementsByClassName("no2Value")).forEach(
-            (element) => {
-              element.textContent = avgData.no2;
-            }
-          );
-
-          Array.from(document.getElementsByClassName("pm2_5Value")).forEach(
-            (element) => {
-              element.textContent = avgData.pm2_5;
-            }
-          );
-
-          Array.from(document.getElementsByClassName("pm10Value")).forEach(
-            (element) => {
-              element.textContent = avgData.pm10;
-            }
-          );
-        }
-        //Update the sensor type and id in the table
-        document.getElementById("sensorType").textContent = sensortype;
-        document.getElementById("sensorId").textContent = sensorid;
-
-      }
-    })
-    .catch((error) => {
-      console.error("Error fetching data:", error);
-    });
-}
-
 function getAQIColor(aqi) {
   if (aqi == 1) return "#a0fc9c"; //Low
   if (aqi == 2) return "#38fc04"; //Low
@@ -89,6 +12,16 @@ function getAQIColor(aqi) {
   if (aqi == 10) return "#d034fc"; //Very High
   return "#626262"; //Unknown or no data
 }
+
+function getAQIDescription(aqi) {
+  if (aqi >= 1 && aqi <= 3) return "Low"; 
+  if (aqi >= 4 && aqi <= 6) return "Moderate";
+  if (aqi >= 7 && aqi <= 9) return "High";
+  if (aqi >= 10) return "Very High";
+  return "";
+}
+
+
 
 // function getAQIDescription(aqi){
 //     if (aqi==1) return 'Good'; //Low
@@ -106,19 +39,37 @@ function updateAQICards(aqi_data) {
   pm10Div.style.backgroundColor = pm10aqi;
 }
 
+function switchPeriodTab(event, tabName) {
+  //Restyle the tabs
+  let tabs = document.querySelectorAll(".periodTabs");
+  tabs.forEach((tab) => {
+    tab.className = tab.className.replace("font-bold bg-white", "");
+  });
+
+  // Highlight the current tab
+  event.currentTarget.className += " font-bold bg-white";
+
+  if (tabName == "HourlyData") {
+    document.getElementById("hourlydata").style.display = "block";
+    document.getElementById("rawdata").style.display = "none";
+  } else if (tabName == "RawData") {
+    document.getElementById("hourlydata").style.display = "none";
+    document.getElementById("rawdata").style.display = "block";
+  }
+}
 
 function switchDaysComparisonTab(event, tabName) {
   //Restyle the tabs
-  var tabs = document.querySelectorAll(".multiChartCompoarisonTabs");
+  let tabs = document.querySelectorAll(".multiChartComparisonTabs");
   tabs.forEach((tab) => {
-    tab.className = tab.className.replace("text-blue-500 border-blue-500", "");
+    tab.className = tab.className.replace("font-bold bg-white", "");
   });
   // Highlight the current tab
-  event.currentTarget.className += " text-blue-500 border-blue-500";
+  event.currentTarget.className += " font-bold bg-white";
 
   let sensortype = document.getElementById("sensortype").value;
   let sensorid = document.getElementById("sensorid").value;
-  let date = document.getElementById("dateFilter").value;
+  let date = document.getElementById("dateInput").value;
  
   let dates = [date];
   let dateObj = new Date(date);
@@ -285,8 +236,6 @@ function updateLineCharts(data) {
       let chartObj = document.getElementById(
         `${param.toLowerCase()}LineChart`
       ).chartInstance;
-    //   chartObj.data.datasets[0].label = `Minutely ${param.toUpperCase()}`; //label
-      // chartObj.data.labels = time.map(label => label.slice(5,16)); //x-axis labels
       //Map the time as JS Date objects
       chartObj.data.labels = time.map((x) => new Date(x)); //x-axis labels
       chartObj.data.datasets[0].data = data[param.toLowerCase()]; //y-axis data
@@ -312,6 +261,52 @@ function updateComparisonMultiCharts(data) {
       chartObj.update();
     }
   }
+}
+
+
+function fetchData() {
+  let sensortype = document.getElementById("sensorTypeSelect1").value;
+  let sensorid = document.getElementById("sensorIdSelect1").value;
+
+  if (!sensortype || !sensorid)  return;
+
+  let date=document.getElementById("dateInput").value;
+  fetch(`/sensor-data/${sensortype}/${sensorid}/${date}`)
+    .then((response) => response.json())
+    .then((data) => {
+      if (data) {
+        if (data.last_updated) {
+          let lastUpdated = new Date(
+            `${data.last_updated["obs_date"]} ${data.last_updated["obs_time_utc"]}`
+          );
+          document.getElementById("lastUpdated").textContent =
+            relativeTime(lastUpdated);
+        } else {
+          document.getElementById("lastUpdated").textContent = "No data";
+        }
+        updateLineCharts(data.rawdata);
+        updateHourlyAvgCharts(data.hourly_avgs, data.hourly_aqis);
+        let aqiData = data.aqi_data;
+        updateAQICards(aqiData);
+        avgData = data.avg_data;
+        if (avgData) {
+          //Update the average values in the table
+          document.getElementById("no2Value").textContent = avgData.no2;
+          document.getElementById("pm2_5Value").textContent = avgData.pm2_5;
+          document.getElementById("pm10Value").textContent = avgData.pm10;
+          document.getElementById("no2AQIDesc").textContent = getAQIDescription(aqiData.no2);
+          document.getElementById("pm2_5AQIDesc").textContent = getAQIDescription(aqiData.pm2_5);
+          document.getElementById("pm10AQIDesc").textContent = getAQIDescription(aqiData.pm10);
+        }
+        //Update the sensor type and id in the table
+        document.getElementById("sensorType").textContent = sensortype;
+        document.getElementById("sensorId").textContent = sensorid;
+
+      }
+    })
+    .catch((error) => {
+      console.error("Error fetching data:", error);
+    });
 }
 
 
@@ -385,7 +380,15 @@ function updateHourlyAvgCharts(avgData, aqiData) {
   }
 }
 
-fetchSensorIDs();
+
+//Hide the sensor Type 2 and sensor ID 2 dropdowns by defaults
+document.getElementById("sensorDiv2").style.display = "none";
+//Fetch the sensor IDs and update the charts on page load
+sensorTypeChanged(1);
+
+//Select the hourly data tab by default
+document.getElementById("hourlyTab").click();
+
 
 
 // let sensor_locations = JSON.parse(document.getElementById('sensor_locations').textContent);

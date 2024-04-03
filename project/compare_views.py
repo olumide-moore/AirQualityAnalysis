@@ -52,7 +52,7 @@ def compare_sensors_data(request, sensor_type1, sensor_id1, sensor_type2, sensor
         data_fetcher2.setSensorId(sensor_id2)
 
     if date!=date.today() and date in data_fetcher1.cacheRawData:
-            rawdata1= data_fetcher1.cacheRawData[date]
+        rawdata1= data_fetcher1.cacheRawData[date]
     else:
         rawdata1 = data_fetcher1.getRawData([date]).get(date)
         data_fetcher1.updateCache({date: rawdata1})
@@ -65,12 +65,14 @@ def compare_sensors_data(request, sensor_type1, sensor_id1, sensor_type2, sensor
     sensors_info= {'sensor1': {'type': data_fetcher1.getSensorType(), 'id': data_fetcher1.getSensorId(), 'last_updated': data_fetcher1.getLastUpdatedTime()},
                      'sensor2': {'type': data_fetcher2.getSensorType(), 'id': data_fetcher2.getSensorId(), 'last_updated': data_fetcher2.getLastUpdatedTime()}
                      }
-    mintuely_avgs1 = data_fetcher1.getMinutelyAverages(rawdata1, date)
-    mintuely_avgs1['id'] = data_fetcher1.getSensorId()
-    mintuely_avgs2 = data_fetcher2.getMinutelyAverages(rawdata2, date)
-    mintuely_avgs2['id'] = data_fetcher2.getSensorId()
+    
+    rawdata1_dict= data_fetcher1.convert_df_to_dict(rawdata1)
+    rawdata2_dict= data_fetcher2.convert_df_to_dict(rawdata2)
+    rawdata1_dict['id']= data_fetcher1.getSensorId()
+    rawdata2_dict['id']= data_fetcher2.getSensorId()
 
     return JsonResponse(
         {'sensors_info': sensors_info,
-            'minutely_avgs': {'sensor1': mintuely_avgs1, 'sensor2': mintuely_avgs2}}
+            'rawdata': {'sensor1': rawdata1_dict, 'sensor2': rawdata2_dict}
+        }
     )
