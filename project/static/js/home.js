@@ -21,12 +21,6 @@ function getAQIDescription(aqi) {
   return "";
 }
 
-
-
-// function getAQIDescription(aqi){
-//     if (aqi==1) return 'Good'; //Low
-//     if (aqi==2) return 'Good'; //Low
-
 function updateAQICards(aqi_data) {
   let no2Div = document.getElementById("no2card");
   let pm2_5Div = document.getElementById("pm2_5card");
@@ -67,8 +61,8 @@ function switchDaysComparisonTab(event, tabName) {
   // Highlight the current tab
   event.currentTarget.className += " font-bold bg-white";
 
-  let sensortype = document.getElementById("sensortype").value;
-  let sensorid = document.getElementById("sensorid").value;
+  let sensortype = document.getElementById("sensorTypeSelect1").value;
+  let sensorid = document.getElementById("sensorIdSelect1").value;
   let date = document.getElementById("dateInput").value;
  
   let dates = [date];
@@ -98,6 +92,46 @@ function switchDaysComparisonTab(event, tabName) {
       // console.log(data);
       // updateComparisonMultiCharts(data);
     })   
+}
+
+function createBarChartObj(chartId) {
+  let canvas = document.getElementById(chartId);
+  let ctx = canvas.getContext("2d");
+  canvas.chartInstance = new Chart(ctx, {
+    type: "bar", //bar, horizontalBar, pie, line, doughnut, radar, polarArea//bar, horizontalBar, pie, line, doughnut, radar, polarArea
+    data: {
+      labels: [],
+      datasets: [
+        {
+          label: "",
+          data: [],
+          backgroundColor: [],
+        },
+      ],
+    },
+    options: {
+      scales: {
+        x: {
+          type: "time",
+        },
+        y: {
+          beginAtZero: true,
+          title: {
+            display: true,
+            text: "µg/m³",
+          },
+        },
+      },
+      plugins: {
+        legend: {
+          display: false,
+        },
+      },
+      maintainAspectRatio: false,
+      aspectRatio: 1,
+    },
+  });
+  canvas.chartInstance.update();
 }
 
 
@@ -227,19 +261,39 @@ function createComparisonMultiChart(chartId) {
 function updateLineCharts(data) {
   // //Set the labels hours 00:00 to 23:00
   if (data) {
-    // console.log('here');
     let time = data.time;
-    // console.log(time);
-    // let curData = time.map(label => sensorData[label]);
-    // console.log(sensorData);
     for (let param of parameters) {
       let chartObj = document.getElementById(
         `${param.toLowerCase()}LineChart`
       ).chartInstance;
-      //Map the time as JS Date objects
-      chartObj.data.labels = time.map((x) => new Date(x)); //x-axis labels
-      chartObj.data.datasets[0].data = data[param.toLowerCase()]; //y-axis data
-      chartObj.update();
+      if (chartObj){
+        //Map the time as JS Date objects
+        chartObj.data.labels = time.map((x) => new Date(x)); //x-axis labels
+        chartObj.data.datasets[0].data = data[param.toLowerCase()]; //y-axis data
+        chartObj.update();
+      }
+    }
+  }
+}
+
+function updateHourlyAvgCharts(avgData, aqiData) {
+  if (avgData) {
+    let time = avgData.time;
+    if (time) {
+      time = time.map((x) => new Date(x));
+      for (let param of parameters) {
+        let chartObj = document.getElementById(
+          `${param.toLowerCase()}HourlyAvgChart`
+        ).chartInstance;
+        if (chartObj) {
+          chartObj.data.labels = time;
+          chartObj.data.datasets[0].data = avgData[param.toLowerCase()];
+          chartObj.data.datasets[0].backgroundColor = aqiData[
+            param.toLowerCase()
+          ].map((x) => getAQIColor(x));
+          chartObj.update();
+        }
+      }
     }
   }
 }
@@ -251,14 +305,16 @@ function updateComparisonMultiCharts(data) {
       let chartObj = document.getElementById(
         `${param.toLowerCase()}ComparisonMultiChart`
       ).chartInstance;
-      chartObj.data.labels = time;
-      let days = 0;
-      for (let date in data) {
-        chartObj.data.datasets[days].label = `${date}`; //label
-        chartObj.data.datasets[days].data = data[date][param.toLowerCase()]; //y-axis data
-        days++;
+      if (chartObj) {
+        chartObj.data.labels = time;
+        let day = 0;
+        for (let date in data) {
+          chartObj.data.datasets[day].label = `${date}`; //label
+          chartObj.data.datasets[day].data = data[date][param.toLowerCase()]; //y-axis data
+          day++;
+        }
+        chartObj.update();
       }
-      chartObj.update();
     }
   }
 }
@@ -310,81 +366,21 @@ function fetchData() {
 }
 
 
+//Create the chart objects for each parameter
 for (let param of parameters) {
   createLineChartObj(`${param.toLowerCase()}LineChart`);
+  createBarChartObj(`${param.toLowerCase()}HourlyAvgChart`);
   createComparisonMultiChart(`${param.toLowerCase()}ComparisonMultiChart`);
 }
 
-const hourlyavgChartsObjsArray = {};
-for (let param of parameters) {
-  let ctx = document
-    .getElementById(`${param.toLowerCase()}HourlyAvgChart`)
-    .getContext("2d");
-  let chart = new Chart(ctx, {
-    type: "bar",
-    data: {
-      labels: [],
-      datasets: [
-        {
-        //   label: `Average ${param.toUpperCase()}`,
-          label: "",
-          data: [],
-        },
-      ],
-    },
-    options: {
-      scales: {
-        x: {
-          type: "time",
-        },
-        y: {
-          beginAtZero: true,
-          title: {
-            display: true,
-            text: "µg/m³",
-          },
-        },
-      },
-      plugins: {
-        legend: {
-          display: false,
-        },
-      },
-      maintainAspectRatio: false,
-      aspectRatio: 1,
-    },
-  });
-  hourlyavgChartsObjsArray[param] = chart;
-}
-
-function updateHourlyAvgCharts(avgData, aqiData) {
-  if (avgData) {
-    let time = avgData.time;
-    if (time) {
-      time = time.map((x) => new Date(x));
-      for (let param of parameters) {
-        let chartObj = hourlyavgChartsObjsArray[param];
-        // console.log(avgData[param.toLowerCase()]);
-        if (chartObj) {
-          chartObj.data.labels = time;
-          if (avgData[param.toLowerCase()]) {
-            chartObj.data.datasets[0].data = avgData[param.toLowerCase()];
-            chartObj.data.datasets[0].backgroundColor = aqiData[
-              param.toLowerCase()
-            ].map((x) => getAQIColor(x));
-            chartObj.update();
-          }
-        }
-      }
-    }
-  }
-}
 
 
 //Hide the sensor Type 2 and sensor ID 2 dropdowns by defaults
 document.getElementById("sensorDiv2").style.display = "none";
+
+
 //Fetch the sensor IDs and update the charts on page load
-sensorTypeChanged(1);
+// sensorTypeChanged(1);
 
 //Select the hourly data tab by default
 document.getElementById("hourlyTab").click();

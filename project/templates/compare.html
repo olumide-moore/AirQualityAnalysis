@@ -141,9 +141,28 @@
       <div><canvas id="pm10ScatterPlot"></canvas></div>
     </div>
   </div>
+  
+  <!-- Box plot-->
+  <div
+    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6 mt-5"
+    id="scatterPlots">
+    <div class="p-4 shadow rounded-lg bg-white">
+      <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">NO2</h2>
+      <div><canvas id="no2BoxPlot"></canvas></div>
+    </div>
+    <div class="p-4 shadow rounded-lg bg-white">
+      <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">PM2.5</h2>
+      <div><canvas id="pm2_5BoxPlot"></canvas></div>
+    </div>
+    <div class="p-4 shadow rounded-lg bg-white">
+      <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">PM10</h2>
+      <div><canvas id="pm10BoxPlot"></canvas></div>
+    </div>
+  </div>
 
-  <div class="flex flex-col p-5 my-10 gap-4 bg-white">
-    <div class="border-b border-gray-200">
+  <!-- Days comparison Box plot-->
+  <div class="flex flex-col p-5 my-10">
+    <div>
       <h2 class="text-lg font-medium leading-6 text-gray-900 mb-4 px-4 py-3 inline-block border-b-2 border-transparent hover:border-gray-300">
         Compare selected date against:
       </h2>
@@ -151,14 +170,14 @@
       <ul class="flex">
         <li class="mr-1">
           <button
-            class="py-2 px-4 inline-block hover:text-blue-500 hover:border-blue-500 border-b-2 border-transparent multiChartCompoarisonTabs"
+            class="py-2 px-4 inline-block border-b-2 border-transparent multiChartComparisonTabs"
             onclick="switchDaysComparisonTab(event, 'Last7Days')">
             Last 7 Days
           </button>
         </li>
         <li class="mr-1">
           <button
-            class="py-2 px-4 inline-block hover:text-blue-500 hover:border-blue-500 border-b-2 border-transparent multiChartCompoarisonTabs"
+            class="py-2 px-4 inline-block border-b-2 border-transparent multiChartComparisonTabs"
             onclick="switchDaysComparisonTab(event, 'SameDayLast7Weeks')">
             Same day for last 7 weeks
           </button>
@@ -166,36 +185,34 @@
       </ul>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-5">
-      <div class="p-4 shadow rounded-lg bg-white">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 bg-white">
+      <div class="p-4 border-gray-200 border-2 my-2 rounded-lg bg-white ml-2">
         <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">
-          NO2 Comparison
+          NO2
         </h2>
         <div>
-          <canvas id="no2ComparisonMultiChart"></canvas>
+          <canvas id="no2DaysBoxPlot"></canvas>
         </div>
       </div>
-      <div class="p-4 shadow rounded-lg bg-white">
+      <div class="p-4 border-gray-200 border-2 my-2 rounded-lg bg-white">
         <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">
-          PM2.5 Comparison
+          PM2.5
         </h2>
         <div>
-          <canvas id="pm2_5ComparisonMultiChart"></canvas>
+          <canvas id="pm2_5DaysBoxPlot"></canvas>
         </div>
       </div>
-      <div class="p-4 shadow rounded-lg bg-white">
+      <div class="p-4 border-gray-200 border-2 my-2 rounded-lg bg-white mr-2">
         <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">
-          PM10 Comparison
+          PM10
         </h2>
         <div>
-          <canvas id="pm10ComparisonMultiChart"></canvas>
+          <canvas id="pm10DaysBoxPlot"></canvas>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Map -->
-  <div id="map" class="z-0"></div>
 </div>
 {% endblock %}
 
@@ -207,19 +224,17 @@
   let date="{{ date|escapejs }}";
     document.addEventListener('DOMContentLoaded', function() {
   let sensorTypeSelect = document.getElementById("sensorTypeSelect1"); //get select of sensor type list
-  sensorTypeSelect.value = sensorType1; //set sensor type 1
+  if (sensorType1 !="None")  sensorTypeSelect.value = sensorType1; //set sensor type 1
   //get the type id of selected sensor type
   let selectedType = sensorTypeSelect.options[sensorTypeSelect.selectedIndex];
   let typeid1 = selectedType.getAttribute("data-id"); //get sensor type id 1
   let sensorIdSelect1 = document.getElementById("sensorIdSelect1"); //get select of sensor id list
+  if (date !="None")  document.getElementById('dateInput').value = date;
   fetchSensorIDs(typeid1).then((sensorData1) => {
     populateSensorOptions(sensorIdSelect1, sensorData1); //populate sensor ids of first sensor list
-    console.log(`Finished popluating sensor ids for sensor 1`)
-    sensorIdSelect1.value = `${sensorId1}`; //set sensor id 1
+    if (sensorId1 !="None")   sensorIdSelect1.value = `${sensorId1}`; //set sensor id 1
     sensorTypeChanged(2);
   });
-  console.log('About to set date input value')
-  document.getElementById('dateInput').value = date;
   });
 </script>
 {% endblock %}

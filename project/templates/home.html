@@ -302,4 +302,24 @@
 
 {% block scripts %}
 <script type="text/javascript" src="{% static 'js/home.js' %}"></script>
+<script type="text/javascript">
+  let sensorType1="{{ sensorType1|escapejs }}";
+  let sensorId1="{{ sensorId1|escapejs }}";
+  let date="{{ date|escapejs }}";
+    document.addEventListener('DOMContentLoaded', function() {
+  let sensorTypeSelect = document.getElementById("sensorTypeSelect1"); //get select of sensor type list
+  if (sensorType1 !="None")  sensorTypeSelect.value = sensorType1; //set sensor type 1
+  //get the type id of selected sensor type
+  let selectedType = sensorTypeSelect.options[sensorTypeSelect.selectedIndex];
+  let typeid1 = selectedType.getAttribute("data-id"); //get sensor type id 1
+  let sensorIdSelect1 = document.getElementById("sensorIdSelect1"); //get select of sensor id list
+  if (date !="None")  document.getElementById('dateInput').value = date;
+  fetchSensorIDs(typeid1).then((sensorData1) => {
+    populateSensorOptions(sensorIdSelect1, sensorData1); //populate sensor ids of first sensor list
+    if (sensorId1 !="None")   sensorIdSelect1.value = `${sensorId1}`; //set sensor id 1
+    sensorTypeChanged(1);
+  });
+  });
+</script>
+
 {% endblock %}

@@ -1,21 +1,3 @@
-//Hamburger menu
-const hamburger = document.querySelector('.hamburger');
-const navMenu = document.querySelector('.nav-menu');
-
-hamburger.addEventListener('click', () => {
-    hamburger.classList.toggle('active');
-    navMenu.classList.toggle('active');
-});
-//Ensure that the hamburger menu is hidden when a menu item is clicked
-const menuLinks = document.querySelectorAll('.nav-link');
-menuLinks.forEach((menuLink) => {
-    menuLink.addEventListener('click', () => {
-        hamburger.classList.remove('active');
-        navMenu.classList.remove('active');
-    });
-});
-
-
 function navigateToPage(page) {
   //Get sensor type1, sensor id1, and date selected on the page if found
   let sensorType1 = document.getElementById("sensorTypeSelect1");
@@ -62,7 +44,7 @@ function relativeTime(date) {
     return Math.floor(seconds) + " seconds ago";
   }
 
-  function createLineChartObj(chartId) {
+function createLineChartObj(chartId) {
     let canvas = document.getElementById(chartId);
     let ctx = canvas.getContext("2d");
     canvas.chartInstance = new Chart(ctx, {
@@ -126,7 +108,27 @@ function relativeTime(date) {
     canvas.chartInstance.update();
   }
   
-const parameters = ["NO2", "PM10", "PM2_5"];
+
+
+//Hamburger menu
+const hamburger = document.querySelector('.hamburger');
+const navMenu = document.querySelector('.nav-menu');
+
+hamburger.addEventListener('click', () => {
+    hamburger.classList.toggle('active');
+    navMenu.classList.toggle('active');
+});
+//Ensure that the hamburger menu is hidden when a menu item is clicked
+const menuLinks = document.querySelectorAll('.nav-link');
+menuLinks.forEach((menuLink) => {
+    menuLink.addEventListener('click', () => {
+        hamburger.classList.remove('active');
+        navMenu.classList.remove('active');
+    });
+});
+
+
+  const parameters = ["NO2", "PM10", "PM2_5"];
 
 //Set the date filter to default date
 document.getElementById("dateInput").value = new Date().toISOString().slice(0, 10);

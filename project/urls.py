@@ -29,4 +29,5 @@ urlpatterns = [
     path("sensor-data/<str:sensor_type>/<int:sensor_id>/<str:date>/", views.get_sensor_data, name="sensor_data/"),
     path("compare-days/<str:sensor_type>/<int:sensor_id>/<str:dates>/", views.compare_days, name="compare_days"),
     path("compare-sensors-data/<str:sensor_type1>/<int:sensor_id1>/<str:sensor_type2>/<int:sensor_id2>/<str:date>/", compare_views.compare_sensors_data, name="compare_sensors_data"),
+    path("compare-sensors-days/<str:sensor_type1>/<int:sensor_id1>/<str:sensor_type2>/<int:sensor_id2>/<str:dates>/", compare_views.compare_sensors_days, name="compare_sensors_days"),
 ]

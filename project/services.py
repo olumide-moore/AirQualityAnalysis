@@ -7,69 +7,6 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 
-
-# class SensorTypeAndIdFetcher():
-#     def __init__(self):
-#         '''Initializes the SensorTypeAndIdFetcher object
-#         variables: sensor_types: dict --> {sensor_type_id: sensor_type_name}
-#                     sensor_types_with_ids: dict --> {sensor_type_id: [sensor_id1, sensor_id2, ...]}
-        
-#         '''
-#         self.sensor_types = self.__fetchAllSensorTypes() 
-#         self.sensor_types_with_ids= {type_id: self.__fetchSensorIds(type_id) for type_id in self.sensor_types.keys()}
-
-#     def __fetchAllSensorTypes(self) -> dict:
-#         """
-#         Fetches all the sensor types from the database and returns them as a dictionary with id as the key and name as the value
-        
-#         :return: dict --> {sensor_type_id: sensor_type_name}
-#         """
-#         sensor_types = Sensortypes.objects.values('id','name').distinct()
-#         self.sensor_types = dict(map(lambda x: (x['id'], x['name']),sensor_types))
-#         return self.sensor_types
-    
-#     def __fetchSensorIds(self, sensor_type_id: int) -> list:
-#         """
-#         Fetches the sensor ids for the given sensor_type_id from the database and returns them as a list
-        
-#         :param sensor_type_id: int
-#         :return: list --> [sensor_id1, sensor_id2, ...]
-#         """
-#         try:
-#             sensor_ids = Sensors.objects.values('id').filter(type_id=sensor_type_id)
-#         except Sensors.DoesNotExist:
-#             sensor_ids = []
-#         return list(map(lambda x: x['id'], sensor_ids))
-    
-#     def getSensorTypes(self) -> dict:
-#         """
-#         Returns the sensor types from the cache
-        
-#         :return: dict --> {sensor_type_id: sensor_type_name}
-#         """
-#         return self.sensor_types
-    
-#     def getSensorIdsOfType(self, sensor_type:str) -> list:
-#         """
-#         Returns the sensor ids for the given sensor_type from the cache
-        
-#         :param sensor_type: str
-#         :return: list --> [sensor_id1, sensor_id2, ...]
-#         """
-#         sensor_type_id = [type_id for type_id, type_name in self.sensor_types.items() if type_name == sensor_type]
-#         if sensor_type_id:
-#             return self.getSensorIdsOfTypeId(sensor_type_id[0])
-#         return []
-    
-#     def getSensorIdsOfTypeId(self, sensor_type_id: int) -> list:
-#         """
-#         Returns the sensor ids for the given sensor_type_id from the cache
-        
-#         :param sensor_type_id: int
-#         :return: list --> [sensor_id1, sensor_id2, ...]
-#         """
-#         return self.sensor_types_with_ids.get(sensor_type_id, [])
-
 class SensorDataFetcher():
     def __init__(self, requiredConcentrations):
         self.sensors_table = None
@@ -145,8 +82,8 @@ class SensorDataFetcher():
         if len(self.cacheRawData) > 50:
             #remove half of the data from the cache
             for date in dates[:len(dates)//2]:
-                self.cacheRawData.pop(date)
-                if hourly_avgs: self.cacheHourlyAvgs.pop(date)
+                self.cacheRawData.pop(date, None)
+                if hourly_avgs: self.cacheHourlyAvgs.pop(date, None)
         self.cacheRawData.update(rawdata)
         if hourly_avgs: self.cacheHourlyAvgs.update(hourly_avgs)
 
@@ -189,39 +126,27 @@ class SensorDataFetcher():
             data_by_date[date] = rawdata[rawdata.index.date == date]
         return data_by_date
     
-    def getRawData_Last7Days(self, end) -> dict:
-        """ 
-        Fetches the raw data from the database for the given sensor_id and the required concentrations for last 7 days till the end datetime
-
-        :param end: datetime
-        :return: dict
-        :side effect: updates the cache with the new data fetched and maintains only 21 days of data in the cache
+    def getHourlyRawData(self,rawdata, date) -> dict:
         """
-        data={}
-        dates= {end.date() - timedelta(days=i) for i in range(7)}
-        for date in list(self.cacheRawData.keys()): #Check if any of the dates are already in the cache
-            if date in dates:
-                data[date]= self.cacheRawData[date] #If the date is in the cache, use the data from the cache
-                dates.remove(date) #Then remove the date from the list of dates to fetch
-            
-        if dates: #If there are dates to fetch
-            data.update(self.getRawData(dates)) #Fetch the data for the remaining dates and update the data dictionary
-        if len(self.cacheRawData) > 21: #If the cache has more than 21 days of data, reset the cache
-            self.cacheRawData = {}
-        self.cacheRawData.update(data) #Update the cache with the new data
+        Fetches the hourly raw data from the database for the given sensor_id and the required concentrations for the given date
+        
+        :param date: datetime
+        :return: dict  - a dictionary of key- value-list pairs representing the hourly raw data for each pollutants and the time
+                           --> 4 keys: time, no2, pm10, pm2_5 and their corresponding 24 values
+        """
+        start= datetime.combine(date, datetime.min.time()) #start of the day
+        end= datetime.combine(date, datetime.max.time())
+        time=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+        data={'time': list(map(lambda t: f"{t}".zfill(0), time))}
+        for param in ['no2', 'pm10', 'pm2_5']:
+            data[param]=[]
+        for t in time:
+            cur_hour_data=rawdata[rawdata.index.hour == t].to_dict(orient='list')
+            for param in ['no2', 'pm10', 'pm2_5']:
+                data[param].append(cur_hour_data[param])
         return data
-    
-    def getRawData_SameDayLast7Weeks(self, end) -> dict:
-        """ 
-        Fetches the raw data from the database for the given sensor_id and the required concentrations for the same day of the week for the last 7 weeks till the end datetime
-        
-        :param end: datetime
-        :return: dict
-        """
-        dates= {end.date() - timedelta(weeks=i) for i in range(7)} #This gets the dates for the same day of the week for the last 7 weeks
-        return self.getRawData(dates)
-        
-    def getHourlyAverages(self, rawdata, date, minute_threshold=45) -> pd.DataFrame:
+            
+    def getHourlyAverages(self, rawdata, date, minute_threshold=45) -> dict:
         """
         Calculates the average concentration of the pollutants for each hour between the start and end datetime.
         
