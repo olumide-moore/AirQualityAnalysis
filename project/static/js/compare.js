@@ -1,3 +1,28 @@
+
+function switchChartTypeTab(event, tabName) {
+  //Restyle the tabs
+  let tabs = document.querySelectorAll(".chartTypeTabs");
+  tabs.forEach((tab) => {
+    tab.className = tab.className.replace("font-bold bg-white", "");
+  });
+
+  // Highlight the current tab
+  event.currentTarget.className += " font-bold bg-white";
+  if (tabName == "RawDtaMultiLineCharts") {
+    document.getElementById("rawdataMultiLineCharts").style.display = "block";
+    document.getElementById("scatterPlots").style.display = "none";
+    document.getElementById("hourlyBoxPlots").style.display = "none";
+  } else if (tabName == "ScatterPlots") {
+    document.getElementById("rawdataMultiLineCharts").style.display = "none";
+    document.getElementById("scatterPlots").style.display = "block";
+    document.getElementById("hourlyBoxPlots").style.display = "none";
+  } else if (tabName == "HourlyBoxPlots") {
+    document.getElementById("rawdataMultiLineCharts").style.display = "none";
+    document.getElementById("scatterPlots").style.display = "none";
+    document.getElementById("hourlyBoxPlots").style.display = "block";
+  }
+}
+
 function switchDaysComparisonTab(event, tabName) {
   //Restyle the tabs
   let tabs = document.querySelectorAll(".multiChartComparisonTabs");
@@ -35,7 +60,6 @@ function switchDaysComparisonTab(event, tabName) {
     .then((response) => response.json())
     .then((data) => { 
       if (data) {
-        console.log(data);
         updateDaysBoxPlot(data);
       }
       // console.log(data);
@@ -84,7 +108,7 @@ function createBoxPlotChartObj(chartId){
               // label: label,
               //disabling the label for now
               data: [],
-              backgroundColor: "rgba(168,220,84, 0.3)",
+              backgroundColor: "rgba(168,220,84, 1)",
           //     // borderColor: 'rgb(255, 99, 132)',
           //     // borderWidth: 1,
           //     // barThickness: 10,
@@ -96,7 +120,7 @@ function createBoxPlotChartObj(chartId){
               // label: label,
               //disabling the label for now
               data: [],
-              backgroundColor: "rgba(256,220,44, 0.3)",
+              backgroundColor: "rgba(256,220,44, 1)",
           }]
       },
       options: {
@@ -106,7 +130,9 @@ function createBoxPlotChartObj(chartId){
                   }
               },
               responsive: true,
-              maintainAspectRatio: false
+              maintainAspectRatio: false,
+              aspectRatio: 1
+
           }
  });
   canvas.chartInstance.update();
@@ -118,21 +144,33 @@ function updateCompareLineCharts(data) {
       // if (!data.sensor1 || !data.sensor2) return;
       let sensor1data = data.sensor1;
       let sensor2data = data.sensor2;
-      let time = sensor1data.time;
+      let time1 = sensor1data.time.map((x) => new Date(x));
+      let time2 = sensor2data.time.map((x) => new Date(x));
       for (let param of parameters) {
-          let chartObj = document.getElementById(
-              `${param.toLowerCase()}LineChart`
-          ).chartInstance;
-          chartObj.data.labels = time.map((x) => new Date(x)); //x-axis labels
-          let curData= sensor1data[param.toLowerCase()];
-          let curData2= sensor2data[param.toLowerCase()];
-          chartObj.data.datasets[0].data = curData;//.map((x) => x==null? Number.NaN: x); //y-axis data
-          chartObj.data.datasets[1].data = curData2;//.map((x) => x==null? Number.NaN: x); //y-axis data
-          chartObj.data.datasets[0].label = `ID: ${sensor1data.id}`; //label
-          chartObj.data.datasets[1].label = `ID: ${sensor2data.id}`; //label
-          chartObj.options.plugins.legend.display = true;
-          // chartObj.options.spanGaps = true;
-          chartObj.update();
+        let chartObj = document.getElementById(
+            `${param.toLowerCase()}LineChart`
+        ).chartInstance;
+        let lineData = [];
+        let lineData2 = [];
+        for (let i = 0; i < time1.length; i++) {
+            lineData.push({
+                x: time1[i],
+                y: sensor1data[param.toLowerCase()][i],
+            });
+        }
+        for (let i = 0; i < time2.length; i++) {
+            lineData2.push({
+                x: time2[i],
+                y: sensor2data[param.toLowerCase()][i],
+            });
+        }
+        chartObj.data.datasets[0].data = lineData; //data
+        chartObj.data.datasets[1].data = lineData2; //data
+        chartObj.data.datasets[0].label = `ID: ${sensor1data.id}`; //label
+        chartObj.data.datasets[1].label = `ID: ${sensor2data.id}`; //label
+        chartObj.options.plugins.legend.display = true;
+        // chartObj.options.spanGaps = true;
+        chartObj.update();
     }  
   }
 }
@@ -178,6 +216,10 @@ function updateBoxPlot(data) {
         // chartObj.data.datasets[1].data = [firsthour2];
         chartObj.data.datasets[0].data = curData1;
         chartObj.data.datasets[1].data = curData2;
+
+        chartObj.data.datasets[0].label = `ID: ${sensor1data.id}`; //label
+        chartObj.data.datasets[1].label = `ID: ${sensor2data.id}`; //label
+        chartObj.options.plugins.legend.display = true;
         chartObj.update();
         }
   }
@@ -197,10 +239,27 @@ function updateDaysBoxPlot(data) {
         let curData2 = sensor2data[param_lower];
         chartObj.data.datasets[0].data = curData1;
         chartObj.data.datasets[1].data = curData2;
+        chartObj.data.datasets[0].label = `ID: ${sensor1data.id}`; //label
+        chartObj.data.datasets[1].label = `ID: ${sensor2data.id}`; //label
+        chartObj.options.plugins.legend.display = true;
         chartObj.update();
         }
   }
 }
+
+function updateCorrelationCards(correlations) {
+  let no2=""; let pm2_5=""; let pm10="";
+  if (correlations) {
+    if (correlations.no2) no2 = correlations.no2;
+    if (correlations.pm2_5) pm2_5 = correlations.pm2_5;
+    if (correlations.pm10) pm10 = correlations.pm10;
+  }
+  document.getElementById("no2correlation").textContent = no2;
+  document.getElementById("pm2_5correlation").textContent = pm2_5;
+  document.getElementById("pm10correlation").textContent = pm10;
+}
+
+
 
 
 
@@ -240,6 +299,8 @@ function fetchData() {
             updateCompareLineCharts(data.rawdata);
             updateScatterPlot(data.rawdata);
             updateBoxPlot(data.hourly_rawdata);
+            updateCorrelationCards(data.correlations);
+
           }
           })
     .catch((error) => {
@@ -249,6 +310,7 @@ function fetchData() {
 
     
 
+//Create the chart objects
 for (let param of parameters) {
   createLineChartObj(`${param.toLowerCase()}LineChart`);
   createScatterPlotObj(`${param.toLowerCase()}ScatterPlot`);
@@ -256,3 +318,5 @@ for (let param of parameters) {
   createBoxPlotChartObj(`${param.toLowerCase()}DaysBoxPlot`);
 }
 
+//Select the raw data tab by default
+document.getElementById("rawDataTab").click();

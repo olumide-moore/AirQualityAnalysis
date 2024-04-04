@@ -9,8 +9,40 @@
 
 <div class="mx-auto px-10 sm:px-6 lg:px-10 py-20">
   {% include 'inputs.html' %}
-  <div class="flex p-5 gap-4 bg-white">
-    <!-- Table-->
+  <div class="flex px-20 py-5 justify-between">
+   
+    <!-- Corrlation container -->
+    <div
+      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 lg:pt-20 gap-8 mr-32">
+      <div
+        class="text-black rounded-2xl shadow-lg overflow-hidden flex flex-col p-6 space-y-4 w-52 h-32  bg-gray-300">
+        <div class="font-bold text-4xl">
+          <span id="no2correlation" class="text-lg"></span>
+        </div>
+        <div class="text-md">NO2 correlation</div>
+      </div>
+
+      <!-- PM2.5 correlation -->
+      <div
+        class="text-black rounded-2xl shadow-lg overflow-hidden flex flex-col p-6 space-y-4 w-52 h-32  bg-gray-300">
+        <div class="font-bold text-4xl">
+          <span id="pm2_5correlation" class="text-lg"></span>
+        </div>
+        <div class="text-md">PM2.5 correlation</div>
+      </div>
+
+      <!-- PM10 correlation -->
+      <div
+        class="text-black rounded-2xl shadow-lg overflow-hidden flex flex-col p-6 space-y-4 w-52 h-32  bg-gray-300">
+        <div class="font-bold text-4xl">
+          <span id="pm10correlation" class="text-lg"></span>
+        </div>
+        <div class="text-md">PM10 correlation</div>
+      </div>
+    </div>
+
+
+     <!-- Table-->
     <div class="bg-white p-6 rounded-2xl shadow-lg">
       <!-- <div class="font-bold text-lg mb-4">INFO</div> -->
       <table class="table-auto w-full border-collapse border border-gray-300">
@@ -55,111 +87,97 @@
         </tbody>
       </table>
     </div>
-    <!-- Card container -->
-    <div
-      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 lg:pt-20 gap-8">
-      <!-- <div class="flex space-x-4"> -->
-      <!-- NO2 card-->
-      <div
-        class="text-white rounded-2xl shadow-lg overflow-hidden flex flex-col p-6 space-y-4 w-52 h-40"
-        id="no2card"
-      >
-        <div class="text-xs">The highest average NO2</div>
-        <div class="no2Value font-bold text-4xl">
-          <span class="text-lg">Unhealthy AQI</span>
-        </div>
-        <div class="flex justify-between text-xs">
-          <div class="text-center">
-            <div>Dominant pollutant</div>
-            <div>☀️ NO2</div>
+
+  </div>
+
+
+
+  <div class="flex flex-col p-5 my-10">
+    <div>
+      <!-- Compare trend Tabs -->
+      <ul class="flex">
+        <li class="mr-1">
+          <button
+            class="py-2 px-4 inline-block border-b-2 border-transparent chartTypeTabs"
+            id="rawDataTab"
+            onclick="switchChartTypeTab(event, 'RawDtaMultiLineCharts')">
+            Raw Data
+          </button>
+        </li>
+        <li class="mr-1">
+          <button
+            class="py-2 px-4 inline-block border-b-2 border-transparent chartTypeTabs"
+            id="scatterTab"
+            onclick="switchChartTypeTab(event, 'ScatterPlots')">
+            Scatter Plots
+          </button>
+        </li>
+        <li class="mr-1">
+          <button
+            class="py-2 px-4 inline-block border-b-2 border-transparent chartTypeTabs"
+            id="hourlyTab"
+            onclick="switchChartTypeTab(event, 'HourlyBoxPlots')">
+            Hourly Boxplots
+          </button>
+      </ul>
+    </div>
+
+    <div class="bg-white">
+      <!-- Raw Data Line Charts -->
+      <div id="rawdataMultiLineCharts">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-5">
+          <div class="p-4 border-gray-200 border-2 my-2 rounded-lg bg-white ml-2">
+            <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">NO2 Data</h2>
+            <div><canvas id="no2LineChart"></canvas></div>
+          </div>
+          <div class="p-4 border-gray-200 border-2 my-2 rounded-lg bg-white">
+            <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">PM2.5 Data</h2>
+            <div><canvas id="pm2_5LineChart"></canvas></div>
+          </div>
+          <div class="p-4 border-gray-200 border-2 my-2 rounded-lg bg-white mr-2">
+            <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">PM10 Data</h2>
+            <div><canvas id="pm10LineChart"></canvas></div>
           </div>
         </div>
       </div>
 
-      <!-- PM2.5 card -->
-      <div
-        class="text-white rounded-2xl shadow-lg overflow-hidden flex flex-col p-6 space-y-4 w-52 h-40"
-        id="pm2_5card"
-      >
-        <div class="text-xs">The lowest average pollution</div>
-        <div class="pm2_5Value font-bold text-4xl">
-          <span class="text-lg">Healthy AQI</span>
-        </div>
-        <div class="text-xs text-center">
-          <div>PM2.5</div>
-        </div>
-      </div>
-
-      <!-- PM10 card -->
-      <div
-        class="text-white rounded-2xl shadow-lg overflow-hidden flex flex-col p-6 space-y-4 w-52 h-40"
-        id="pm10card"
-      >
-        <div class="text-xs">The highest average pollution</div>
-        <div class="pm10Value font-bold text-4xl">
-          <span class="text-lg">Hazardous AQI</span>
-        </div>
-        <div class="text-xs text-center">
-          <div>PM10</div>
+      <!-- Scatter plot-->
+      <div id="scatterPlots">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-5">
+          <div class="p-4 border-gray-200 border-2 my-2 rounded-lg bg-white ml-2">
+            <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">NO2</h2>
+            <div><canvas id="no2ScatterPlot"></canvas></div>
+          </div>
+          <div class="p-4 border-gray-200 border-2 my-2 rounded-lg bg-white">
+            <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">PM2.5</h2>
+            <div><canvas id="pm2_5ScatterPlot"></canvas></div>
+          </div>
+          <div class="p-4 border-gray-200 border-2 my-2 rounded-lg bg-white mr-2">
+            <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">PM10</h2>
+            <div><canvas id="pm10ScatterPlot"></canvas></div>
+          </div>
         </div>
       </div>
+      
+      <!-- Box plot-->
+      <div id="hourlyBoxPlots">
+        <div class="flex flex-col space-y-4 mt-5">
+          <div class="p-4 border-gray-200 border-2 my-2 rounded-lg bg-white mx-2">
+            <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">NO2 Hourly Comparison</h2>
+            <div><canvas id="no2BoxPlot"></canvas></div>
+          </div>
+          <div class="p-4 border-gray-200 border-2 my-2 rounded-lg bg-white mx-2">
+            <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">PM2.5 Hourly Comparison</h2>
+            <div><canvas id="pm2_5BoxPlot"></canvas></div>
+          </div>
+          <div class="p-4 border-gray-200 border-2 my-2 rounded-lg bg-white mx-2">
+            <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">PM10 Hourly Comparison</h2>
+            <div><canvas id="pm10BoxPlot"></canvas></div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
-
-  <!-- Raw Data Line Charts -->
-  <div
-    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-5"
-    id="lineCharts">
-    <div class="p-4 shadow rounded-lg bg-white">
-      <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">NO2 Data</h2>
-      <div><canvas id="no2LineChart"></canvas></div>
-    </div>
-    <div class="p-4 shadow rounded-lg bg-white">
-      <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">PM2.5 Data</h2>
-      <div><canvas id="pm2_5LineChart"></canvas></div>
-    </div>
-    <div class="p-4 shadow rounded-lg bg-white">
-      <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">PM10 Data</h2>
-      <div><canvas id="pm10LineChart"></canvas></div>
-    </div>
-  </div>
-
-  <!-- Scatter plot-->
-  <div
-    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-5"
-    id="scatterPlots">
-    <div class="p-4 shadow rounded-lg bg-white">
-      <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">NO2</h2>
-      <div><canvas id="no2ScatterPlot"></canvas></div>
-    </div>
-    <div class="p-4 shadow rounded-lg bg-white">
-      <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">PM2.5</h2>
-      <div><canvas id="pm2_5ScatterPlot"></canvas></div>
-    </div>
-    <div class="p-4 shadow rounded-lg bg-white">
-      <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">PM10</h2>
-      <div><canvas id="pm10ScatterPlot"></canvas></div>
-    </div>
-  </div>
-  
-  <!-- Box plot-->
-  <div
-    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6 mt-5"
-    id="scatterPlots">
-    <div class="p-4 shadow rounded-lg bg-white">
-      <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">NO2</h2>
-      <div><canvas id="no2BoxPlot"></canvas></div>
-    </div>
-    <div class="p-4 shadow rounded-lg bg-white">
-      <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">PM2.5</h2>
-      <div><canvas id="pm2_5BoxPlot"></canvas></div>
-    </div>
-    <div class="p-4 shadow rounded-lg bg-white">
-      <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">PM10</h2>
-      <div><canvas id="pm10BoxPlot"></canvas></div>
-    </div>
-  </div>
-
   <!-- Days comparison Box plot-->
   <div class="flex flex-col p-5 my-10">
     <div>

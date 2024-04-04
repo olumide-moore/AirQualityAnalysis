@@ -137,7 +137,7 @@ class SensorDataFetcher():
         start= datetime.combine(date, datetime.min.time()) #start of the day
         end= datetime.combine(date, datetime.max.time())
         time=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
-        data={'time': list(map(lambda t: f"{t}".zfill(0), time))}
+        data={'time': list(map(lambda t: f"{t}".zfill(0)+":00", time))}
         for param in ['no2', 'pm10', 'pm2_5']:
             data[param]=[]
         for t in time:

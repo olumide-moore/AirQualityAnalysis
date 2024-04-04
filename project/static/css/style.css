@@ -5,13 +5,8 @@
 }
 
 body {
-  background-color: #f0ece4; /* Fallback for old browsers */
-  background-image: linear-gradient(
-    to left,
-    #f0ece4,
-    #f0ece4
-  ); /* Pure color as gradient for consistency */
-  height: 100vh; /* Full height */
+  background-color: #f0ece4;
+  height: 100vh; 
 }
 
 header {
@@ -20,7 +15,7 @@ header {
   position: fixed;
   width: 100%;
   z-index: 1000;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Horizontal offset, vertical offset, blur radius, color */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); 
 }
 li {
   list-style: none;

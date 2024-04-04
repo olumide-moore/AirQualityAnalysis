@@ -10,139 +10,113 @@
 <div class="mx-auto px-10 sm:px-6 lg:px-10 py-20">
 
   {% include 'inputs.html' %}  
-  <div class="grid grid-cols-4 gap-4"> 
-    <!-- Card container -->
-    <div class="col-span-2 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 lg:pt-20 gap-8">
-      <!-- <div class="flex space-x-4"> -->
-      <!-- NO2 card-->
-      <div class="text-white rounded-2xl shadow-lg overflow-hidden flex flex-col p-6 space-y-4 w-52 h-40"
-        id="no2card">
-        <div class="text-xs">Highest average NO2 at </div>
-        <div class="font-bold text-4xl">
-          <span id="no2AQIDesc" class="text-lg"></span>
-        </div>
-        <div class="flex justify-between text-xs">
-          <div class="text-center">
-            <div>Dominant pollutant</div>
-            <div>☀️ NO2</div>
+  <div class="grid lg:grid-cols-4 sm:grid-cols-2 gap-4"> 
+
+    <div class="col-span-2 flex flex-col justify-between space-y-10">
+      <!-- Card container -->
+      <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 lg:pt-20 gap-8 items-stretch">
+        <!-- NO2 card-->
+        <div class="text-black rounded-2xl shadow-lg overflow-hidden flex justify-between p-4 w-52 h-36 bg-gray-300"
+            id="no2card">
+          <div class="flex justify-end items-center mt-2 mr-2">
+            <img src="{% static 'icons/no2.svg' %}" alt="NO2" class="w-10 h-10">
+          </div>
+          <div class="flex-grow">
+            <div class="font-bold text-xl">
+              <span id="no2AQIDesc" class="text-xl"></span>
+            </div>
+            <div class="text-md">
+              <div>NO2 Daily AQI - <span id="no2AQI"></span></div>
+            </div>
           </div>
         </div>
-      </div>
+        <!-- PM2.5 card -->
+        <div class="text-black rounded-2xl shadow-lg overflow-hidden flex justify-between p-4 w-52 h-36 bg-gray-300"
+            id="pm2_5card">
+          <div class="flex justify-end items-center">
+            <img src="{% static 'icons/pm2_5.svg' %}" alt="PM2_5" class="w-12 h-12">
+          </div>
+          <div class="flex-grow">
+            <div class="font-bold text-xl">
+              <span id="pm2_5AQIDesc" class="text-xl"></span>
+            </div>
+            <div class="text-md">
+              <div>PM2.5 Daily AQI - <span id="pm2_5AQI"></span></div>
+            </div>
+          </div>
+        </div>
 
-      <!-- PM2.5 card -->
-      <div class="text-white rounded-2xl shadow-lg overflow-hidden flex flex-col p-6 space-y-4 w-52 h-40"
-        id="pm2_5card">
-        <div class="font-bold text-4xl">
-          <span id="pm2_5AQIDesc" class="text-lg"></span>
+        <!-- PM10 card -->
+        <div class="text-black rounded-2xl shadow-lg overflow-hidden flex justify-between p-4 w-52 h-36 bg-gray-300"
+            id="pm10card">
+          <div class="flex justify-end items-center mt-1 mr-2">
+            <img src="{% static 'icons/pm10.svg' %}" alt="PM10" class="w-10 h-10">
+          </div>
+          <div class="flex-grow">
+            <div class="font-bold text-xl">
+              <span id="pm10AQIDesc" class="text-xl"></span>
+            </div>
+            <div class="text-md">
+              <div>PM10 Daily AQI - <span id="pm10AQI"></span></div>
+            </div>
+          </div>
         </div>
-        <div class="text-xs text-center">
-          <div>PM2.5</div>
-        </div>
-      </div>
+      </div>  
 
-      <!-- PM10 card -->
-      <div class="text-white rounded-2xl shadow-lg overflow-hidden flex flex-col p-6 space-y-4 w-52 h-40"
-        id="pm10card">
-        <div class="font-bold text-4xl">
-          <span id="pm10AQIDesc" class="text-lg"></span>
+         <!--AQI Guide Legend Table-->
+      <div class="col-span-2 row-span-2 p-6 rounded-sm shadow-xs">
+        <!-- <div class="p-6"> -->
+        <!-- <div onclick="toggleLegend('aqiGuideLegend')" class="cursor-pointer bg-gray-300 p-2 rounded-sm">
+          <span>AQI Legend</span>
+        </div> -->
+        <div class="flex items-end space-x-4">
+          <div onclick="toggleLegend('aqiGuideLegend')" class="cursor-pointer bg-gray-300 text-sm m-2 p-2 rounded-md shadow hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 w-32" tabindex="0">
+            AQI Legend <span id="toggleLegendSymbol">  ▲</span>
+          </div>
+          <table class="table-auto w-full border-collapse border border-gray-400" style="display: none;" id="aqiGuideLegend">
+            <tbody class="text-sm" >
+              <tr>
+                <th class="px-4 py-2 border-r border-gray-400">Air Pollution Banding</th>
+                <td class="px-4 py-2 border-r border-gray-400" colspan="3">Low</td>
+                <td class="px-4 py-2 border-r border-gray-400" colspan="3">Moderate</td>
+                <td class="px-4 py-2 border-r border-gray-400" colspan="3">High</td>
+                <td class="px-4 py-2 border-r border-gray-400">Very High</td>
+              </tr>
+              <tr>
+                <th class="px-4 py-2 border-r border-gray-400">AQI Value</th>
+                <td class="px-4 py-2 border-r border-gray-400" style="background-color: #a0fc9c;">1</td>
+                <td class="px-4 py-2 border-r border-gray-400" style="background-color: #38fc04;">2</td>
+                <td class="px-4 py-2 border-r border-gray-400" style="background-color: #38cc04;">3</td>
+                <td class="px-4 py-2 border-r border-gray-400" style="background-color: #fffc04;">4</td>
+                <td class="px-4 py-2 border-r border-gray-400" style="background-color: #fccc04;">5</td>
+                <td class="px-4 py-2 border-r border-gray-400" style="background-color: #ff9c04;">6</td>
+                <td class="px-4 py-2 border-r border-gray-400" style="background-color: #ff6464;">7</td>
+                <td class="px-4 py-2 border-r border-gray-400" style="background-color: #ff0404;">8</td>
+                <td class="px-4 py-2 border-r border-gray-400" style="background-color: #a00404;">9</td>
+                <td class="px-4 py-2 border-r border-gray-400" style="background-color: #d034fc;">10</td>
+            </tr>
+            </tbody>
+          </table>
         </div>
-        <div class="text-xs text-center">
-          <div>PM10</div>
+        <div class="py-4">
+          <a href="https://uk-air.defra.gov.uk/air-pollution/daqi" target="_blank" class="text-indigo-600 hover:text-indigo-900 transition duration-300 ease-in-out">
+            Learn more about air quality and health advice
+          </a>
         </div>
-      </div>
-    </div>
 
-    <!--AQI Legend-->
-    <div class="col-span-2 row-span-2 bg-white p-6 rounded-sm shadow-xs">
-      <!-- <div class="font-bold text-lg mb-4">AQI Legend</div> -->
-      <table class="table-auto w-full border-collapse border border-gray-300">
-        <thead>
-          <tr class="border-b-2">
-            <th class="px-4 py-2 border-r w-1/12">AQI Value</th>
-            <th class="px-4 py-2 border-r w-1/12">Air Pollution Banding</th>
-            <th class="px-4 py-2 border-r max-w-xs">Health Messages for at risk individuals*</th>
-            <th class="px-4 py-2 border-r max-w-xs">Health messages for the general population</th>
-          </tr>
-        </thead>
-        <tbody class="text-sm">
-          <!-- Low Category -->
-          <tr>
-            <td class="px-4 py-2 border-r w-1/12" style="background-color: #a0fc9c;">1</td>
-            <td class="px-4 py-2 border-r max-w-xs" rowspan="3">Low</td>
-            <td class="px-4 py-2 border-r max-w-xs" rowspan="3">
-              Enjoy your usual outdoor activities
-            </td>
-            <td class="px-4 py-2" rowspan="3">
-              Enjoy your usual outdoor activities
-            </td>
-          </tr>
-          <tr>
-            <td class="px-4 py-2 border-r w-1/12" style="background-color: #38fc04;">2</td>
-          </tr>
-          <tr class="border-b-2">
-            <td class="px-4 py-2 border-r w-1/12" style="background-color: #38cc04;">3</td>
-          </tr>
-          <!-- Moderate Category -->
-          <tr>
-            <td class="px-4 py-2 border-r w-1/12" style="background-color: #fffc04;">4</td>
-            <td class="px-4 py-2 border-r max-w-xs" rowspan="3">Moderate</td>
-            <td class="px-4 py-2 border-r max-w-xs" rowspan="3">
-              Adults and children with lung problems, and adults with heart problems, who experience symptoms, should consider reducing strenuous physical activity, particularly outdoors.	
-            </td>
-            <td class="px-4 py-2" rowspan="3">
-              Enjoy your usual outdoor activities
-            </td>
-          </tr>
-          <tr>
-            <td class="px-4 py-2 border-r w-1/12" style="background-color: #fccc04;">5</td>
-          </tr>
-          <tr class="border-b-2">
-            <td class="px-4 py-2 border-r w-1/12" style="background-color: #ff9c04;">6</td>
-          </tr>
-          <!-- High Category -->
-          <tr>
-            <td class="px-4 py-2 border-r w-1/12" style="background-color: #ff6464;">7</td>
-            <td class="px-4 py-2 border-r max-w-xs" rowspan="3">High</td>
-            <td class="px-4 py-2 border-r max-w-xs" rowspan="3">
-              Adults and children with lung problems, and adults with heart problems, should reduce strenuous physical exertion, particularly outdoors, and particularly if they experience symptoms. People with asthma may find they need to use their reliever inhaler more often. Older people should also reduce physical exertion.	
-            </td>
-            <td class="px-4 py-2 max-w-xs" rowspan="3">
-              Anyone experiencing discomfort such as sore eyes, cough or sore throat should consider reducing activity, particularly outdoors.
-            </td>
-          </tr>
-          <tr>
-            <td class="px-4 py-2 border-r w-1/12" style="background-color: #ff0404;">8</td>
-          </tr>
-          <tr class="border-b-2">
-            <td class="px-4 py-2 border-r w-1/12" style="background-color: #a00404;">9</td>
-          </tr>
-          <!-- Very High Category -->
-          <tr>
-            <td class="px-4 py-2 border-r w-1/12" style="background-color: #d034fc;">10</td>
-            <td class="px-4 py-2 border-r w-1/12">Very High</td>
-            <td class="px-4 py-2 border-r max-w-xs">
-              Adults and children with lung problems, adults with heart problems, and older people, should avoid strenuous physical activity. People with asthma may find they need to use their reliever inhaler more often.	            </td>
-            <td class="px-4 py-2 max-w-xs">
-              Reduce physical exertion, particularly outdoors, especially if you experience symptoms such as cough or sore throat.
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      </div>
     </div>
     
-
-    <!-- Info Table-->
-    <div class="bg-white p-2 rounded-sm shadow-xs">
-      <!-- <div class="font-bold text-lg mb-4">INFO</div> -->
-      <table class="table-auto w-full h-full border-collapse border border-gray-300">
-        <tbody class="text-sm">
-          <!--INFO Header-->
-          <tr>
-            <td class="px-4 py-2 font-bold">INFO</td>
+    <!-- Sensor Info Table-->
+    <div class="col-span-2 p-2 mx-auto my-auto rounded-md shadow-lg bg-white">
+      <table class="w-full border-collapse border border-gray-300 text-sm">
+        <tbody>
+          <tr class="font-bold text-gray-800">
+            <td colspan="2" class="px-4 py-3">INFO</td>
           </tr>
           <tr class="bg-gray-100">
             <td class="px-4 py-2">Sensor Type</td>
-            <td id="sensorType" class="sensorType px-4 py-2"></td>
+            <td id="sensorType" class="px-4 py-2"></td>
           </tr>
           <tr>
             <td class="px-4 py-2">ID</td>
@@ -152,15 +126,11 @@
             <td class="px-4 py-2">Last updated</td>
             <td id="lastUpdated" class="px-4 py-2"></td>
           </tr>
-          <!-- <tr>
-            <td class="px-4 py-2">Aggregated missing ticks</td>
-            <td class="px-4 py-2">6 mins</td>
-          </tr> -->
           <tr>
             <td class="px-4 py-2">NO2</td>
             <td id="no2Value" class="px-4 py-2"></td>
           </tr>
-          <tr>
+          <tr class="bg-gray-100">
             <td class="px-4 py-2">PM2.5</td>
             <td id="pm2_5Value" class="px-4 py-2"></td>
           </tr>
@@ -171,18 +141,17 @@
         </tbody>
       </table>
     </div>
- 
+    
   </div>
 
-  <div class="flex flex-col p-5 my-10">
+  <div class="flex flex-col mx-5 my-7">
     <div>
-      <!-- Compare trend Tabs -->
       <ul class="flex">
         <li class="mr-1">
           <button
             class="py-2 px-4 inline-block border-b-2 border-transparent periodTabs"
             id="hourlyTab"
-            onclick="switchPeriodTab(event, 'HourlyData')">
+            onclick="switchPeriodTab(event, 'HourlyBarCharts')">
             Hourly averages
           </button>
         </li>
@@ -190,7 +159,7 @@
           <button
             class="py-2 px-4 inline-block border-b-2 border-transparent periodTabs"
             id="rawTab"
-            onclick="switchPeriodTab(event, 'RawData')">
+            onclick="switchPeriodTab(event, 'RawDataLineCharts')">
             Raw Data
           </button>
         </li>
@@ -199,7 +168,7 @@
 
     <div class="bg-white">
       <!-- Hourly averages bars-->
-      <div id="hourlydata">
+      <div id="hourlyBarCharts">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div class="p-4 border-gray-200 border-2 my-2 rounded-lg bg-white ml-2">
             <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">
@@ -223,7 +192,7 @@
       </div>
 
       <!-- Raw Data Line Charts -->
-      <div id="rawdata">
+      <div id="rawdataLineCharts">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div class="p-4 border-gray-200 border-2 my-2 rounded-lg bg-white ml-2">
             <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">NO2 Data</h2>

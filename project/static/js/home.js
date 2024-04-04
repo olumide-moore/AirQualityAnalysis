@@ -1,4 +1,20 @@
 
+
+function toggleLegend(elementId) {
+  var legend = document.getElementById(elementId);
+  var toggleSymbol = document.getElementById("toggleLegendSymbol");
+  if (legend.style.display === "none") {
+    // legend.style.display = "table-row-group";
+    legend.style.display = "table";
+    toggleSymbol.textContent = '▼'; 
+    // toggleSymbol.textContent = '>'; 
+
+  } else {
+    legend.style.display = "none";
+    // toggleSymbol.textContent = '^'; 
+    toggleSymbol.textContent = '▲'; 
+  }
+}
 function getAQIColor(aqi) {
   if (aqi == 1) return "#a0fc9c"; //Low
   if (aqi == 2) return "#38fc04"; //Low
@@ -25,12 +41,52 @@ function updateAQICards(aqi_data) {
   let no2Div = document.getElementById("no2card");
   let pm2_5Div = document.getElementById("pm2_5card");
   let pm10Div = document.getElementById("pm10card");
-  let no2aqi = getAQIColor(aqi_data.no2);
-  let pm2_5aqi = getAQIColor(aqi_data.pm2_5);
-  let pm10aqi = getAQIColor(aqi_data.pm10);
-  no2Div.style.backgroundColor = no2aqi;
-  pm2_5Div.style.backgroundColor = pm2_5aqi;
-  pm10Div.style.backgroundColor = pm10aqi;
+
+  if (aqi_data.no2) { 
+    let no2aqi_color = getAQIColor(aqi_data.no2); //Get the AQI color for the NO2 value
+    no2Div.style.backgroundColor = no2aqi_color; //Set the background color of the card
+    document.getElementById("no2AQIDesc").textContent = getAQIDescription(aqi_data.no2); //Set the AQI description
+    document.getElementById("no2AQI").textContent = aqi_data.no2; //Set the AQI value
+    document.getElementById("no2card").style.display = "block"; //Show the AQI description
+  } else {
+    no2Div.style.backgroundColor = "#d1d5db"  //Set the background color to grey
+    document.getElementById("no2AQIDesc").textContent = ""; //Set the AQI description to ""
+    document.getElementById("no2card").style.display = "none";
+  }
+  if (aqi_data.pm2_5) {
+    let pm2_5aqi_color = getAQIColor(aqi_data.pm2_5);
+    pm2_5Div.style.backgroundColor = pm2_5aqi_color;
+    document.getElementById("pm2_5AQIDesc").textContent = getAQIDescription(aqi_data.pm2_5);
+    document.getElementById("no2AQI").textContent = aqi_data.pm2_5; //Set the AQI value
+    document.getElementById("pm2_5card").style.display = "block";
+  } else {
+    pm2_5Div.style.backgroundColor = "#d1d5db";
+    document.getElementById("pm2_5AQIDesc").textContent = "";
+    document.getElementById("pm2_5card").style.display = "none";
+  }
+
+  if (aqi_data.pm10) {
+    let pm10aqi_color = getAQIColor(aqi_data.pm10);
+    pm10Div.style.backgroundColor = pm10aqi_color;
+    document.getElementById("pm10AQIDesc").textContent = getAQIDescription(aqi_data.pm10);
+    document.getElementById("no2AQI").textContent = aqi_data.pm10; //Set the AQI value
+    document.getElementById("pm10card").style.display = "block";
+  }
+  else {
+    pm10Div.style.backgroundColor = "#d1d5db";
+    document.getElementById("pm10AQIDesc").textContent = "";
+    document.getElementById("pm10card").style.display = "none";
+  }
+
+}
+
+function updateAvgData(avgData) {
+    if (avgData) {
+      //Update the average values in the table
+      if (avgData.no2)   document.getElementById("no2Value").textContent = avgData.no2;
+      if (avgData.pm2_5)   document.getElementById("pm2_5Value").textContent = avgData.pm2_5;
+      if (avgData.pm10)   document.getElementById("pm10Value").textContent = avgData.pm10;
+    }
 }
 
 function switchPeriodTab(event, tabName) {
@@ -43,12 +99,12 @@ function switchPeriodTab(event, tabName) {
   // Highlight the current tab
   event.currentTarget.className += " font-bold bg-white";
 
-  if (tabName == "HourlyData") {
-    document.getElementById("hourlydata").style.display = "block";
-    document.getElementById("rawdata").style.display = "none";
-  } else if (tabName == "RawData") {
-    document.getElementById("hourlydata").style.display = "none";
-    document.getElementById("rawdata").style.display = "block";
+  if (tabName == "HourlyBarCharts") {
+    document.getElementById("hourlyBarCharts").style.display = "block";
+    document.getElementById("rawdataLineCharts").style.display = "none";
+  } else if (tabName == "RawDataLineCharts") {
+    document.getElementById("hourlyBarCharts").style.display = "none";
+    document.getElementById("rawdataLineCharts").style.display = "block";
   }
 }
 
@@ -342,18 +398,8 @@ function fetchData() {
         }
         updateLineCharts(data.rawdata);
         updateHourlyAvgCharts(data.hourly_avgs, data.hourly_aqis);
-        let aqiData = data.aqi_data;
-        updateAQICards(aqiData);
-        avgData = data.avg_data;
-        if (avgData) {
-          //Update the average values in the table
-          document.getElementById("no2Value").textContent = avgData.no2;
-          document.getElementById("pm2_5Value").textContent = avgData.pm2_5;
-          document.getElementById("pm10Value").textContent = avgData.pm10;
-          document.getElementById("no2AQIDesc").textContent = getAQIDescription(aqiData.no2);
-          document.getElementById("pm2_5AQIDesc").textContent = getAQIDescription(aqiData.pm2_5);
-          document.getElementById("pm10AQIDesc").textContent = getAQIDescription(aqiData.pm10);
-        }
+        updateAQICards(data.aqi_data);
+        updateAvgData(data.avg_data);
         //Update the sensor type and id in the table
         document.getElementById("sensorType").textContent = sensortype;
         document.getElementById("sensorId").textContent = sensorid;
