@@ -32,10 +32,10 @@ function switchDaysComparisonTab(event, tabName) {
   // Highlight the current tab
   event.currentTarget.className += " font-bold bg-white";
 
-  let sensortype1 = document.getElementById("sensorTypeSelect1").value;
-  let sensorid1 = document.getElementById("sensorIdSelect1").value;
-  let sensortype2 = document.getElementById("sensorTypeSelect2").value;
-  let sensorid2 = document.getElementById("sensorIdSelect2").value;
+  let sensortype1 = document.getElementById("sensorType1").value;
+  let sensorid1 = document.getElementById("sensorId1").value;
+  let sensortype2 = document.getElementById("sensorType2").value;
+  let sensorid2 = document.getElementById("sensorId2").value;
   let date = document.getElementById("dateInput").value;
  
   let dates = [date];
@@ -137,7 +137,6 @@ function createBoxPlotChartObj(chartId){
  });
   canvas.chartInstance.update();
 }
-
 
 function updateCompareLineCharts(data) {
   if (data) {
@@ -259,21 +258,18 @@ function updateCorrelationCards(correlations) {
   document.getElementById("pm10correlation").textContent = pm10;
 }
 
-
-
-
-
 function fetchData() {
-  let sensortype1 = document.getElementById("sensorTypeSelect1").value;
-  let sensorid1 = document.getElementById("sensorIdSelect1").value;
+  let sensortype1 = document.getElementById("sensorType1").value;
+  let sensorid1 = document.getElementById("sensorId1").value;
 
-  let sensortype2 = document.getElementById("sensorTypeSelect2").value;
-  let sensorid2 = document.getElementById("sensorIdSelect2").value;
-
-
-  if (!sensortype1 || !sensorid1 || !sensortype2 || !sensorid2) return; //if no sensor is selected, return
-  
+  let sensortype2 = document.getElementById("sensorType2").value;
+  let sensorid2 = document.getElementById("sensorId2").value;
   let date=document.getElementById("dateInput").value;
+
+
+  if(!(isString(sensortype1) && isInteger(sensorid1)  && isString(sensortype2) && isInteger(sensorid2) && isValidDate(date))) {
+    return;
+  }
   fetch(`/compare-sensors-data/${sensortype1}/${sensorid1}/${sensortype2}/${sensorid2}/${date}`)
     .then((response) => response.json())
     .then((data) => {
@@ -283,7 +279,7 @@ function fetchData() {
             document.getElementById("table-sensorType1").textContent = sensor1info.type;
             document.getElementById("table-sensorId1").textContent = sensor1info.id;
             if (sensor1info.last_updated){
-              let last_updated = new Date(`${sensor1info.last_updated["obs_date"]} ${sensor1info.last_updated["obs_time_utc"]}`);
+              let last_updated = new Date(sensor1info.last_updated);
               document.getElementById("table-lastUpdated1").textContent = relativeTime(last_updated);
             }else{
               document.getElementById("table-lastUpdated1").textContent = "No data";
@@ -291,7 +287,7 @@ function fetchData() {
             document.getElementById("table-sensorType2").textContent = sensor2info.type;
             document.getElementById("table-sensorId2").textContent = sensor2info.id;
             if (sensor2info.last_updated){
-              last_updated = new Date(`${sensor2info.last_updated["obs_date"]} ${sensor2info.last_updated["obs_time_utc"]}`);
+              last_updated = new Date(sensor2info.last_updated);
               document.getElementById("table-lastUpdated2").textContent = relativeTime(last_updated);
             }else{
               document.getElementById("table-lastUpdated2").textContent = "No data";

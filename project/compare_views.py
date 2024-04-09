@@ -1,9 +1,16 @@
-from .services import *
+from .services.sensor_data_fetcher import SensorDataFetcher
+from .services.data_processor import DataProcessor
+
 from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
 
-data_fetcher1= SensorDataFetcher(requiredConcentrations=['no2', 'particulatepm10', 'particulatepm2_5'])
-data_fetcher2= SensorDataFetcher(requiredConcentrations=['no2', 'particulatepm10', 'particulatepm2_5'])
+from datetime import datetime
+import numpy as np
 
+fetcher1= SensorDataFetcher(requiredConcentrations=['no2', 'particulatepm10', 'particulatepm2_5'])
+fetcher2= SensorDataFetcher(requiredConcentrations=['no2', 'particulatepm10', 'particulatepm2_5'])
+
+@login_required
 def compare_sensors_days(request, sensor_type1, sensor_id1, sensor_type2, sensor_id2, dates):
     """
     Compares the data for two sensors for the given dates.
@@ -31,47 +38,40 @@ def compare_sensors_days(request, sensor_type1, sensor_id1, sensor_type2, sensor
         return JsonResponse(
             {'error': 'Invalid date format'}
         )
-    if 'data_fetcher1' not in globals():
-        global data_fetcher1
-        data_fetcher1= SensorDataFetcher(requiredConcentrations=['no2', 'particulatepm10', 'particulatepm2_5'])
-    if 'data_fetcher2' not in globals():
-        global data_fetcher2
-        data_fetcher2= SensorDataFetcher(requiredConcentrations=['no2', 'particulatepm10', 'particulatepm2_5'])
+    #Check if the two the sensors is linked to fetcher1 or fetcher2 respectively, if not, link them
+    if fetcher1.get_sensor_type() != sensor_type1:
+        fetcher1.set_sensor_type(sensor_type1)
+        fetcher1.set_sensor_id(sensor_id1)
+    if fetcher1.get_sensor_id() != sensor_id1:
+        fetcher1.set_sensor_id(sensor_id1)
 
-    #Check if the two the sensors is linked to data_fetcher1 or data_fetcher2, if not, link them
-    if data_fetcher1.getSensorType() != sensor_type1:
-        data_fetcher1.setSensorType(sensor_type1)
-        data_fetcher1.setSensorId(sensor_id1)
-    if data_fetcher1.getSensorId() != sensor_id1:
-        data_fetcher1.setSensorId(sensor_id1)
-
-    if data_fetcher2.getSensorType() != sensor_type2:
-        data_fetcher2.setSensorType(sensor_type2)
-        data_fetcher2.setSensorId(sensor_id2)
-    if data_fetcher2.getSensorId() != sensor_id2:
-        data_fetcher2.setSensorId(sensor_id2)
+    if fetcher2.get_sensor_type() != sensor_type2:
+        fetcher2.set_sensor_type(sensor_type2)
+        fetcher2.set_sensor_id(sensor_id2)
+    if fetcher2.get_sensor_id() != sensor_id2:
+        fetcher2.set_sensor_id(sensor_id2)
     
     sensors_data=[]
     
-    for data_fetcher in [data_fetcher1, data_fetcher2]:
+    for fetcher in [fetcher1, fetcher2]:
         dates_clone= dates.copy()
         dates_raw_data= {}
-        for date in list(data_fetcher.cacheRawData.keys()):
+        for date in list(fetcher.cacheRawData.keys()):
             if date in dates_clone:
-                dates_raw_data[date]= data_fetcher.cacheRawData[date]
+                dates_raw_data[date]= fetcher.cacheRawData[date]
                 dates_clone.remove(date)
         if dates_clone:
-            rawdata= data_fetcher.getRawData(dates_clone)
+            rawdata= fetcher.fetch_raw_data(dates_clone)
             dates_raw_data.update(rawdata)
-        data_fetcher.updateCache(dates_raw_data)
+        fetcher.update_cache(dates_raw_data)
         all_dates= sorted(dates_raw_data.keys(), reverse=True)
-        all_dates_data= [data_fetcher.convert_df_to_dict(dates_raw_data[date]) for date in all_dates]
+        all_dates_data= [DataProcessor.convert_df_to_dict(dates_raw_data[date]) for date in all_dates]
         all_dates= [date.strftime('%a, %d-%b') for date in all_dates]
         sensors_data.append({'dates': all_dates, 
                              'no2': [data['no2'] for data in all_dates_data], 
                              'pm2_5': [data['pm2_5'] for data in all_dates_data], 
                              'pm10': [data['pm10'] for data in all_dates_data],
-                             'id': data_fetcher.getSensorId()})
+                             'id': fetcher.get_sensor_id()})
     # print(sensors_data)
 
     
@@ -80,6 +80,7 @@ def compare_sensors_days(request, sensor_type1, sensor_id1, sensor_type2, sensor
     )
     
 
+@login_required
 def compare_sensors_data(request, sensor_type1, sensor_id1, sensor_type2, sensor_id2, date):
     """
     Compares the data for two sensors for the given date.
@@ -104,91 +105,55 @@ def compare_sensors_data(request, sensor_type1, sensor_id1, sensor_type2, sensor
         return JsonResponse(
             {'error': 'Invalid date format'}
         )
-    if 'data_fetcher1' not in globals():
-        global data_fetcher1
-        data_fetcher1= SensorDataFetcher(requiredConcentrations=['no2', 'particulatepm10', 'particulatepm2_5'])
-    if 'data_fetcher2' not in globals():
-        global data_fetcher2
-        data_fetcher2= SensorDataFetcher(requiredConcentrations=['no2', 'particulatepm10', 'particulatepm2_5'])
-
-    #Check if the two the sensors is linked to data_fetcher1 or data_fetcher2, if not, link them
-    if data_fetcher1.getSensorType() != sensor_type1:
-        data_fetcher1.setSensorType(sensor_type1)
-        data_fetcher1.setSensorId(sensor_id1)
-    if data_fetcher1.getSensorId() != sensor_id1:
-        data_fetcher1.setSensorId(sensor_id1)
+    #Check if the two the sensors is linked to fetcher1 or fetcher2, if not, link them
+    if fetcher1.get_sensor_type() != sensor_type1:
+        fetcher1.set_sensor_type(sensor_type1)
+        fetcher1.set_sensor_id(sensor_id1)
+    if fetcher1.get_sensor_id() != sensor_id1:
+        fetcher1.set_sensor_id(sensor_id1)
         
-    if data_fetcher2.getSensorType() != sensor_type2:
-        data_fetcher2.setSensorType(sensor_type2)
-        data_fetcher2.setSensorId(sensor_id2)
-    if data_fetcher2.getSensorId() != sensor_id2:
-        data_fetcher2.setSensorId(sensor_id2)
+    if fetcher2.get_sensor_type() != sensor_type2:
+        fetcher2.set_sensor_type(sensor_type2)
+        fetcher2.set_sensor_id(sensor_id2)
+    if fetcher2.get_sensor_id() != sensor_id2:
+        fetcher2.set_sensor_id(sensor_id2)
 
-    if date!=date.today() and date in data_fetcher1.cacheRawData:
-        rawdata1= data_fetcher1.cacheRawData[date]
+    if date!=date.today() and date in fetcher1.cacheRawData:
+        date_rawdata1= fetcher1.cacheRawData[date]
     else:
-        rawdata1 = data_fetcher1.getRawData([date]).get(date)
-        data_fetcher1.updateCache({date: rawdata1})
-    if date!=date.today() and date in data_fetcher2.cacheRawData:
-        rawdata2= data_fetcher2.cacheRawData[date]
+        date_rawdata1 = fetcher1.fetch_raw_data([date]).get(date)
+        fetcher1.update_cache({date: date_rawdata1})
+    if date!=date.today() and date in fetcher2.cacheRawData:
+        date_rawdata2= fetcher2.cacheRawData[date]
     else:
-        rawdata2 = data_fetcher2.getRawData([date]).get(date)
-        data_fetcher2.updateCache({date: rawdata2})
+        date_rawdata2 = fetcher2.fetch_raw_data([date]).get(date)
+        fetcher2.update_cache({date: date_rawdata2})
 
 
-    hourly_rawdata1= data_fetcher1.getHourlyRawData(rawdata1,date)
-    hourly_rawdata2= data_fetcher2.getHourlyRawData(rawdata2,date)
+    date_hourly_rawdata1= DataProcessor.extract_hrly_raw_data(date_rawdata1)
+    date_hourly_rawdata2= DataProcessor.extract_hrly_raw_data(date_rawdata2)
     
-    sensors_info= {'sensor1': {'type': data_fetcher1.getSensorType(), 'id': data_fetcher1.getSensorId(), 'last_updated': data_fetcher1.getLastUpdatedTime()},
-                     'sensor2': {'type': data_fetcher2.getSensorType(), 'id': data_fetcher2.getSensorId(), 'last_updated': data_fetcher2.getLastUpdatedTime()}
+    sensors_info= {'sensor1': {'type': fetcher1.get_sensor_type(), 'id': fetcher1.get_sensor_id(), 'last_updated': fetcher1.fetch_last_updated()},
+                     'sensor2': {'type': fetcher2.get_sensor_type(), 'id': fetcher2.get_sensor_id(), 'last_updated': fetcher2.fetch_last_updated()}
                      }
     
-    rawdata1_dict= data_fetcher1.convert_df_to_dict(rawdata1)
-    rawdata2_dict= data_fetcher2.convert_df_to_dict(rawdata2)
-    rawdata1_dict['id']= data_fetcher1.getSensorId()
-    rawdata2_dict['id']= data_fetcher2.getSensorId()
-    hourly_rawdata1['id']= data_fetcher1.getSensorId()
-    hourly_rawdata2['id']= data_fetcher2.getSensorId()
+    date_rawdata1_dict= DataProcessor.convert_df_to_dict(date_rawdata1)
+    date_rawdata2_dict= DataProcessor.convert_df_to_dict(date_rawdata2)
+    date_rawdata1_dict['id']= fetcher1.get_sensor_id()
+    date_rawdata2_dict['id']= fetcher2.get_sensor_id()
+    date_hourly_rawdata1['id']= fetcher1.get_sensor_id()
+    date_hourly_rawdata2['id']= fetcher2.get_sensor_id()
 
-    correlations= get_correlations(rawdata1, rawdata2)
+    correlations= DataProcessor.get_correlations(date_rawdata1, date_rawdata2)
 
     return JsonResponse(
         {'sensors_info': sensors_info,
-            'rawdata': {'sensor1': rawdata1_dict, 'sensor2': rawdata2_dict},
-            'hourly_rawdata': {'sensor1': hourly_rawdata1, 'sensor2': hourly_rawdata2},
+            'rawdata': {'sensor1': date_rawdata1_dict, 'sensor2': date_rawdata2_dict},
+            'hourly_rawdata': {'sensor1': date_hourly_rawdata1, 'sensor2': date_hourly_rawdata2},
             'correlations': correlations
         }
     )
 
-def get_correlations(data1, data2) -> dict:
-    """
-    Returns the correlations for each pollutant between two data sets using the Pearson correlation coefficient after sampling the data into minute intervals.
-
-    :param data1: list - the first data set
-    :param data2: list - the second data set
-    :return: dict - a dictionary containing the correlation between the two data sets for each concentration
-    """
-    rawdata1_minutely= data1.resample('min').mean()
-    rawdata2_minutely= data2.resample('min').mean()
-
-    #Ensure that the two data sets have the same index for the correlation calculation
-    common_index= rawdata1_minutely.index.intersection(rawdata2_minutely.index)
-    rawdata1_minutely= rawdata1_minutely.loc[common_index]
-    rawdata2_minutely= rawdata2_minutely.loc[common_index]
-    if data1.columns.to_list()!=data2.columns.to_list(): return {}
-    correlation= {}
-    for conc in data1.columns:
-        if rawdata1_minutely[conc].empty or rawdata2_minutely[conc].empty:
-            corr= None
-        else:
-            corr= rawdata1_minutely[conc].corr(rawdata2_minutely[conc])
-        if corr in [np.nan, None]:   
-            corr= None
-        else:
-            corr= round(corr, 2)
-        correlation[conc]= corr
-    return correlation
-    
 
 
     

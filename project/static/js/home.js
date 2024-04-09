@@ -49,7 +49,7 @@ function updateAQICards(aqi_data) {
     document.getElementById("no2AQI").textContent = aqi_data.no2; //Set the AQI value
     document.getElementById("no2card").style.display = "block"; //Show the AQI description
   } else {
-    no2Div.style.backgroundColor = "#d1d5db"  //Set the background color to grey
+    no2Div.style.backgroundColor = "#d1d5db"  //Set the default background color to grey
     document.getElementById("no2AQIDesc").textContent = ""; //Set the AQI description to ""
     document.getElementById("no2card").style.display = "none";
   }
@@ -57,7 +57,7 @@ function updateAQICards(aqi_data) {
     let pm2_5aqi_color = getAQIColor(aqi_data.pm2_5);
     pm2_5Div.style.backgroundColor = pm2_5aqi_color;
     document.getElementById("pm2_5AQIDesc").textContent = getAQIDescription(aqi_data.pm2_5);
-    document.getElementById("no2AQI").textContent = aqi_data.pm2_5; //Set the AQI value
+    document.getElementById("pm2_5AQI").textContent = aqi_data.pm2_5; //Set the AQI value
     document.getElementById("pm2_5card").style.display = "block";
   } else {
     pm2_5Div.style.backgroundColor = "#d1d5db";
@@ -69,7 +69,7 @@ function updateAQICards(aqi_data) {
     let pm10aqi_color = getAQIColor(aqi_data.pm10);
     pm10Div.style.backgroundColor = pm10aqi_color;
     document.getElementById("pm10AQIDesc").textContent = getAQIDescription(aqi_data.pm10);
-    document.getElementById("no2AQI").textContent = aqi_data.pm10; //Set the AQI value
+    document.getElementById("pm10AQI").textContent = aqi_data.pm10; //Set the AQI value
     document.getElementById("pm10card").style.display = "block";
   }
   else {
@@ -117,8 +117,8 @@ function switchDaysComparisonTab(event, tabName) {
   // Highlight the current tab
   event.currentTarget.className += " font-bold bg-white";
 
-  let sensortype = document.getElementById("sensorTypeSelect1").value;
-  let sensorid = document.getElementById("sensorIdSelect1").value;
+  let sensortype = document.getElementById("sensorType1").value;
+  let sensorid = document.getElementById("sensorId1").value;
   let date = document.getElementById("dateInput").value;
  
   let dates = [date];
@@ -305,6 +305,15 @@ function createComparisonMultiChart(chartId) {
         legend: {
           display: true,
         },
+        tooltip: {
+          callbacks: {
+            title: function(tooltipItems) {
+              let date = new Date(tooltipItems[0].parsed.x); 
+              let timeString = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+              return timeString;
+            }
+          }
+        }
       },
       responsive: true,
       maintainAspectRatio: false,
@@ -377,22 +386,22 @@ function updateComparisonMultiCharts(data) {
 
 
 function fetchData() {
-  let sensortype = document.getElementById("sensorTypeSelect1").value;
-  let sensorid = document.getElementById("sensorIdSelect1").value;
-
-  if (!sensortype || !sensorid)  return;
-
+  let sensortype = document.getElementById("sensorType1").value;
+  let sensorid = document.getElementById("sensorId1").value;
   let date=document.getElementById("dateInput").value;
+
+  if(!(isString(sensortype) && isInteger(sensorid) && isValidDate(date))) {
+    return;
+  }
+
   fetch(`/sensor-data/${sensortype}/${sensorid}/${date}`)
     .then((response) => response.json())
     .then((data) => {
       if (data) {
         if (data.last_updated) {
-          let lastUpdated = new Date(
-            `${data.last_updated["obs_date"]} ${data.last_updated["obs_time_utc"]}`
-          );
+          let last_updated = new Date(data.last_updated);
           document.getElementById("lastUpdated").textContent =
-            relativeTime(lastUpdated);
+            relativeTime(last_updated);
         } else {
           document.getElementById("lastUpdated").textContent = "No data";
         }
@@ -422,7 +431,8 @@ for (let param of parameters) {
 
 
 //Hide the sensor Type 2 and sensor ID 2 dropdowns by defaults
-document.getElementById("sensorDiv2").style.display = "none";
+document.getElementById("sensorTypeDiv2").style.display = "none";
+document.getElementById("sensorIdDiv2").style.display = "none";
 
 
 //Fetch the sensor IDs and update the charts on page load

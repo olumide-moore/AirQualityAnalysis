@@ -1,12 +1,12 @@
 
 function sensorTypeChanged(dropdownNumber) {
-  let sensorTypeSelect = document.getElementById(`sensorTypeSelect${dropdownNumber}`);
-  let sensorIdSelect = document.getElementById(`sensorIdSelect${dropdownNumber}`);
+  let sensorTypeSelect = document.getElementById(`sensorType${dropdownNumber}`);
+  let sensorId = document.getElementById(`sensorId${dropdownNumber}`);
    // Getting the selected sensor type id 
    let selectedType = sensorTypeSelect.options[sensorTypeSelect.selectedIndex];
    let typeid = selectedType.getAttribute("data-id");
     fetchSensorIDs(typeid).then((sensorIds) => {
-      populateSensorOptions(sensorIdSelect, sensorIds); //populate sensor ids of first sensor list
+      populateSensorOptions(sensorId, sensorIds); //populate sensor ids of first sensor list
       fetchData();
     });
   }
@@ -36,3 +36,19 @@ function sensorTypeChanged(dropdownNumber) {
   }
   
   
+function initializeInputs(sensorTypeChangeIndex) {
+  document.addEventListener('DOMContentLoaded', function() {
+    let sensorTypeSelect = document.getElementById("sensorType1"); //get select of sensor type list
+    if (init_sensorType1 !="None")  sensorTypeSelect.value = init_sensorType1; //set sensor type 1
+    //get the type id of selected sensor type
+    let selectedType = sensorTypeSelect.options[sensorTypeSelect.selectedIndex];
+    let typeid1 = selectedType.getAttribute("data-id"); //get sensor type id 1
+    let sensorIdSelect1 = document.getElementById("sensorId1"); //get select of sensor id list
+    if (init_date !="None")  document.getElementById('dateInput').value = init_date;
+    fetchSensorIDs(typeid1).then((sensorData1) => {
+      populateSensorOptions(sensorIdSelect1, sensorData1); //populate sensor ids of first sensor list
+      if (init_sensorId1 !="None")   sensorIdSelect1.value = `${init_sensorId1}`; //set sensor id 1
+      sensorTypeChanged(sensorTypeChangeIndex); //fetch for the first or second sensor
+    });
+    });
+}

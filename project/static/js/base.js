@@ -1,17 +1,35 @@
-function navigateToPage(page) {
-  //Get sensor type1, sensor id1, and date selected on the page if found
-  let sensorType1 = document.getElementById("sensorTypeSelect1");
-  let sensorId1 = document.getElementById("sensorIdSelect1");
-  let date = document.getElementById("dateInput");
 
-  if (sensorType1 && sensorId1 && date) {
-    let sensorType1Value = sensorType1.value;
-    let sensorId1Value = sensorId1.value;
-    let dateValue = date.value;
-    window.location.href=`/${page}?sensorType1=${sensorType1Value}&sensorId1=${sensorId1Value}&date=${dateValue}`;
-  } else {
-      window.location.href=`/${page}`;
+function isInteger(variable) {
+    return Number.isInteger(Number(variable));
+}
+
+function isString(variable) {
+    return typeof variable === "string" || variable instanceof String;
+}
+
+function isValidDate(dateStr) {
+    var date = new Date(dateStr);
+    if (!(date instanceof Date && !isNaN(date)) ) return false;
+    if (date.getFullYear() < 1970 || date.getFullYear() > 2262) return false; //year range permissble by pandas Timestamp
+    if (date.getMonth() < 0 || date.getMonth() > 11) return false;
+    if (date.getDate() < 1 || date.getDate() > 31) return false;
+
+    return true;
+}
+
+
+function navigateToPage(page) {
+  let sensortype1 = document.getElementById("sensorType1").value;
+  let sensorid1 = document.getElementById("sensorId1").value;
+  let date = document.getElementById("dateInput").value;
+
+ 
+  if(!(isString(sensortype1) && isInteger(sensorid1) && isValidDate(date))) {
+      return;
   }
+  let form = document.getElementById("inputsForm");
+  form.action = `/${page}/`;
+  form.submit();
 }
 
 function relativeTime(date) {
@@ -42,7 +60,7 @@ function relativeTime(date) {
       return Math.floor(interval) + " minutes ago";
     }
     return Math.floor(seconds) + " seconds ago";
-  }
+}
 
 function createLineChartObj(chartId) {
     let canvas = document.getElementById(chartId);
@@ -106,7 +124,7 @@ function createLineChartObj(chartId) {
       },
     });
     canvas.chartInstance.update();
-  }
+}
   
 
 
