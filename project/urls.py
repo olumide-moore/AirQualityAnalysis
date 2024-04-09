@@ -20,7 +20,7 @@ from . import views, compare_views
 import debug_toolbar
 
 urlpatterns = [
-    # path('admin/', admin.site.urls),
+    path('admin/', admin.site.urls),
     path("", views.home, name="home"),
     path("", include("authentication.urls")),
     path("home/", views.home, name="home"),
