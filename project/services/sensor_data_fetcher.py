@@ -3,6 +3,7 @@ from django.db.models import DateTimeField, F
 from django.db.models.expressions import Func, Value
 import pandas as pd
 import numpy as np
+from datetime import datetime, date
 
 class SensorDataFetcher():
     """SensorDataFetcher fetches sensor data from the database. IT also utilizes a cache to store some previously fetched data to reduce the number of database queries"""
@@ -87,13 +88,24 @@ class SensorDataFetcher():
         :param rawdata: dict - keys datetime (the date to be updated), values: pd.DataFrame (raw data for the given date
         :param hourly_avgs: (optional) dict - keys datetime (the date to be updated), values: pd.DataFrame (hourly averages for the given date
         """
+        if not isinstance(rawdata, dict):
+            raise ValueError('Invalid raw data')
+        if not all(isinstance(k, date) and isinstance(v, pd.DataFrame) for k, v in rawdata.items()):
+            raise ValueError('Invalid raw data')
+        if hourly_avgs is not None:
+            if not isinstance(hourly_avgs, dict):
+                raise ValueError('Invalid hourly averages')
+            if not all(isinstance(k, date) and isinstance(v, dict) for k, v in hourly_avgs.items()):
+                raise ValueError('Invalid hourly averages')
+        
         dates = list(self.cacheRawData.keys())
-        #if the cache has more than 50 days of data, reset the cache
+        #if the cache has more than 50 days of data, remove half of the data from the cache
         if len(self.cacheRawData) > self.CACHE_LIMIT:
             #remove half of the data from the cache
-            for date in dates[:len(dates)//2]:
-                self.cacheRawData.pop(date, None)
-                if hourly_avgs: self.cacheHourlyAvgs.pop(date, None)
+            for dat in dates[:len(dates)//2]: #since python 3 dictionary are ordered
+                                                #so the first half of the dates will be the oldest dates
+                self.cacheRawData.pop(dat, None)
+                if hourly_avgs: self.cacheHourlyAvgs.pop(dat, None)
         self.cacheRawData.update(rawdata)
         if hourly_avgs: self.cacheHourlyAvgs.update(hourly_avgs)
 

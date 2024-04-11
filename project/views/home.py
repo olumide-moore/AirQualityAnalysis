@@ -1,7 +1,7 @@
-from .services.sensor_data_fetcher import SensorDataFetcher
-from .services.data_processor import DataProcessor
-from .services.aqi_calculator import AQICalculator
-from .services import sensors_metadata
+from ..services.sensor_data_fetcher import SensorDataFetcher
+from ..services.data_processor import DataProcessor
+from ..services.aqi_calculator import AQICalculator
+from ..services import sensors_metadata
 
 from django.http import JsonResponse
 from django.shortcuts import render
@@ -19,31 +19,11 @@ import numpy as np
 fetcher= SensorDataFetcher(requiredConcentrations=['no2', 'particulatepm10', 'particulatepm2_5'])
 
 @login_required
-def home(request):
-    sensorType1= request.POST.get('sensorType1')
-    sensorId1= request.POST.get('sensorId1')
-    date= request.POST.get('dateInput')
+def initialize_page(request):
     sensor_types= sensors_metadata.get_all_sensor_types()
-    print(sensorType1, sensorId1, date)
     return render(request, 'home.html',
-                  context={'sensor_types': sensor_types,
-                            'sensorType1': sensorType1,
-                            'sensorId1': sensorId1,
-                            'date': date}
-                           )
-
-@login_required
-def compare(request):
-    sensorType1= request.POST.get('sensorType1')
-    sensorId1= request.POST.get('sensorId1')
-    date= request.POST.get('dateInput')
-    sensor_types= sensors_metadata.get_all_sensor_types()
-    print(sensorType1, sensorId1, date)
-    return render(request, 'compare.html',
-                context={'sensor_types': sensor_types,
-                         'sensorType1': sensorType1,
-                            'sensorId1': sensorId1,
-                            'date': date})
+                  context={'sensor_types': sensor_types}
+                  )
 
 @login_required
 def get_sensor_ids(request, type_id):
@@ -51,66 +31,12 @@ def get_sensor_ids(request, type_id):
     return JsonResponse(
         {'sensors': sensorsids}
     )
+@login_required
+def aqiguide(request):
+    return render(request, 'aqiguide.html')
 
 @login_required
-def compare_days(request, sensor_type, sensor_id, dates):
-    """
-    Fetches the raw data from the database for the given sensor_id and the required concentrations for the given dates.
-    If the data is not available in the cache, it fetches the data from the database and updates the cache.
-
-    :param sensor_type: str - the type of the sensor
-    :param sensor_id: int - the id of the sensor
-    :param dates: str - a comma separated string of dates in the format 'YYYY-MM-DD'
-    :return: JsonResponse - a json response containing the data for the given dates
-    :side effect: updates the cache with the fetched data
-
-    """
-    # ## Test data
-    # date='2024-01-22'
-    # sensor_type='Zephyr'
-    # sensor_id = 60
-    # dates='2024-01-17,2024-01-18,2024-01-19,2024-01-20,2024-01-21,2024-01-22'
-    # ## End test data
-    try:
-        dates = dates.split(',')
-        dates = [datetime.strptime(date, '%Y-%m-%d').date() for date in dates]
-    except:
-        return JsonResponse(
-            {'error': 'Invalid date format'}
-        )
-    if fetcher.get_sensor_type() != sensor_type:
-        fetcher.set_sensor_type(sensor_type)
-        fetcher.set_sensor_id(sensor_id)
-    if fetcher.get_sensor_id() != sensor_id:
-        fetcher.set_sensor_id(sensor_id)
-    
-    dates_hourly_data={}
-    #Check if the data for the given dates is available in the cache
-    for date in list(fetcher.cacheHourlyAvgs.keys()):
-        if date in dates:
-            dates_hourly_data[date]= fetcher.cacheHourlyAvgs[date]
-            # print(dates_hourly_data[date])
-            dates.remove(date)
-    if dates: #If the data for some dates is not available in the cache, fetch the data from the database
-        dates_raw_data = fetcher.fetch_raw_data(dates)
-        for date, data in dates_raw_data.items():
-            hourly_avgs = DataProcessor.calc_hrly_avgs_pollutants(data, date)
-            dates_hourly_data[date]= hourly_avgs
-        #update the cache
-        fetcher.update_cache(dates_raw_data, dates_hourly_data)
-    #sort the data by date
-    sorted_dates= sorted(dates_hourly_data.keys(), reverse=True)
-
-    # dates_hourly_data = {key.strftime('%a, %d-%b'): value for key, value in dates_hourly_data.items()}
-    dates_hourly_data = {key.strftime('%a, %d-%b'): dates_hourly_data[key] for key in sorted_dates}
-    # print(dates_hourly_data.keys())
-    return JsonResponse(
-        {'data': dates_hourly_data}
-    )
-
-
-@login_required
-def get_sensor_data(request, sensor_type, sensor_id, date):
+def get_data_for_date(request, sensor_type, sensor_id, date):
     """
     Fetches the raw data from the database for the given sensor_id and the required concentrations for the given date.
     If the data is not available in the cache, it fetches the data from the database and updates the cache.
@@ -176,3 +102,60 @@ def get_sensor_data(request, sensor_type, sensor_id, date):
         }
     )
     
+
+@login_required
+def get_data_across_dates(request, sensor_type, sensor_id, dates):
+    """
+    Fetches the raw data from the database for the given sensor_id and the required concentrations for the given dates.
+    If the data is not available in the cache, it fetches the data from the database and updates the cache.
+
+    :param sensor_type: str - the type of the sensor
+    :param sensor_id: int - the id of the sensor
+    :param dates: str - a comma separated string of dates in the format 'YYYY-MM-DD'
+    :return: JsonResponse - a json response containing the data for the given dates
+    :side effect: updates the cache with the fetched data
+
+    """
+    # ## Test data
+    # date='2024-01-22'
+    # sensor_type='Zephyr'
+    # sensor_id = 60
+    # dates='2024-01-17,2024-01-18,2024-01-19,2024-01-20,2024-01-21,2024-01-22'
+    # ## End test data
+    try:
+        dates = dates.split(',')
+        dates = [datetime.strptime(date, '%Y-%m-%d').date() for date in dates]
+    except:
+        return JsonResponse(
+            {'error': 'Invalid date format'}
+        )
+    if fetcher.get_sensor_type() != sensor_type:
+        fetcher.set_sensor_type(sensor_type)
+        fetcher.set_sensor_id(sensor_id)
+    if fetcher.get_sensor_id() != sensor_id:
+        fetcher.set_sensor_id(sensor_id)
+    
+    dates_hourly_data={}
+    #Check if the data for the given dates is available in the cache
+    for date in list(fetcher.cacheHourlyAvgs.keys()):
+        if date in dates:
+            dates_hourly_data[date]= fetcher.cacheHourlyAvgs[date]
+            # print(dates_hourly_data[date])
+            dates.remove(date)
+    if dates: #If the data for some dates is not available in the cache, fetch the data from the database
+        dates_raw_data = fetcher.fetch_raw_data(dates)
+        for date, data in dates_raw_data.items():
+            hourly_avgs = DataProcessor.calc_hrly_avgs_pollutants(data, date)
+            dates_hourly_data[date]= hourly_avgs
+        #update the cache
+        fetcher.update_cache(dates_raw_data, dates_hourly_data)
+    #sort the data by date
+    sorted_dates= sorted(dates_hourly_data.keys(), reverse=True)
+
+    # dates_hourly_data = {key.strftime('%a, %d-%b'): value for key, value in dates_hourly_data.items()}
+    dates_hourly_data = {key.strftime('%a, %d-%b'): dates_hourly_data[key] for key in sorted_dates}
+    # print(dates_hourly_data.keys())
+    return JsonResponse(
+        {'data': dates_hourly_data}
+    )
+

@@ -32,7 +32,7 @@
         <a href="{% url 'home' %}" class="nav-branding"><img src="{% static 'icons/logo.svg' %}" alt="logo" height="200" width="200"/></a>
         <ul class="nav-menu">
           <li class="nav-item">
-            <a href="#" class="nav-link {% if request.path == '/' %}active{% endif %}" onclick="navigateToPage('home')">Home</a>
+            <a href="{% url 'home' %}" class="nav-link {% if request.path == '/' %}active{% endif %}">Home</a>
           </li>
           <li class="nav-item">
             <a href="#" class="nav-link {% if request.path == '/compare/' %}active{% endif %}" onclick="navigateToPage('compare')">Compare</a>

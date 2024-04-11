@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
-# from datetime import datetime, date
-import datetime
+from datetime import datetime, date
 
 
 class DataProcessor():
@@ -30,13 +29,13 @@ class DataProcessor():
     
 
     @staticmethod
-    def calc_hrly_avgs_pollutants(rawdata, date, minute_threshold=45) -> dict:
+    def calc_hrly_avgs_pollutants(rawdata, dateObj, minute_threshold=45) -> dict:
         """
         Calculates hourly averages across all given pollutants for the given date. It includes a reindexing step to include
         all hours of the day. If the number of minutes for an hour is less than the minute_threshold, None is returned for that hour.
 
         :param rawdata: pd.DataFrame with a DateTimeIndex
-        :param date: datetime.date object representing the date to calculate averages for
+        :param dateObj: datetime.date object representing the date to calculate averages for
         :param minute_threshold: int, the minimum number of minutes required for the hourly average to be calculated
         :return: dict - a dictionary with keys for each pollutant and 'time', each containing a list of hourly averages or None
         """
@@ -44,16 +43,16 @@ class DataProcessor():
             raise ValueError("rawdata must be a pandas DataFrame")
         if not isinstance(rawdata.index, pd.DatetimeIndex):
             raise ValueError("rawdata must have a DateTimeIndex")
-        if not isinstance(date, datetime.date):
+        if not isinstance(dateObj, date):
             raise ValueError("date must be a datetime.date object")
         #Check if the date isn't going to cause overflow in the conversion to ns
-        if date.year < 1970 or date.year > 2262:
+        if dateObj.year < 1970 or dateObj.year > 2262:
             raise ValueError("date must be between 1970 and 2262")
         if not isinstance(minute_threshold, int) or minute_threshold < 0 or minute_threshold > 60:
             raise ValueError("minute_threshold must be int between 0 and 60")
 
-        start = datetime.datetime.combine(date, datetime.datetime.min.time())  # Start of the day with time 00:00:00
-        end = datetime.datetime.combine(date, datetime.datetime.max.time())    # End of the day with time 23:59:59
+        start = datetime.combine(dateObj, datetime.min.time())  # Start of the day with time 00:00:00
+        end = datetime.combine(dateObj, datetime.max.time())    # End of the day with time 23:59:59
         
         data_per_hour = rawdata.resample('h').apply( 
             lambda x: x.mean() if len(x) >= minute_threshold else np.nan)  # Resampling and calculating conditional averages

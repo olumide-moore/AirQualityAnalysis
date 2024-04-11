@@ -56,14 +56,12 @@ function switchDaysComparisonTab(event, tabName) {
     }
   }
   dates=dates.join(',');
-  fetch(`/compare-sensors-days/${sensortype1}/${sensorid1}/${sensortype2}/${sensorid2}/${dates}`)
+  fetch(`/sensors/compare/${sensortype1}/${sensorid1}/and/${sensortype2}/${sensorid2}/dates/${dates}`)
     .then((response) => response.json())
     .then((data) => { 
       if (data) {
         updateDaysBoxPlot(data);
       }
-      // console.log(data);
-      // updateComparisonMultiCharts(data);
     })   
 }
 
@@ -105,23 +103,13 @@ function createBoxPlotChartObj(chartId){
       data: {
 
           datasets: [{
-              // label: label,
-              //disabling the label for now
-              data: [],
-              backgroundColor: "rgba(168,220,84, 1)",
-          //     // borderColor: 'rgb(255, 99, 132)',
-          //     // borderWidth: 1,
-          //     // barThickness: 10,
-          //     // maxBarThickness: 8,
-          //     // hoverBorderColor: "rgba(234, 236, 244, 1)",
-          //     // hoverBorderWidth: 3
-          },
-          {
-              // label: label,
-              //disabling the label for now
-              data: [],
-              backgroundColor: "rgba(256,220,44, 1)",
-          }]
+                data: [],
+                backgroundColor: "rgba(168,220,84, 1)",
+                  },
+                  {
+                data: [],
+                backgroundColor: "rgba(256,220,44, 1)",
+            }],
       },
       options: {
           plugins: {
@@ -174,6 +162,19 @@ function updateCompareLineCharts(data) {
   }
 }
 
+function updateAvgData(data) {
+  if (data) {
+    let sensor1info = data.sensor1;
+    let sensor2info = data.sensor2;
+    if (sensor1info.no2) document.getElementById("table-no2Value1 ").textContent = sensor1info.no2;
+    if (sensor1info.pm2_5) document.getElementById("table-pm2_5Value1").textContent = sensor1info.pm2_5;
+    if (sensor1info.pm10) document.getElementById("table-pm10Value1").textContent = sensor1info.pm10;
+    if (sensor2info.no2) document.getElementById("table-no2Value2").textContent = sensor2info.no2;
+    if (sensor2info.pm2_5) document.getElementById("table-pm2_5Value2").textContent = sensor2info.pm2_5;
+    if (sensor2info.pm10) document.getElementById("table-pm10Value2").textContent = sensor2info.pm10;
+  }
+}
+
 function updateScatterPlot(data) {
   if (data) {
     let sensor1data = data.sensor1;
@@ -192,7 +193,6 @@ function updateScatterPlot(data) {
         }
         chartObj.data.datasets[0].data = scatterData;
         chartObj.update();
-      
     }
   }
 }
@@ -209,10 +209,6 @@ function updateBoxPlot(data) {
         let param_lower = param.toLowerCase();
         let curData1 = sensor1data[param_lower];
         let curData2 = sensor2data[param_lower];
-        // let firsthour1 = sensor1param[0];
-        // let firsthour2 = sensor2param[0];
-        // chartObj.data.datasets[0].data = [firsthour1];
-        // chartObj.data.datasets[1].data = [firsthour2];
         chartObj.data.datasets[0].data = curData1;
         chartObj.data.datasets[1].data = curData2;
 
@@ -270,7 +266,7 @@ function fetchData() {
   if(!(isString(sensortype1) && isInteger(sensorid1)  && isString(sensortype2) && isInteger(sensorid2) && isValidDate(date))) {
     return;
   }
-  fetch(`/compare-sensors-data/${sensortype1}/${sensorid1}/${sensortype2}/${sensorid2}/${date}`)
+  fetch(`/sensors/compare/${sensortype1}/${sensorid1}/and/${sensortype2}/${sensorid2}/date/${date}`)
     .then((response) => response.json())
     .then((data) => {
       if (data) {
@@ -292,18 +288,45 @@ function fetchData() {
             }else{
               document.getElementById("table-lastUpdated2").textContent = "No data";
             }
+            updateAvgData(data.avg_data);
             updateCompareLineCharts(data.rawdata);
             updateScatterPlot(data.rawdata);
             updateBoxPlot(data.hourly_rawdata);
             updateCorrelationCards(data.correlations);
 
-          }
+            //Whichever tab is active between last 7 days and same day last 7 weeks, update the data
+            let activeTab = document.querySelector(".multiChartComparisonTabs.font-bold.bg-white");
+            if (activeTab && activeTab.id) {
+              document.getElementById(activeTab.id).click();
+            }
+            }
           })
     .catch((error) => {
       console.error("Error fetching data:", error);
     });
 }
 
+
+async function initializeInputs() {
+  await sensorTypeChanged(2, fetchdata=false); // Ensure this completes before proceeding
+  
+  let sensorTypeSelect = document.getElementById("sensorType1");
+  if (init_sensorType1 != "None") sensorTypeSelect.value = init_sensorType1;
+  
+  let selectedType = sensorTypeSelect.options[sensorTypeSelect.selectedIndex];
+  let typeid1 = selectedType.getAttribute("data-id");
+  let sensorIdSelect1 = document.getElementById("sensorId1");
+  
+  if (init_date != "None") document.getElementById('dateInput').value = init_date;
+
+  let sensorIDs = await fetchSensorIDs(typeid1); // Use await here to ensure this completes
+  populateSensorIDs(sensorIdSelect1, sensorIDs);
+  
+  if (init_sensorId1 != "None") sensorIdSelect1.value = `${init_sensorId1}`;
+
+  fetchData();
+
+}
     
 
 //Create the chart objects
@@ -314,5 +337,14 @@ for (let param of parameters) {
   createBoxPlotChartObj(`${param.toLowerCase()}DaysBoxPlot`);
 }
 
-//Select the raw data tab by default
-document.getElementById("rawDataTab").click();
+
+window.onload = function() {
+  initializeInputs().then(() => {
+    //Select the hourly data tab by default
+    document.getElementById("rawdataTab").click();
+    //Select the last 7 days tab by default
+    document.getElementById("last7daysTab").click();
+
+  });
+  
+}

@@ -96,10 +96,17 @@
             </tbody>
           </table>
         </div>
-        <div class="py-4">
-          <a href="https://uk-air.defra.gov.uk/air-pollution/daqi" target="_blank" class="text-indigo-600 hover:text-indigo-900 transition duration-300 ease-in-out">
-            Learn more about the air quality index and health advice
-          </a>
+        <div class="grid grid-cols-1 py-4">
+          <div>
+            <a href="{%url 'aqiguide' %}" target="_blank" class="text-indigo-600 hover:text-indigo-900 transition duration-300 ease-in-out">
+                How was the AQI calculated?
+            </a>
+            </div>
+            <div>
+            <a href="https://uk-air.defra.gov.uk/air-pollution/daqi" target="_blank" class="text-indigo-600 hover:text-indigo-900 transition duration-300 ease-in-out">
+              Learn more about the air quality index and health advice
+            </a>
+          </div>
         </div>
 
       </div>
@@ -125,15 +132,15 @@
             <td id="lastUpdated" class="px-4 py-2"></td>
           </tr>
           <tr>
-            <td class="px-4 py-2 font-bold">NO2</td>
+            <td class="px-4 py-2 font-bold">NO2 (µg m-3)</td>
             <td id="no2Value" class="px-4 py-2"></td>
           </tr>
           <tr class="bg-gray-100">
-            <td class="px-4 py-2 font-bold">PM2.5</td>
+            <td class="px-4 py-2 font-bold">PM2.5 (µg m-3)</td>
             <td id="pm2_5Value" class="px-4 py-2"></td>
           </tr>
           <tr>
-            <td class="px-4 py-2 font-bold">PM10</td>
+            <td class="px-4 py-2 font-bold">PM10 (µg m-3)</td>
             <td id="pm10Value" class="px-4 py-2"></td>
           </tr>
         </tbody>
@@ -146,19 +153,11 @@
     <div>
       <ul class="flex">
         <li class="mr-1">
-          <button
-            class="py-2 px-4 inline-block periodTabs"
-            id="hourlyTab"
-            onclick="switchPeriodTab(event, 'HourlyBarCharts')">
-            Hourly averages
+          <button class="py-2 px-4 inline-block periodTabs" id="hourlyTab" onclick="switchPeriodTab(event, 'HourlyBarCharts')"> Hourly averages
           </button>
         </li>
         <li class="mr-1">
-          <button
-            class="py-2 px-4 inline-block periodTabs"
-            id="rawTab"
-            onclick="switchPeriodTab(event, 'RawDataLineCharts')">
-            Raw Data
+          <button class="py-2 px-4 inline-block periodTabs" id="rawdataTab" onclick="switchPeriodTab(event, 'RawDataLineCharts')"> Raw Data
           </button>
         </li>
       </ul>
@@ -218,18 +217,10 @@
       <!-- Compare trend Tabs -->
       <ul class="flex">
         <li class="mr-1">
-          <button
-            class="py-2 px-4 inline-block multiChartComparisonTabs"
-            onclick="switchDaysComparisonTab(event, 'Last7Days')">
-            Last 7 Days
-          </button>
+          <button id="last7daysTab" class="py-2 px-4 inline-block multiChartComparisonTabs" onclick="switchDaysComparisonTab(event, 'Last7Days')"> Last 7 Days</button>
         </li>
         <li class="mr-1">
-          <button
-            class="py-2 px-4 inline-block multiChartComparisonTabs"
-            onclick="switchDaysComparisonTab(event, 'SameDayLast7Weeks')">
-            Same day for last 7 weeks
-          </button>
+          <button  id="last7weeksTab" class="py-2 px-4 inline-block multiChartComparisonTabs" onclick="switchDaysComparisonTab(event, 'SameDayLast7Weeks')"> Same day for last 7 weeks</button>
         </li>
       </ul>
     </div>
@@ -268,11 +259,5 @@
 
 {% block scripts %}
 <script type="text/javascript" src="{% static 'js/home.js' %}"></script>
-<script type="text/javascript">
-  const init_sensorType1="{{ sensorType1|escapejs }}";
-  const init_sensorId1="{{ sensorId1|escapejs }}";
-  const init_date="{{ date|escapejs }}";
-  initializeInputs(1)
-</script>
 
 {% endblock %}

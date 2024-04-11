@@ -1,5 +1,4 @@
 
-
 function toggleLegend(elementId) {
   var legend = document.getElementById(elementId);
   var toggleSymbol = document.getElementById("toggleLegendSymbol");
@@ -139,7 +138,7 @@ function switchDaysComparisonTab(event, tabName) {
     }
   }
   dates=dates.join(',');
-  fetch(`/compare-days/${sensortype}/${sensorid}/${dates}`)
+  fetch(`/sensor/${sensortype}/${sensorid}/dates/${dates}`)
     .then((response) => response.json())
     .then((data) => { 
       if (data.data) {
@@ -179,111 +178,43 @@ function createBarChartObj(chartId) {
         },
       },
       plugins: {
+        events: [],
         legend: {
           display: false,
         },
+        responsive: true,
       },
       maintainAspectRatio: false,
-      aspectRatio: 1,
-    },
+      aspectRatio: 1
+      },
   });
   canvas.chartInstance.update();
 }
 
 
 function createComparisonMultiChart(chartId) {
+  function createDataset(backgroundColor, borderColor) {
+      return {label: "",
+      data: [],
+      backgroundColor: backgroundColor,
+      borderColor: borderColor,
+      borderWidth: 1.5,
+      pointRadius: 3,
+      pointBackgroundColor: borderColor,
+      lineTension: 0.3,
+      radius: 0,
+    }
+  }
+  let bgColors = ["rgba(168,220,84, 0.3)", "rgba(255,140,100, 0.1)", "rgba(144,164,204, 0.1)", "rgba(232,140,196, 0.1)", "rgba(192,236,244, 0.1)", "rgba(255,220,44, 0.1)", "rgba(232,196,148, 0.1)"];
+  let borderColors = ["rgba(168,220,84, 1)", "rgba(255,140,100, 1)", "rgba(144,164,204, 1)", "rgba(232,140,196, 1)", "rgba(192,236,244, 1)", "rgba(255,220,44, 1)", "rgba(232,196,148, 1)"];
+  let datasets = Array.from({length: bgColors.length}, (_, i) => createDataset(bgColors[i], borderColors[i]));
+ 
   let canvas = document.getElementById(chartId);
   let ctx = canvas.getContext("2d");
   canvas.chartInstance = new Chart(ctx, {
     type: "line", //bar, horizontalBar, pie, line, doughnut, radar, polarArea//bar, horizontalBar, pie, line, doughnut, radar, polarArea
     data: {
-      datasets: [
-        {
-          label: "",
-          //disabling the label for now
-          // type: 'line',
-          data: [],
-          backgroundColor: "rgba(168,220,84, 0.3)",
-          borderColor: "rgba(168,220,84, 1)",
-          borderWidth: 3,
-          pointRadius: 3,
-          pointBackgroundColor: "rgba(168,220,84, 1)",
-          // yAxisID: 'y',
-          lineTension: 0.3,
-          radius: 0,
-        //   fill: true,
-        },
-        {
-          label: "",
-          // type: 'line',
-          data: [],
-          backgroundColor: "rgba(256,140,100, 0.1)",
-          borderColor: "rgba(256,140,100, 1)",
-          borderWidth: 1.5,
-          pointRadius: 3,
-          pointBackgroundColor: "rgba(256,140,100, 1)",
-          // yAxisID: 'y2',
-          lineTension: 0.3,
-          radius: 0,
-        },
-        {
-          label: "",
-          // type: 'line',
-          data: [],
-          backgroundColor: "rgba(144,164,204, 0.1)",
-          borderColor: "rgba(144,164,204, 1)",
-          borderWidth: 1.5,
-          pointRadius: 3,
-          pointBackgroundColor: "rgba(144,164,204, 1)",
-          // yAxisID: 'y2',
-          lineTension: 0.3,
-          radius: 0,
-        },
-        {
-          label: "",
-          data: [],
-          backgroundColor: "rgba(232,140,196, 0.1)",
-          borderColor: "rgba(232,140,196, 1)",
-          borderWidth: 1.5,
-          pointRadius: 3,
-          pointBackgroundColor: "rgba(232,140,196, 1)",
-          lineTension: 0.3,
-          radius: 0,
-        },
-        {
-          label: "",
-          data: [],
-          backgroundColor: "rgba(192,236,244, 0.1)",
-          borderColor: "rgba(192,236,244, 1)",
-          borderWidth: 1.5,
-          pointRadius: 3,
-          pointBackgroundColor: "rgba(192,236,244, 1)",
-          lineTension: 0.3,
-          radius: 0,
-        },
-        {
-          label: "",
-          data: [],
-          backgroundColor: "rgba(256,220,44, 0.1)",
-          borderColor: "rgba(256,220,44, 1)",
-          borderWidth: 1.5,
-          pointRadius: 3,
-          pointBackgroundColor: "rgba(256,220,44, 1)",
-          lineTension: 0.3,
-          radius: 0,
-        },
-        {
-          label: "",
-          data: [],
-          backgroundColor: "rgba(232,196,148, 0.1)",
-          borderColor: "rgba(232,196,148, 1)",
-          borderWidth: 1.5,
-          pointRadius: 3,
-          pointBackgroundColor: "rgba(232,196,148, 1)",
-          lineTension: 0.3,
-          radius: 0,
-        },
-      ],
+      datasets: datasets,
     },
     options: {
       scales: {
@@ -335,6 +266,7 @@ function updateLineCharts(data) {
         //Map the time as JS Date objects
         chartObj.data.labels = time.map((x) => new Date(x)); //x-axis labels
         chartObj.data.datasets[0].data = data[param.toLowerCase()]; //y-axis data
+        // chartsUpdateAfterDraw(chartObj);
         chartObj.update();
       }
     }
@@ -356,6 +288,7 @@ function updateHourlyAvgCharts(avgData, aqiData) {
           chartObj.data.datasets[0].backgroundColor = aqiData[
             param.toLowerCase()
           ].map((x) => getAQIColor(x));
+          // chartsUpdateAfterDraw(chartObj);
           chartObj.update();
         }
       }
@@ -393,8 +326,7 @@ function fetchData() {
   if(!(isString(sensortype) && isInteger(sensorid) && isValidDate(date))) {
     return;
   }
-
-  fetch(`/sensor-data/${sensortype}/${sensorid}/${date}`)
+  fetch(`/sensor/${sensortype}/${sensorid}/date/${date}`)
     .then((response) => response.json())
     .then((data) => {
       if (data) {
@@ -405,14 +337,19 @@ function fetchData() {
         } else {
           document.getElementById("lastUpdated").textContent = "No data";
         }
-        updateLineCharts(data.rawdata);
-        updateHourlyAvgCharts(data.hourly_avgs, data.hourly_aqis);
         updateAQICards(data.aqi_data);
         updateAvgData(data.avg_data);
+        updateLineCharts(data.rawdata);
+        updateHourlyAvgCharts(data.hourly_avgs, data.hourly_aqis);
         //Update the sensor type and id in the table
         document.getElementById("sensorType").textContent = sensortype;
         document.getElementById("sensorId").textContent = sensorid;
 
+        //Whichever tab is active between last 7 days and same day last 7 weeks, update the data
+        let activeTab = document.querySelector(".multiChartComparisonTabs.font-bold.bg-white");
+        if (activeTab && activeTab.id) {
+          document.getElementById(activeTab.id).click();
+        }
       }
     })
     .catch((error) => {
@@ -429,18 +366,9 @@ for (let param of parameters) {
 }
 
 
-
 //Hide the sensor Type 2 and sensor ID 2 dropdowns by defaults
 document.getElementById("sensorTypeDiv2").style.display = "none";
 document.getElementById("sensorIdDiv2").style.display = "none";
-
-
-//Fetch the sensor IDs and update the charts on page load
-// sensorTypeChanged(1);
-
-//Select the hourly data tab by default
-document.getElementById("hourlyTab").click();
-
 
 
 // let sensor_locations = JSON.parse(document.getElementById('sensor_locations').textContent);
@@ -459,3 +387,11 @@ function createMap(center, zoom) {
   }).addTo(map);
   return map;
 }
+
+
+sensorTypeChanged(1).then(() => {
+  document.getElementById("hourlyTab").click();
+  //Select the last 7 days tab by default
+  document.getElementById("last7daysTab").click();
+  
+});

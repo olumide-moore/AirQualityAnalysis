@@ -2,7 +2,7 @@
 
 {% load static %}
 
-{% block title %}Welcome{% endblock %}
+{% block title %}Compare sensors{% endblock %}
 
 {% block content %}
 
@@ -85,16 +85,19 @@
             <td class="px-4 py-2 font-bold">6 mins</td>
           </tr> -->
           <tr>
-            <td class="px-4 py-2 font-bold">NO2</td>
-            <td class="table-no2Value px-4 py-2"></td>
+            <td class="px-4 py-2 font-bold">NO2 (µg m-3)</td>
+            <td class="table-no2Value1 px-4 py-2"></td>
+            <td class="table-no2Value2 px-4 py-2"></td>
           </tr>
           <tr>
-            <td class="px-4 py-2 font-bold">PM2.5</td>
-            <td class="table-pm2_5Value px-4 py-2"></td>
+            <td class="px-4 py-2 font-bold">PM2.5 (µg m-3)</td>
+            <td class="table-pm2_5Value1 px-4 py-2"></td>
+            <td class="table-pm2_5Value2 px-4 py-2"></td>
           </tr>
           <tr>
-            <td class="px-4 py-2 font-bold">PM10</td>
-            <td class="table-pm10Value px-4 py-2"></td>
+            <td class="px-4 py-2 font-bold">PM10 (µg m-3)</td>
+            <td class="table-pm10Value1 px-4 py-2"></td>
+            <td class="table-pm10Value2 px-4 py-2"></td>
           </tr>
         </tbody>
       </table>
@@ -106,30 +109,18 @@
 
   <div class="flex flex-col p-5 my-10">
     <div>
-      <!-- Compare trend Tabs -->
+      <!-- Plot types tabs -->
       <ul class="flex">
         <li class="mr-1">
-          <button
-            class="py-2 px-4 inline-block border-b-2 border-transparent chartTypeTabs"
-            id="rawDataTab"
-            onclick="switchChartTypeTab(event, 'RawDtaMultiLineCharts')">
-            Raw Data
+          <button class="py-2 px-4 inline-block border-b-2 border-transparent chartTypeTabs" id="rawdataTab" onclick="switchChartTypeTab(event, 'RawDtaMultiLineCharts')"> Raw Data
           </button>
         </li>
         <li class="mr-1">
-          <button
-            class="py-2 px-4 inline-block border-b-2 border-transparent chartTypeTabs"
-            id="scatterTab"
-            onclick="switchChartTypeTab(event, 'ScatterPlots')">
-            Scatter Plots
+          <button class="py-2 px-4 inline-block border-b-2 border-transparent chartTypeTabs" id="scatterTab" onclick="switchChartTypeTab(event, 'ScatterPlots')"> Scatter Plots
           </button>
         </li>
         <li class="mr-1">
-          <button
-            class="py-2 px-4 inline-block border-b-2 border-transparent chartTypeTabs"
-            id="hourlyTab"
-            onclick="switchChartTypeTab(event, 'HourlyBoxPlots')">
-            Hourly Boxplots
+          <button class="py-2 px-4 inline-block border-b-2 border-transparent chartTypeTabs" id="hourlyTab" onclick="switchChartTypeTab(event, 'HourlyBoxPlots')"> Hourly Boxplots
           </button>
       </ul>
     </div>
@@ -199,17 +190,11 @@
       <!-- Compare trend Tabs -->
       <ul class="flex">
         <li class="mr-1">
-          <button
-            class="py-2 px-4 inline-block border-b-2 border-transparent multiChartComparisonTabs"
-            onclick="switchDaysComparisonTab(event, 'Last7Days')">
-            Last 7 Days
+          <button id="last7daysTab" class="py-2 px-4 inline-block border-b-2 border-transparent multiChartComparisonTabs" onclick="switchDaysComparisonTab(event, 'Last7Days')"> Last 7 Days
           </button>
         </li>
         <li class="mr-1">
-          <button
-            class="py-2 px-4 inline-block border-b-2 border-transparent multiChartComparisonTabs"
-            onclick="switchDaysComparisonTab(event, 'SameDayLast7Weeks')">
-            Same day for last 7 weeks
+          <button id="last7weeksTab" class="py-2 px-4 inline-block border-b-2 border-transparent multiChartComparisonTabs" onclick="switchDaysComparisonTab(event, 'SameDayLast7Weeks')"> Same day for last 7 weeks
           </button>
         </li>
       </ul>
@@ -251,7 +236,6 @@
   const init_sensorType1="{{ sensorType1|escapejs }}";
   const init_sensorId1="{{ sensorId1|escapejs }}";
   const init_date="{{ date|escapejs }}";
-  initializeInputs(2);
 </script>
 
 {% endblock %}

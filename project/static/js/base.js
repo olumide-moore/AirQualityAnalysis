@@ -1,4 +1,26 @@
 
+Chart.register({
+  id: 'NoData',
+  afterDraw: function(chart) {
+
+  if (chart.data.datasets.length === 0 || chart.data.datasets.every((dataset) => dataset.data.length === 0 || dataset.data.every((x) => x === null))) {
+
+      const ctx = chart.ctx;
+      const width = chart.width;
+      const height = chart.height;
+      chart.clear();
+
+      ctx.save();
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.font = `1.5rem ${window.getComputedStyle(document.body).fontFamily}`;
+
+      ctx.fillText('No data', width / 2, height / 2);
+      ctx.restore();
+    }
+  }
+});
+
 function isInteger(variable) {
     return Number.isInteger(Number(variable));
 }
@@ -27,9 +49,19 @@ function navigateToPage(page) {
   if(!(isString(sensortype1) && isInteger(sensorid1) && isValidDate(date))) {
       return;
   }
-  let form = document.getElementById("inputsForm");
-  form.action = `/${page}/`;
-  form.submit();
+  
+  if (page === "compare") {
+    let form = document.getElementById("inputsForm");
+    form.action = `/${page}/`;
+    form.submit();
+    initializeInputs().then(() => {
+      //Select the raw data tab by default
+      document.getElementById("rawdataTab").click();
+      //Select the last 7 days tab by default
+      document.getElementById("last7daysTab").click();
+      
+    });
+  }
 }
 
 function relativeTime(date) {

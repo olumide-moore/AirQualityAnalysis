@@ -4,7 +4,7 @@ class AQICalculator():
     PM10_BREAKPOINTS = [16, 33, 50, 58, 66, 75, 83, 91, 100]
 
     @staticmethod
-    def _get_index(avg, breakpoints):
+    def _get_index(avg : float, breakpoints: list) -> int:
         """
         Helper method to get the AQI index based on the average concentration and the breakpoints
         
@@ -20,35 +20,39 @@ class AQICalculator():
         return 10
 
     @staticmethod
-    def get_no2_index(no2_avg) -> int:
+    def get_no2_index(no2_avg : float) -> int:
         """
         Get the AQI value for NO2 based on the average concentration
+        
         :param no2_avg: float
         :return: int - the AQI value"""
         return AQICalculator._get_index(no2_avg, AQICalculator.NO2_BREAKPOINTS)
 
     @staticmethod
-    def get_pm2_5_index(pm2_5_avg) -> int:
+    def get_pm2_5_index(pm2_5_avg :float) -> int:
         """
         Get the AQI value for PM2.5 based on the average concentration
+        
         :param pm2_5_avg: float
         :return: int - the AQI value"""
         return AQICalculator._get_index(pm2_5_avg, AQICalculator.PM2_5_BREAKPOINTS)
     
 
     @staticmethod
-    def get_pm10_index(pm10_avg) -> int:
+    def get_pm10_index(pm10_avg : float) -> int:
         """
         Get the AQI value for PM10 based on the average concentration
+        
         :param pm10_avg: float
         :return: int - the AQI value"""
         return AQICalculator._get_index(pm10_avg, AQICalculator.PM10_BREAKPOINTS)
 
     @staticmethod
-    def compute_hourly_aqis(hourly_avgs) -> dict:
+    def compute_hourly_aqis(hourly_avgs : dict) -> dict:
         """
         Computes the hourly AQI values for the 3 pollutants
         The AQI values and their corresponding categories are then returned as a dictionary
+        
         :param hourly_avgs: dict - a dictionary of key- value pairs consisting of the time span and the hourly averages for the pollutants -> {'time': [time1, time2, ...], 'no2': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 'pm2_5': [...], 'pm10': [...]}
         :return: dict - a dictionary of key- value pairs representing the hourly AQI values for the 3 pollutants
                 --> {'no2': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 'pm2_5': [...], 'pm10': [...]}

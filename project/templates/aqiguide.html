@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+
+{% block title %}AQI Guide{% endblock %}
+
+{% block content %}
+
+
+
+<div>
+
+    <table class="table-auto w-full border-collapse border border-gray-300">
+        <thead>
+          <tr class="border-b-2">
+            <th class="px-4 py-2 border-r w-1/12">AQI Value</th>
+            <th class="px-4 py-2 border-r w-1/12">Air Pollution Banding</th>
+            <th class="px-4 py-2 border-r max-w-xs">Health Messages for at risk individuals*</th>
+            <th class="px-4 py-2 border-r max-w-xs">Health messages for the general population</th>
+          </tr>
+        </thead>
+        <tbody class="text-sm">
+          <!-- Low Category -->
+          <tr>
+            <td class="px-4 py-2 border-r w-1/12" style="background-color: #a0fc9c;">1</td>
+            <td class="px-4 py-2 border-r max-w-xs" rowspan="3">Low</td>
+            <td class="px-4 py-2 border-r max-w-xs" rowspan="3">
+              Enjoy your usual outdoor activities
+            </td>
+            <td class="px-4 py-2" rowspan="3">
+              Enjoy your usual outdoor activities
+            </td>
+          </tr>
+          <tr>
+            <td class="px-4 py-2 border-r w-1/12" style="background-color: #38fc04;">2</td>
+          </tr>
+          <tr class="border-b-2">
+            <td class="px-4 py-2 border-r w-1/12" style="background-color: #38cc04;">3</td>
+          </tr>
+          <!-- Moderate Category -->
+          <tr>
+            <td class="px-4 py-2 border-r w-1/12" style="background-color: #fffc04;">4</td>
+            <td class="px-4 py-2 border-r max-w-xs" rowspan="3">Moderate</td>
+            <td class="px-4 py-2 border-r max-w-xs" rowspan="3">
+              Adults and children with lung problems, and adults with heart problems, who experience symptoms, should consider reducing strenuous physical activity, particularly outdoors.	
+            </td>
+            <td class="px-4 py-2" rowspan="3">
+              Enjoy your usual outdoor activities
+            </td>
+          </tr>
+          <tr>
+            <td class="px-4 py-2 border-r w-1/12" style="background-color: #fccc04;">5</td>
+          </tr>
+          <tr class="border-b-2">
+            <td class="px-4 py-2 border-r w-1/12" style="background-color: #ff9c04;">6</td>
+          </tr>
+          <!-- High Category -->
+          <tr>
+            <td class="px-4 py-2 border-r w-1/12" style="background-color: #ff6464;">7</td>
+            <td class="px-4 py-2 border-r max-w-xs" rowspan="3">High</td>
+            <td class="px-4 py-2 border-r max-w-xs" rowspan="3">
+              Adults and children with lung problems, and adults with heart problems, should reduce strenuous physical exertion, particularly outdoors, and particularly if they experience symptoms. People with asthma may find they need to use their reliever inhaler more often. Older people should also reduce physical exertion.	
+            </td>
+            <td class="px-4 py-2 max-w-xs" rowspan="3">
+              Anyone experiencing discomfort such as sore eyes, cough or sore throat should consider reducing activity, particularly outdoors.
+            </td>
+          </tr>
+          <tr>
+            <td class="px-4 py-2 border-r w-1/12" style="background-color: #ff0404;">8</td>
+          </tr>
+          <tr class="border-b-2">
+            <td class="px-4 py-2 border-r w-1/12" style="background-color: #a00404;">9</td>
+          </tr>
+          <!-- Very High Category -->
+          <tr>
+            <td class="px-4 py-2 border-r w-1/12" style="background-color: #d034fc;">10</td>
+            <td class="px-4 py-2 border-r w-1/12">Very High</td>
+            <td class="px-4 py-2 border-r max-w-xs">
+              Adults and children with lung problems, adults with heart problems, and older people, should avoid strenuous physical activity. People with asthma may find they need to use their reliever inhaler more often.	            </td>
+            <td class="px-4 py-2 max-w-xs">
+              Reduce physical exertion, particularly outdoors, especially if you experience symptoms such as cough or sore throat.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+</div>
+
+{% endblock %}
