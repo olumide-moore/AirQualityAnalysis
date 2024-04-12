@@ -16,7 +16,7 @@ import numpy as np
 # data_table= AllSensorMeasurementsWithLocationsSc
 # data_table= AllPlumeMeasurements
 #49, 47,29, 11
-fetcher= SensorDataFetcher(requiredConcentrations=['no2', 'particulatepm10', 'particulatepm2_5'])
+fetcher= SensorDataFetcher()
 
 @login_required
 def initialize_page(request):

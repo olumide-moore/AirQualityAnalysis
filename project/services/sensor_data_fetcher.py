@@ -7,12 +7,21 @@ from datetime import datetime, date
 
 class SensorDataFetcher():
     """SensorDataFetcher fetches sensor data from the database. IT also utilizes a cache to store some previously fetched data to reduce the number of database queries"""
-    def __init__(self, requiredConcentrations):
+    def __init__(self):
         self.sensors_table = None
         self.sensor_type = None
         self.sensor_id = None
         self.last_updated = None
-        self.requiredConcentrations = requiredConcentrations
+        self.requiredConcentrations = {
+            'date_field':   'obs_date', 
+            'time_field':   'obs_time_utc', 
+            'no2_field':    'no2', 
+            'pm10_field':   'particulatepm10',
+            'pm2_5_field':  'particulatepm2_5'
+            }
+        self.date_field = 'obs_date'
+        self.time_field = 'obs_time_utc'
+        self.concentrations_fields= {'no2_field': 'no2', 'pm10_field': 'particulatepm10', 'pm2_5_field': 'particulatepm2_5'}
 
         self.cacheRawData = {}
         self.cacheHourlyAvgs = {}
@@ -69,11 +78,11 @@ class SensorDataFetcher():
         if self.last_updated is not None: 
             return self.last_updated #return the last updated date if it is already fetched
         try:
-            last_updated_record = self.sensors_table.objects.values('obs_date','obs_time_utc').filter(sensor_id=self.sensor_id).latest('obs_date', 'obs_time_utc')
-            if last_updated_record.get('obs_date') and last_updated_record.get('obs_time_utc'):
-                self.last_updated = f"{last_updated_record['obs_date']} {last_updated_record['obs_time_utc']}"
-            elif last_updated_record.get('obs_date'):
-                self.last_updated = last_updated_record['obs_date'] + ' 00:00:00'
+            last_updated_record = self.sensors_table.objects.values(self.date_field,self.time_field).filter(sensor_id=self.sensor_id).latest(self.date_field, self.time_field)
+            if last_updated_record.get(self.date_field) and last_updated_record.get(self.time_field):
+                self.last_updated = f"{last_updated_record[self.date_field]} {last_updated_record[self.time_field]}"
+            elif last_updated_record.get(self.date_field):
+                self.last_updated = last_updated_record[self.date_field] + ' 00:00:00'
             else:
                 self.last_updated = None
         except self.sensors_table.DoesNotExist:
@@ -120,26 +129,26 @@ class SensorDataFetcher():
             #Fetch the raw data from database for the given sensor_id and the required concentrations for the given dates
             try:
                 rawdata = (
-                self.sensors_table.objects.values('obs_date', 'obs_time_utc', *self.requiredConcentrations)
+                self.sensors_table.objects.values(self.date_field, self.time_field, *self.concentrations_fields.values())
                 .filter(sensor_id=self.sensor_id)
                 .annotate( 
                     datetime = ConcatDateTime(
-                    F('obs_date'), 
+                    F(self.date_field), 
                     Value(' '), 
-                    F('obs_time_utc')
+                    F(self.time_field)
                     )
-                ).filter(obs_date__in=dates).order_by('datetime')
+                ).filter(**{f"{self.date_field}__in":dates}).order_by('datetime')
                 )
             except self.sensors_table.DoesNotExist:
                 rawdata = {'datetime': []}
-                rawdata.update({c: [] for c in self.requiredConcentrations})
+                rawdata.update({c: [] for c in self.concentrations_fields.values()})
         else:
             #If sensor table is not set, return an empty dataframe
             rawdata = {'datetime': []}
-            rawdata.update({c: [] for c in self.requiredConcentrations})
+            rawdata.update({c: [] for c in self.concentrations_fields.values()})
         #Convert the queryset to a pandas dataframe
-        rawdata = pd.DataFrame(rawdata, columns=['datetime', *self.requiredConcentrations]) #convert the queryset to a pandas dataframe
-        rawdata.rename(columns={'particulatepm2_5':'pm2_5', 'particulatepm10':'pm10', 'particulatepm1':'pm1'}, inplace=True) #Rename the columns
+        rawdata = pd.DataFrame(rawdata, columns=['datetime', *self.concentrations_fields.values()])
+        rawdata.rename(columns={self.concentrations_fields['no2_field']: 'no2', self.concentrations_fields['pm10_field']: 'pm10', self.concentrations_fields['pm2_5_field']: 'pm2_5'}, inplace=True) #rename the columns to the required names
         rawdata['datetime'] = pd.to_datetime(rawdata['datetime']) #convert the datetime column to a pandas datetime object
         rawdata.set_index('datetime', inplace=True) #set the datetime column as the index
         rawdata.replace(np.nan, None, inplace=True) #replace nan values with None

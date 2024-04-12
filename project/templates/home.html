@@ -2,7 +2,7 @@
 
 {% load static %}
 
-{% block title %}Welcome{% endblock %}
+{% block title %}Home{% endblock %}
 
 {% block content %}
 
@@ -92,23 +92,15 @@
                 <td class="px-4 py-2 border-r border-gray-400" style="background-color: #ff0404;">8</td>
                 <td class="px-4 py-2 border-r border-gray-400" style="background-color: #a00404;">9</td>
                 <td class="px-4 py-2 border-r border-gray-400" style="background-color: #d034fc;">10</td>
-            </tr>
+              </tr>
             </tbody>
           </table>
         </div>
-        <div class="grid grid-cols-1 py-4">
-          <div>
-            <a href="{%url 'aqiguide' %}" target="_blank" class="text-indigo-600 hover:text-indigo-900 transition duration-300 ease-in-out">
-                How was the AQI calculated?
-            </a>
-            </div>
-            <div>
-            <a href="https://uk-air.defra.gov.uk/air-pollution/daqi" target="_blank" class="text-indigo-600 hover:text-indigo-900 transition duration-300 ease-in-out">
-              Learn more about the air quality index and health advice
-            </a>
-          </div>
-        </div>
-
+      </div>
+      <div>
+          <a href="{%url 'aqiguide' %}" class="text-indigo-600 hover:text-indigo-900 transition duration-300 ease-in-out">
+            Recommended Actions and Health Advice
+          </a>
       </div>
     </div>
     
@@ -116,31 +108,31 @@
     <div class="col-span-2 p-2 w-1/2 lg:ml-auto shadow-sm">
       <table class="w-full border-collapse border-[1px] text-sm">
         <tbody>
-          <tr class="font-bold text-gray-800">
+          <tr class="font-semibold text-gray-800">
             <td colspan="2" class="px-4 py-3"></td>
           </tr>
           <tr class="bg-gray-100">
-            <td class="px-4 py-2 font-bold">Sensor Type</td>
+            <td class="px-4 py-2 font-semibold">Sensor Type</td>
             <td id="sensorType" class="px-4 py-2"></td>
           </tr>
           <tr>
-            <td class="px-4 py-2 font-bold">ID</td>
+            <td class="px-4 py-2 font-semibold">ID</td>
             <td id="sensorId" class="px-4 py-2"></td>
           </tr>
           <tr class="bg-gray-100">
-            <td class="px-4 py-2 font-bold">Last updated</td>
+            <td class="px-4 py-2 font-semibold">Last updated</td>
             <td id="lastUpdated" class="px-4 py-2"></td>
           </tr>
           <tr>
-            <td class="px-4 py-2 font-bold">NO2 (µg m-3)</td>
+            <td class="px-4 py-2 font-semibold">NO2 (µg m-3)</td>
             <td id="no2Value" class="px-4 py-2"></td>
           </tr>
           <tr class="bg-gray-100">
-            <td class="px-4 py-2 font-bold">PM2.5 (µg m-3)</td>
+            <td class="px-4 py-2 font-semibold">PM2.5 (µg m-3)</td>
             <td id="pm2_5Value" class="px-4 py-2"></td>
           </tr>
           <tr>
-            <td class="px-4 py-2 font-bold">PM10 (µg m-3)</td>
+            <td class="px-4 py-2 font-semibold">PM10 (µg m-3)</td>
             <td id="pm10Value" class="px-4 py-2"></td>
           </tr>
         </tbody>
@@ -209,9 +201,9 @@
 
   </div>
 
-  <div class="flex flex-col p-5 my-10">
+  <div class="flex flex-col p-5 mt-10">
     <div>
-      <h2 class="text-lg font-medium leading-6 text-gray-900 mb-4 px-4 py-3 inline-block hover:border-gray-300">
+      <h2 class="text-lg font-medium leading-6 text-gray-900 mb-4 py-3 inline-block hover:border-gray-300">
         Compare selected date against:
       </h2>
       <!-- Compare trend Tabs -->
@@ -254,7 +246,8 @@
   </div>
 
   <!-- Map -->
-  <div id="map" class="z-0"></div>
+  <!-- <div id="map" class="z-0"></div> -->
+
 {% endblock %}
 
 {% block scripts %}

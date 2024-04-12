@@ -9,8 +9,8 @@ from django.contrib.auth.decorators import login_required
 from datetime import datetime
 import numpy as np
 
-fetcher1= SensorDataFetcher(requiredConcentrations=['no2', 'particulatepm10', 'particulatepm2_5'])
-fetcher2= SensorDataFetcher(requiredConcentrations=['no2', 'particulatepm10', 'particulatepm2_5'])
+fetcher1= SensorDataFetcher()
+fetcher2= SensorDataFetcher()
 
 @login_required
 def initialize_page(request):

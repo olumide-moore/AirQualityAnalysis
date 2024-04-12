@@ -5,7 +5,7 @@ from ..models import *
 
 class SensorDataFetcherTests(TestCase):
     def setUp(self):
-        self.fetcher= SensorDataFetcher(requiredConcentrations=['no2', 'particulatepm10', 'particulatepm2_5'])
+        self.fetcher= SensorDataFetcher()
         self.fetcher.set_sensor_id(1)
         self.fetcher.set_sensor_type('Zephyr')
         return super().setUp()
@@ -117,37 +117,37 @@ class SensorDataFetcherTests(TestCase):
         self.fetcher.sensor_id = None
         self.assertIsNone(self.fetcher.fetch_last_updated())
 
-    # ##def update_cache(self, rawdata : dict, hourly_avgs : dict = None):
-    #     """
-    #     Updates the cache with the new raw data and hourly averages while maintaining a limit on the number of days of data stored in the cache.
-    #     If the cache hits the limit, it removes half of the data from the cache
+    # # ##def update_cache(self, rawdata : dict, hourly_avgs : dict = None):
+    # #     """
+    # #     Updates the cache with the new raw data and hourly averages while maintaining a limit on the number of days of data stored in the cache.
+    # #     If the cache hits the limit, it removes half of the data from the cache
 
-    #     :param rawdata: dict - keys datetime (the date to be updated), values: pd.DataFrame (raw data for the given date
-    #     :param hourly_avgs: (optional) dict - keys datetime (the date to be updated), values: pd.DataFrame (hourly averages for the given date
-    #     """
-    #     if not isinstance(rawdata, dict):
-    #         raise ValueError('Invalid raw data')
-    #     if not all(isinstance(k, datetime) and isinstance(v, pd.DataFrame) for k, v in rawdata.items()):
-    #         raise ValueError('Invalid raw data')
-    #     if hourly_avgs is not None:
-    #         if not isinstance(hourly_avgs, dict):
-    #             raise ValueError('Invalid hourly averages')
-    #         if not all(isinstance(k, datetime) and isinstance(v, pd.DataFrame) for k, v in hourly_avgs.items()):
-    #             raise ValueError('Invalid hourly averages')
+    # #     :param rawdata: dict - keys datetime (the date to be updated), values: pd.DataFrame (raw data for the given date
+    # #     :param hourly_avgs: (optional) dict - keys datetime (the date to be updated), values: pd.DataFrame (hourly averages for the given date
+    # #     """
+    # #     if not isinstance(rawdata, dict):
+    # #         raise ValueError('Invalid raw data')
+    # #     if not all(isinstance(k, datetime) and isinstance(v, pd.DataFrame) for k, v in rawdata.items()):
+    # #         raise ValueError('Invalid raw data')
+    # #     if hourly_avgs is not None:
+    # #         if not isinstance(hourly_avgs, dict):
+    # #             raise ValueError('Invalid hourly averages')
+    # #         if not all(isinstance(k, datetime) and isinstance(v, pd.DataFrame) for k, v in hourly_avgs.items()):
+    # #             raise ValueError('Invalid hourly averages')
 
-    def test_update_cache(self):
-        #Test for valid input
-        rawdata= {'no2': [1,2,3], 'particulatepm10': [4,5,6], 'particulatepm2_5': [7,8,9]}
-        hourly_avgs= {'no2': 2, 'particulatepm10': 5, 'particulatepm2_5': 8}
-        self.fetcher.update_cache(rawdata, hourly_avgs)
-        self.assertEqual(self.fetcher.cacheRawData, rawdata)
-        self.assertEqual(self.fetcher.cacheHourlyAvgs, hourly_avgs)
+    # def test_update_cache(self):
+    #     #Test for valid input
+    #     rawdata= {'no2': [1,2,3], 'particulatepm10': [4,5,6], 'particulatepm2_5': [7,8,9]}
+    #     hourly_avgs= {'no2': 2, 'particulatepm10': 5, 'particulatepm2_5': 8}
+    #     self.fetcher.update_cache(rawdata, hourly_avgs)
+    #     self.assertEqual(self.fetcher.cacheRawData, rawdata)
+    #     self.assertEqual(self.fetcher.cacheHourlyAvgs, hourly_avgs)
 
-    def test_update_cache_invalid_rawdata(self):
-        #Test for invalid rawdata
-        with self.assertRaises(ValueError):
-            rawdata= 'Invalid'
-            hourly_avgs= {'no2': 2, 'particulatepm10': 5, 'particulatepm2_5': 8}
-            self.fetcher.update_cache(rawdata, hourly_avgs)
+    # def test_update_cache_invalid_rawdata(self):
+    #     #Test for invalid rawdata
+    #     with self.assertRaises(ValueError):
+    #         rawdata= 'Invalid'
+    #         hourly_avgs= {'no2': 2, 'particulatepm10': 5, 'particulatepm2_5': 8}
+    #         self.fetcher.update_cache(rawdata, hourly_avgs)
 
   

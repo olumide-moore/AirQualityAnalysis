@@ -12,10 +12,14 @@ def signup(request):
             messages.error(request, "Email Already Registered!!")
             return redirect('signup')
         
+        if User.objects.filter(username=username).exists():
+            messages.error(request, "Username Already Taken!!")
+            return redirect('signup')
+        
         if len(username)>20:
             messages.error(request, "Name must be under 20 charcters!!")
             return redirect('signup')
-        
+                
         if len(pass1)<8:
             messages.error(request, "Password must be atleast 8 charcters!!")
             return redirect('signup')
