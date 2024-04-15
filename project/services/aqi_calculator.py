@@ -46,26 +46,3 @@ class AQICalculator():
         :param pm10_avg: float
         :return: int - the AQI value"""
         return AQICalculator._get_index(pm10_avg, AQICalculator.PM10_BREAKPOINTS)
-
-    @staticmethod
-    def compute_hourly_aqis(hourly_avgs : dict) -> dict:
-        """
-        Computes the hourly AQI values for the 3 pollutants
-        The AQI values and their corresponding categories are then returned as a dictionary
-        
-        :param hourly_avgs: dict - a dictionary of key- value pairs consisting of the time span and the hourly averages for the pollutants -> {'time': [time1, time2, ...], 'no2': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 'pm2_5': [...], 'pm10': [...]}
-        :return: dict - a dictionary of key- value pairs representing the hourly AQI values for the 3 pollutants
-                --> {'no2': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 'pm2_5': [...], 'pm10': [...]}
-        """
-        if type(hourly_avgs) is not dict: return None
-        hourly_aqis = {}
-        for pollutant in ['no2', 'pm2_5', 'pm10']:
-            cur_pollutant_aqis = [None] * len(hourly_avgs.get('time', [])) #initialize the list with None values as each hour's AQI value
-            if pollutant in hourly_avgs:
-                for i, avg in enumerate(hourly_avgs[pollutant]): #iterate through the hourly averages for the pollutant
-                    if len(cur_pollutant_aqis) > i: #if the index is within the range of the list (i.e. the time span is not over)
-                        cur_pollutant_aqis[i] = AQICalculator._get_index(avg, getattr(AQICalculator, f"{pollutant.upper()}_BREAKPOINTS")) #get the AQI index for the average concentration
-            hourly_aqis[pollutant] = cur_pollutant_aqis #store the AQI values for the pollutant in the dictionary
-        return hourly_aqis
-    
-

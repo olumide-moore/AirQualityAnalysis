@@ -272,7 +272,7 @@ function updateLineCharts(data) {
   }
 }
 
-function updateHourlyAvgCharts(avgData, aqiData) {
+function updateHourlyAvgCharts(avgData) {
   if (avgData) {
     let time = avgData.time;
     if (time) {
@@ -284,11 +284,6 @@ function updateHourlyAvgCharts(avgData, aqiData) {
         if (chartObj) {
           chartObj.data.labels = time;
           chartObj.data.datasets[0].data = avgData[param.toLowerCase()];
-          console.log(aqiData[param.toLowerCase()].map((x) => getAQIColor(x)));
-          // chartObj.data.datasets[0].backgroundColor = aqiData[
-          //   param.toLowerCase()
-          // ].map((x) => getAQIColor(x));
-          // chartsUpdateAfterDraw(chartObj);
           chartObj.update();
         }
       }
@@ -340,7 +335,7 @@ function fetchData() {
         updateAQICards(data.aqi_data);
         updateAvgData(data.avg_data);
         updateLineCharts(data.rawdata);
-        updateHourlyAvgCharts(data.hourly_avgs, data.hourly_aqis);
+        updateHourlyAvgCharts(data.hourly_avgs);
         //Update the sensor type and id in the table
         document.getElementById("sensorType").textContent = sensortype;
         document.getElementById("sensorId").textContent = sensorid;

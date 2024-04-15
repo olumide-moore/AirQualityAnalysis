@@ -77,7 +77,6 @@ def get_data_for_date(request, sensor_type, sensor_id, date):
         hourly_avgs = DataProcessor.calc_hrly_avgs_pollutants(rawdata, date)
         fetcher.update_cache({date: rawdata}, {date: hourly_avgs})
 
-    hourly_aqis = AQICalculator.compute_hourly_aqis(hourly_avgs)
 
     no2_hourly_avgs= DataProcessor.calc_hrly_avgs_single_pollutant(rawdata['no2'], minute_threshold= 45)
     no2_hourly_avg_max = no2_hourly_avgs.max()
@@ -96,7 +95,6 @@ def get_data_for_date(request, sensor_type, sensor_id, date):
         {'last_updated': last_updated, 
         'rawdata': rawdata_dict,
         'hourly_avgs':hourly_avgs, 
-        'hourly_aqis':hourly_aqis,
         'avg_data': avg_data,
         'aqi_data': aqi_data
         }
