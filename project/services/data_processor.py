@@ -103,18 +103,21 @@ class DataProcessor():
         return None
     
     @staticmethod
-    def get_correlations(data1, data2) -> dict:
+    def get_correlations(data1, data2, corravginterval=1) -> dict:
         """
-        Returns the correlations for each pollutant between two data sets using the Pearson correlation coefficient after sampling the data into minutely intervals.
+        Returns the correlations for each pollutant between two data sets using the Pearson correlation coefficient after sampling the data into the specified resolution
 
         :param data1: pd.DataFrame - the first data set
         :param data2: pd.DataFrame - the second data set
+        :param corravginterval: int - the resolution to aggregate the data to (default is 1 minute)
         :return: dict - a dictionary containing the correlation between the two data sets for each concentration
         """
         if not isinstance(data1, pd.DataFrame) or not isinstance(data2, pd.DataFrame):
             raise ValueError("data1 and data2 must be pandas DataFrames")
         if not isinstance(data1.index, pd.DatetimeIndex) or not isinstance(data2.index, pd.DatetimeIndex):
             raise ValueError("data1 and data2 must have a DateTimeIndex")
+        if not isinstance(corravginterval, int) or corravginterval < 1 or corravginterval > 1440:
+            raise ValueError("corravginterval must be a positive integer between 1 and 1440")
         
 
         correlations= {}
@@ -130,18 +133,18 @@ class DataProcessor():
 
         if data1.empty or data2.empty: return {col : None for col in data1.columns} #if any of the data sets is empty, return None for all the attributes
 
-        rawdata1_minutely= data1.resample('min').mean()  #Group the data into minute intervals and calculate the mean
-        rawdata2_minutely= data2.resample('min').mean()
+        agg_data1= data1.resample(f'{corravginterval}min').mean() #resample the data to the specified resolution
+        agg_data2= data2.resample(f'{corravginterval}min').mean()
 
         #Ensure that the two data sets have the same time indexes for the correlation calculation
-        common_index= rawdata1_minutely.index.intersection(rawdata2_minutely.index)
-        rawdata1_minutely= rawdata1_minutely.loc[common_index] #filter the two data to have only the common indexes
-        rawdata2_minutely= rawdata2_minutely.loc[common_index]
+        common_index= agg_data1.index.intersection(agg_data2.index)
+        agg_data1= agg_data1.loc[common_index] #filter the two data to have only the common indexes
+        agg_data2= agg_data2.loc[common_index]
         for conc in data1.columns: #for each column (in this case, each concentration) in the data set
-            if rawdata1_minutely[conc].empty or rawdata2_minutely[conc].empty: #if any of the data sets is empty, return None for that attribute correlation
+            if agg_data1[conc].empty or agg_data2[conc].empty: #if any of the data sets is empty, return None for that attribute correlation
                 corr= None
             else:
-                corr= rawdata1_minutely[conc].corr(rawdata2_minutely[conc]) #calculate the correlation between the two data sets (Pearson correlation coefficient)
+                corr= agg_data1[conc].corr(agg_data2[conc]) #calculate the correlation between the two data sets (Pearson correlation coefficient)
             if corr in [np.nan, None]:   #if the correlation is nan or None, return None (this happens when the data sets are nan or None)
                 corr= None
             else:

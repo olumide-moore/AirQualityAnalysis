@@ -8,9 +8,14 @@
 
 
 <div>
-
-    <p class="mb-10">An increase in the AQI value denotes a raised level of air pollution and potential health risks.</p>
-
+    <h1 class="text-3xl font-semibold mb-5">Daily Air Quality Index</h1>
+    <p>The Daily Air Quality Index (DAQI) used tells you about levels of air pollution and provides recommended actions and health advice.</p>
+    <p class="mb-5">An increase in the AQI value denotes a raised level of air pollution and potential health risks.</p>
+    <div class="my-2">
+      <a href="https://uk-air.defra.gov.uk/air-pollution/daqi" target="_blank" class="text-indigo-600 hover:text-indigo-900 transition duration-300 ease-in-out">
+        Learn more about the Daily Air Quality Index (DAQI)
+      </a>
+    </div>
     <table class="table-auto w-full border-collapse border border-gray-300">
         <thead>
           <tr class="border-2 border-gray-300">
@@ -84,11 +89,14 @@
           </tr>
         </tbody>
       </table>
-      <div class="my-5">
-        <a href="https://uk-air.defra.gov.uk/air-pollution/daqi" target="_blank" class="text-indigo-600 hover:text-indigo-900 transition duration-300 ease-in-out">
-          Learn more about the AQI
-        </a>
+      <div class="my-5 w-1/2">
+        <h1 class="font-bold">What time frame is used to calculate the AQI?</h1>
+        <p>The time frame varies by pollutant.</p>
+        <ul class="mt-2">
+          <li><span class="text-md font-semibold">- NO2 (Nitrogen Dioxide)</span> is evaluated based on the average concentration over each hour. The index value for the peak hourly average is displayed.</li>
+          <li><span class="text-md font-semibold">- PM 2.5 and PM10 (Particulate Matter)</span> indices are calculated from the 24 hourly rolling average (i.e. the displayed index represents the average of the past 24 hours' measurements). For retrospective days, the daily index is based on the entire day's 24-hour average value.</li>
+        </ul>
       </div>
-</div>
+    </div>
 
 {% endblock %}

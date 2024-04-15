@@ -19,7 +19,7 @@
         <!-- AQI Cards -->
         <div class="grid grid-cols-1 md:grid-cols-3 lg:gap-48 lg:grid-cols-3 lg:pt-20 gap-8 items-stretch">
           <!-- NO2 card-->
-          <div class="text-black rounded-2xl shadow-lg overflow-hidden flex flex-col justify-between p-4 w-56 h-36 bg-gray-300" id="no2card">
+          <div class="text-black rounded-2xl shadow-lg overflow-hidden flex flex-col justify-between p-4 w-56 h-36 bg-gray-300 hidden" id="no2card">
             <div class="flex justify-end items-center mt-2 mr-2">
               <img src="{% static 'icons/no2.svg' %}" alt="NO2" class="w-10 h-10">
             </div>
@@ -28,12 +28,12 @@
                 <span id="no2AQIDesc" class="text-xl"></span>
               </div>
               <div class="text-md">
-                <div>NO2 Daily AQI - <span id="no2AQI"></span></div>
+                <div><span class="text-md font-semibold">NO2</span>  Daily AQI - <span id="no2AQI"></span></div>
               </div>
             </div>
           </div>
           <!-- PM2.5 card -->
-          <div class="text-black rounded-2xl shadow-lg overflow-hidden flex flex-col justify-between p-4 w-56 h-36 bg-gray-300" id="pm2_5card">
+          <div class="text-black rounded-2xl shadow-lg overflow-hidden flex flex-col justify-between p-4 w-56 h-36 bg-gray-300 hidden" id="pm2_5card">
             <div class="flex justify-end items-center">
               <img src="{% static 'icons/pm2_5.svg' %}" alt="PM2_5" class="w-12 h-12">
             </div>
@@ -42,14 +42,13 @@
                 <span id="pm2_5AQIDesc" class="text-xl"></span>
               </div>
               <div class="text-md">
-                <div>PM2.5 Daily AQI - <span id="pm2_5AQI"></span></div>
+                <div><span class="text-md font-semibold">PM2.5</span>  Daily AQI - <span id="pm2_5AQI"></span></div>
               </div>
             </div>
           </div>
 
           <!-- PM10 card -->
-          <div class="text-black rounded-2xl shadow-lg overflow-hidden flex flex-col justify-between p-4 w-56 h-36 bg-gray-300"
-              id="pm10card">
+          <div class="text-black rounded-2xl shadow-lg overflow-hidden flex flex-col justify-between p-4 w-56 h-36 bg-gray-300 hidden" id="pm10card">
             <div class="flex justify-end items-center mt-1 mr-2">
               <img src="{% static 'icons/pm10.svg' %}" alt="PM10" class="w-10 h-10">
             </div>
@@ -58,7 +57,7 @@
                 <span id="pm10AQIDesc" class="text-xl"></span>
               </div>
               <div class="text-md">
-                <div>PM10 Daily AQI - <span id="pm10AQI"></span></div>
+                <div><span class="text-md font-semibold">PM10</span>  Daily AQI - <span id="pm10AQI"></span></div>
               </div>
             </div>
           </div>
@@ -98,12 +97,12 @@
         </div>
       </div>
       <div>
-          <a href="{%url 'aqiguide' %}" class="text-indigo-600 hover:text-indigo-900 transition duration-300 ease-in-out">
-            Recommended Actions and Health Advice
-          </a>
+        <a href="{%url 'aqiguide' %}" class="text-indigo-600 hover:text-indigo-900 transition duration-300 ease-in-out">
+          View AQI Guide
+        </a>
       </div>
     </div>
-    
+
     <!-- Sensor Info Table-->
     <div class="col-span-2 p-2 w-1/2 lg:ml-auto shadow-sm">
       <table class="w-full border-collapse border-[1px] text-sm">
@@ -203,9 +202,18 @@
 
   <div class="flex flex-col p-5 mt-10">
     <div>
-      <h2 class="text-lg font-medium leading-6 text-gray-900 mb-4 py-3 inline-block hover:border-gray-300">
+      <div class="flex items-center space-x-2">
+      <h2 class="text-xl font-medium leading-6 text-gray-900 mb-4 py-3 inline-block hover:border-gray-300">
         Compare selected date against:
       </h2>
+      <span data-tooltip-target="compareDaysTooltip" >
+        <img src="{% static 'icons/help.svg' %}" alt="help" class="w-6 h-6">
+      </span>
+      </div>
+      <div id="compareDaysTooltip" role="tooltip" class="absolute z-10 invisible inline-block px-3 py-2 text-xs font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+        <p class="text-xs">Compare the selected date (indicated in black line) against other days using their hourly averages. The colored lines correspond to previous days or weeks.</p>
+        <div class="tooltip-arrow" data-popper-arrow></div>
+      </div>
       <!-- Compare trend Tabs -->
       <ul class="flex">
         <li class="mr-1">
@@ -244,9 +252,6 @@
       </div>
     </div>
   </div>
-
-  <!-- Map -->
-  <!-- <div id="map" class="z-0"></div> -->
 
 {% endblock %}
 

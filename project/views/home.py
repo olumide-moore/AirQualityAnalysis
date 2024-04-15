@@ -12,10 +12,6 @@ import numpy as np
 
 # import time
 
-# data_table= AllSensorMeasurementsWithLocationsZephyr
-# data_table= AllSensorMeasurementsWithLocationsSc
-# data_table= AllPlumeMeasurements
-#49, 47,29, 11
 fetcher= SensorDataFetcher()
 
 @login_required
@@ -36,6 +32,10 @@ def aqiguide(request):
     return render(request, 'aqiguide.html')
 
 @login_required
+def howto(request):
+    return render(request, 'howto.html')
+
+@login_required
 def get_data_for_date(request, sensor_type, sensor_id, date):
     """
     Fetches the raw data from the database for the given sensor_id and the required concentrations for the given date.
@@ -46,7 +46,7 @@ def get_data_for_date(request, sensor_type, sensor_id, date):
     :return: JsonResponse - a json response containing the data for the given date - last updated date, rawdata, hourly averages, hourly aqis, average data, aqi data
     :side effect: updates the cache with the fetched data
     """
-    ## Test data
+    # # Test data
     # date='2024-01-22'
     # sensor_type='Zephyr'
     # sensor_id = 60

@@ -41,19 +41,32 @@ function isValidDate(dateStr) {
 
 
 function navigateToPage(page) {
-  let sensortype1 = document.getElementById("sensorType1").value;
-  let sensorid1 = document.getElementById("sensorId1").value;
-  let date = document.getElementById("dateInput").value;
 
- 
-  if(!(isString(sensortype1) && isInteger(sensorid1) && isValidDate(date))) {
-      return;
+  let sensortype1; let sensorId1; let date;
+  if (document.getElementById("sensorType1")) {
+    sensortype1 = document.getElementById("sensorType1").value;    
+  }
+ if (document.getElementById("sensorId1")) {
+    sensorId1 = document.getElementById("sensorId1").value;
+  }
+  if (document.getElementById("dateInput")) {
+    date = document.getElementById("dateInput").value;
+  }
+  
+  if (sensortype1 && sensorId1 && date) {
+    if(!(isString(sensortype1) && isInteger(sensorId1) && isValidDate(date))) {
+        return;
+    }
   }
   
   if (page === "compare") {
     let form = document.getElementById("inputsForm");
-    form.action = `/${page}/`;
-    form.submit();
+    if (form) {
+      form.action = `/${page}/`;
+      form.submit();
+    }else {
+      window.location.href = `/${page}/`;
+    }
     initializeInputs().then(() => {
       //Select the raw data tab by default
       document.getElementById("rawdataTab").click();
@@ -106,9 +119,9 @@ function createLineChartObj(chartId) {
             //disabling the label for now
             // type: 'line',
             data: [],
-            borderColor: "rgba(168,220,84, 1)",
+            borderColor: "rgba(0,0,0, 0.4)",//"rgba(168,220,84, 1)",
             borderWidth: 1.5,
-            backgroundColor: "rgba(168,220,84, 0.3)",
+            backgroundColor: "rgba(0,0,0, 0.4)", //"rgba(168,220,84, 0.3)",
             yAxisID: "y",
             lineTension: 0.3,
             radius: 0,
@@ -119,9 +132,9 @@ function createLineChartObj(chartId) {
             //disabling the label for now
             // type: 'line',
             data: [],
-            borderColor: "rgba(256,220,44, 1)",
+            borderColor: "rgba(0, 120, 200, 0.4)",
             borderWidth: 1.5,
-            backgroundColor: "rgba(256,220,44, 0.3)",
+            backgroundColor: "rgba(0, 120, 200, 0.4)",
             yAxisID: "y",
             lineTension: 0.3,
             radius: 0,
@@ -180,6 +193,7 @@ menuLinks.forEach((menuLink) => {
 
   const parameters = ["NO2", "PM10", "PM2_5"];
 
-//Set the date filter to default date
-document.getElementById("dateInput").value = new Date().toISOString().slice(0, 10);
-
+if (document.getElementById("dateInput")) {
+  //Set the date filter to default date
+  document.getElementById("dateInput").value = new Date().toISOString().slice(0, 10);
+}

@@ -50,9 +50,38 @@
             </div>
             <div class="text-md">PM10 correlation</div>
           </div>
-
         </div>
       </div>
+      <div class="flex items-center space-x-2">
+        <label>
+          Average interval for correlation:
+        </label>
+        <div class="flex items-center space-x-1">
+          <select id="corravginterval" class="border border-gray-300 rounded-md p-1" onchange="updateCorrelation()">
+            <option value="1">1 minute</option>
+            <option value="5">5 minutes</option>
+            <option value="10">10 minutes</option>
+            <option value="15">15 minutes</option>
+            <option value="30">30 minutes</option>
+            <option value="60">1 hour</option>
+            <option value="480">8 hours</option>
+          </select>
+          <span data-tooltip-target="corravgintervalTooltip" >
+            <img src="{% static 'icons/help.svg' %}" alt="help" class="w-5 h-5">
+          </span>
+        </div>
+
+      </div>
+      <div id="corravgintervalTooltip" role="tooltip" class="absolute z-10 invisible inline-block px-3 py-2 text-xs font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+        Time interval for averaging data before calculating correlation. Shorter intervals may reveal fine-scale variations, while longer intervals can smooth out short-term fluctuations.
+          <div class="tooltip-arrow" data-popper-arrow></div>
+      </div>
+      <div>
+        <a href="{%url 'correlationguide' %}" class="text-indigo-600 hover:text-indigo-900 transition duration-300 ease-in-out">
+          What is Pearson Correlation?
+        </a>
+      </div>
+
     </div>
 
      <!--Sensor Info Table-->

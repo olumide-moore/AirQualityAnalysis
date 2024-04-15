@@ -5,8 +5,6 @@
   <head>
     <meta charset="UTF-8">
     <mata name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Leaflet as a CDN -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 
     <!--Chart.js CDN-->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -23,6 +21,9 @@
 
     <!-- Tailwind as a CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Tooltip Flowbite cdn-->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet" />
     <title>{% block title%}{% endblock %} | Sensors</title>
   </head>
   <body>
@@ -35,7 +36,7 @@
             <a href="{% url 'home' %}" class="nav-link {% if request.path == '/' %}active{% endif %}">Home</a>
           </li>
           <li class="nav-item">
-            <a href="#" class="nav-link {% if request.path == '/compare/' %}active{% endif %}" onclick="navigateToPage('compare')">Compare</a>
+            <a href="#" class="nav-link {% if request.path == '/compare/' %}active{% endif %}" onclick="event.preventDefault(); navigateToPage('compare');">Compare sensors</a>
           </li>
           {% if user.is_authenticated %}
           <li class="nav-item">
@@ -75,10 +76,12 @@
         <p class="text-gray-500 font-semibold">For an overview of your air quality sensors with others in the neighborhood, visit the map <a href="https://sensor.community/" target="_blank">Sensor.Community</a>.</p>
 
       </div>
-      <!-- <div class="w-1/3">
-        <h3 class="mb-5 font-semibold">Menu</h3>
+        
+      <div class="w-1/3">
+        <!-- <h3 class="mb-5 font-semibold">Menu</h3> -->
         <ul class="space-y-2">
-          <li>
+         
+          <!-- <li>
             <a href="#" class="text-lg  text-gray-400 hover: text-gray-400">About</a>
           </li>
           <li>
@@ -86,14 +89,14 @@
           </li>
           <li>
             <a href="#" class="text-lg  text-gray-400 hover: text-gray-400">Term of use</a>
-          </li>
+          </li> -->
         </ul>
-      </div> -->
+      </div>
     </footer>
-    <!-- Make sure you put this AFTER Leaflet's CSS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
     <script type="text/javascript" src="{% static 'js/base.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/inputs.js' %}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
     {% block scripts %}{% endblock %}
   </body>
 </html>

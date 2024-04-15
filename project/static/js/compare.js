@@ -104,11 +104,11 @@ function createBoxPlotChartObj(chartId){
 
           datasets: [{
                 data: [],
-                backgroundColor: "rgba(168,220,84, 1)",
+                backgroundColor: "rgba(0,0,0, 0.4)",
                   },
                   {
                 data: [],
-                backgroundColor: "rgba(256,220,44, 1)",
+                backgroundColor: "rgba(0, 120, 200, 0.4)",
             }],
       },
       options: {
@@ -261,12 +261,14 @@ function fetchData() {
   let sensortype2 = document.getElementById("sensorType2").value;
   let sensorid2 = document.getElementById("sensorId2").value;
   let date=document.getElementById("dateInput").value;
+  let corravginterval = document.getElementById("corravginterval").value;
+  corravginterval = parseInt(corravginterval);
 
 
-  if(!(isString(sensortype1) && isInteger(sensorid1)  && isString(sensortype2) && isInteger(sensorid2) && isValidDate(date))) {
+  if(!(isString(sensortype1) && isInteger(sensorid1)  && isString(sensortype2) && isInteger(sensorid2) && isValidDate(date) && isInteger(corravginterval))) {
     return;
   }
-  fetch(`/sensors/compare/${sensortype1}/${sensorid1}/and/${sensortype2}/${sensorid2}/date/${date}`)
+  fetch(`/sensors/compare/${sensortype1}/${sensorid1}/and/${sensortype2}/${sensorid2}/date/${date}/corravginterval/${corravginterval}`)
     .then((response) => response.json())
     .then((data) => {
       if (data) {
@@ -306,6 +308,29 @@ function fetchData() {
     });
 }
 
+function updateCorrelation() {
+  let sensortype1 = document.getElementById("sensorType1").value;
+  let sensorid1 = document.getElementById("sensorId1").value;
+  let sensortype2 = document.getElementById("sensorType2").value;
+  let sensorid2 = document.getElementById("sensorId2").value;
+  let date=document.getElementById("dateInput").value;
+  let corravginterval = document.getElementById("corravginterval").value;
+  corravginterval = parseInt(corravginterval);
+  if(!(isString(sensortype1) && isInteger(sensorid1)  && isString(sensortype2) && isInteger(sensorid2) && isValidDate(date))) {
+    return;
+  }
+  fetch(`/sensors/compare-correlation/${sensortype1}/${sensorid1}/and/${sensortype2}/${sensorid2}/date/${date}/corravginterval/${corravginterval}`)
+    .then((response) => response.json())
+    .then((data) => {
+      if (data) {
+        updateCorrelationCards(data.correlations);
+      }
+    })
+    .catch((error) => {
+      console.error("Error fetching data:", error);
+    });
+}
+
 
 async function initializeInputs() {
   await sensorTypeChanged(2, fetchdata=false); // Ensure this completes before proceeding
@@ -327,6 +352,12 @@ async function initializeInputs() {
   fetchData();
 
 }
+
+
+//Unhide the sensor Type 2 and sensor ID 2 dropdowns by defaults
+document.getElementById("sensorTypeDiv2").style.display = "block";
+document.getElementById("sensorIdDiv2").style.display = "block";
+
     
 
 //Create the chart objects

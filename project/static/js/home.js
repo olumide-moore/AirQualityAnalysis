@@ -160,7 +160,7 @@ function createBarChartObj(chartId) {
         {
           label: "",
           data: [],
-          backgroundColor: [],
+          backgroundColor: "rgba(0,0,0, 0.4)",
         },
       ],
     },
@@ -205,8 +205,8 @@ function createComparisonMultiChart(chartId) {
       radius: 0,
     }
   }
-  let bgColors = ["rgba(168,220,84, 0.3)", "rgba(255,140,100, 0.1)", "rgba(144,164,204, 0.1)", "rgba(232,140,196, 0.1)", "rgba(192,236,244, 0.1)", "rgba(255,220,44, 0.1)", "rgba(232,196,148, 0.1)"];
-  let borderColors = ["rgba(168,220,84, 1)", "rgba(255,140,100, 1)", "rgba(144,164,204, 1)", "rgba(232,140,196, 1)", "rgba(192,236,244, 1)", "rgba(255,220,44, 1)", "rgba(232,196,148, 1)"];
+  let bgColors = ["rgba(0,0,0, 0.3)", "rgba(255,140,100, 0.1)", "rgba(144,164,204, 0.1)", "rgba(232,140,196, 0.1)", "rgba(192,236,244, 0.1)", "rgba(255,220,44, 0.1)", "rgba(232,196,148, 0.1)"];
+  let borderColors = ["rgba(0,0,0, 0.7)", "rgba(255,140,100, 1)", "rgba(144,164,204, 1)", "rgba(232,140,196, 1)", "rgba(192,236,244, 1)", "rgba(255,220,44, 1)", "rgba(232,196,148, 1)"];
   let datasets = Array.from({length: bgColors.length}, (_, i) => createDataset(bgColors[i], borderColors[i]));
  
   let canvas = document.getElementById(chartId);
@@ -263,7 +263,6 @@ function updateLineCharts(data) {
         `${param.toLowerCase()}LineChart`
       ).chartInstance;
       if (chartObj){
-        //Map the time as JS Date objects
         chartObj.data.labels = time.map((x) => new Date(x)); //x-axis labels
         chartObj.data.datasets[0].data = data[param.toLowerCase()]; //y-axis data
         // chartsUpdateAfterDraw(chartObj);
@@ -285,9 +284,10 @@ function updateHourlyAvgCharts(avgData, aqiData) {
         if (chartObj) {
           chartObj.data.labels = time;
           chartObj.data.datasets[0].data = avgData[param.toLowerCase()];
-          chartObj.data.datasets[0].backgroundColor = aqiData[
-            param.toLowerCase()
-          ].map((x) => getAQIColor(x));
+          console.log(aqiData[param.toLowerCase()].map((x) => getAQIColor(x)));
+          // chartObj.data.datasets[0].backgroundColor = aqiData[
+          //   param.toLowerCase()
+          // ].map((x) => getAQIColor(x));
           // chartsUpdateAfterDraw(chartObj);
           chartObj.update();
         }
@@ -364,30 +364,6 @@ for (let param of parameters) {
   createBarChartObj(`${param.toLowerCase()}HourlyAvgChart`);
   createComparisonMultiChart(`${param.toLowerCase()}ComparisonMultiChart`);
 }
-
-
-//Hide the sensor Type 2 and sensor ID 2 dropdowns by defaults
-document.getElementById("sensorTypeDiv2").style.display = "none";
-document.getElementById("sensorIdDiv2").style.display = "none";
-
-
-// let sensor_locations = JSON.parse(document.getElementById('sensor_locations').textContent);
-if (document.getElementById("map")) {
-  var mapObject = createMap([51.505, -0.09], 13);
-  var markerFeatureGroup = L.featureGroup();
-  mapObject.addLayer(markerFeatureGroup);
-}
-//Create a map object and set the center and zoom level
-function createMap(center, zoom) {
-  let map = L.map("map").setView(center, zoom);
-  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19, //Max zoom level
-    attribution:
-      '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>', //Attribution (bottom bar)
-  }).addTo(map);
-  return map;
-}
-
 
 sensorTypeChanged(1).then(() => {
   document.getElementById("hourlyTab").click();

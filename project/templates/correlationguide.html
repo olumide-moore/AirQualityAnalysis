@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+
+{% block title %}Correlation Guide{% endblock %}
+
+{% block content %}
+
+<div class="w-1/2 text-justify flex flex-col space-y-5">
+    <h1 class="text-3xl font-semibold">Correlation Guide</h1>
+    <p>The Pearson correlation is a measure that describes the relationship between two continuous variables.</p>
+    <p>The correlation coefficient ranges from -1 to 1.</p>
+    <p>A value of 1 indicates a perfect positive relationship, while a value of -1 indicates a perfect negative relationship.</p>
+    <p class="mb-10">A value of 0 indicates no relationship between the variables.</p>
+    
+   <p><span class="text-lg font-semibold mb-5">Average Interval:  </span>
+      is the time interval for averaging the data before calculating correlation. Shorter intervals may reveal fine-scale variations, while longer intervals can smooth out short-term fluctuations.
+    
+    <div class="my-10">
+      <a href="https://www.scribbr.com/statistics/pearson-correlation-coefficient/" target="_blank" class="text-indigo-600 hover:text-indigo-900 transition duration-300 ease-in-out">
+        Learn more about the Pearson Correlation
+      </a>
+    </div>
+</div>
+
+{% endblock %}
