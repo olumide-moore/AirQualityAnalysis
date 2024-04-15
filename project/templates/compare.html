@@ -151,6 +151,14 @@
         <li class="mr-1">
           <button class="py-2 px-4 inline-block border-b-2 border-transparent chartTypeTabs" id="hourlyTab" onclick="switchChartTypeTab(event, 'HourlyBoxPlots')"> Hourly Boxplots
           </button>
+        </li>
+        <span data-tooltip-target="chartTooltip" >
+          <img src="{% static 'icons/help.svg' %}" alt="help" class="w-6 h-6">
+        </span>
+        <div id="chartTooltip" role="tooltip" class="absolute z-10 invisible inline-block px-3 py-2 text-xs font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+          <p class="text-xs">Hover over the charts to see the values at each point. Click the legends to toggle data visibility.</p>
+          <div class="tooltip-arrow" data-popper-arrow></div>
+        </div>
       </ul>
     </div>
 
@@ -226,6 +234,13 @@
           <button id="last7weeksTab" class="py-2 px-4 inline-block border-b-2 border-transparent multiChartComparisonTabs" onclick="switchDaysComparisonTab(event, 'SameDayLast7Weeks')"> Same day for last 7 weeks
           </button>
         </li>
+        <span data-tooltip-target="compareDaysTooltip" >
+          <img src="{% static 'icons/help.svg' %}" alt="help" class="w-6 h-6">
+        </span>
+        <div id="compareDaysTooltip" role="tooltip" class="absolute z-10 invisible inline-block px-3 py-2 text-xs font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+          <p class="text-xs">Hover over the charts to see the box plots stats for each day. Click the legends to toggle data visibility.</p>
+          <div class="tooltip-arrow" data-popper-arrow></div>
+        </div>
       </ul>
     </div>
 
