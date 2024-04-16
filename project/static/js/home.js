@@ -199,7 +199,8 @@ function createComparisonMultiChart(chartId) {
       backgroundColor: backgroundColor,
       borderColor: borderColor,
       borderWidth: 1.5,
-      pointRadius: 3,
+      pointStyle: "circle",
+      pointRadius: 2,
       pointBackgroundColor: borderColor,
       lineTension: 0.3,
       radius: 0,
@@ -235,6 +236,9 @@ function createComparisonMultiChart(chartId) {
       plugins: {
         legend: {
           display: true,
+          labels: {
+          usePointStyle: true,
+          }
         },
         tooltip: {
           callbacks: {

@@ -161,6 +161,9 @@ function createLineChartObj(chartId) {
         plugins: {
           legend: {
             display: false,
+            labels: {
+              boxHeight: 1.5,
+            },
           },
         },
         responsive: true,

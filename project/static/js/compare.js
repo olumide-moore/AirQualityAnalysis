@@ -23,47 +23,6 @@ function switchChartTypeTab(event, tabName) {
   }
 }
 
-function switchDaysComparisonTab(event, tabName) {
-  //Restyle the tabs
-  let tabs = document.querySelectorAll(".multiChartComparisonTabs");
-  tabs.forEach((tab) => {
-    tab.className = tab.className.replace("font-bold bg-white", "");
-  });
-  // Highlight the current tab
-  event.currentTarget.className += " font-bold bg-white";
-
-  let sensortype1 = document.getElementById("sensorType1").value;
-  let sensorid1 = document.getElementById("sensorId1").value;
-  let sensortype2 = document.getElementById("sensorType2").value;
-  let sensorid2 = document.getElementById("sensorId2").value;
-  let date = document.getElementById("dateInput").value;
- 
-  let dates = [date];
-  let dateObj = new Date(date);
-  if (tabName == "Last7Days") {
-    //Get the last 7 days
-    for (let i = 1; i < 7; i++) {
-      let newDate = new Date(dateObj);
-      newDate.setDate(dateObj.getDate() - i);
-      dates.push(newDate.toISOString().slice(0, 10));
-    }
-  }else if(tabName == "SameDayLast7Weeks"){
-    //Get the same day of the week for the last 7 weeks
-    for (let i = 1; i < 7; i++) {
-      let newDate = new Date(dateObj);
-      newDate.setDate(dateObj.getDate() - i*7);
-      dates.push(newDate.toISOString().slice(0, 10));
-    }
-  }
-  dates=dates.join(',');
-  fetch(`/sensors/compare/${sensortype1}/${sensorid1}/and/${sensortype2}/${sensorid2}/dates/${dates}`)
-    .then((response) => response.json())
-    .then((data) => { 
-      if (data) {
-        updateDaysBoxPlot(data);
-      }
-    })   
-}
 
 
 function createScatterPlotObj(chartId) {
@@ -74,7 +33,7 @@ function createScatterPlotObj(chartId) {
     data: {
       datasets: [
         {
-          label: "Scatter Plot",
+          // label: "Scatter Plot",
           data: [],
           backgroundColor: "rgba(0, 0, 0, 0.1)",
         },
@@ -90,6 +49,11 @@ function createScatterPlotObj(chartId) {
       responsive: true,
       maintainAspectRatio: false,
       aspectRatio: 1,
+      plugins: {
+        legend: {
+          display: false,
+        },
+      }
     },
   });
   canvas.chartInstance.update();
@@ -212,28 +176,6 @@ function updateBoxPlot(data) {
         chartObj.data.datasets[0].data = curData1;
         chartObj.data.datasets[1].data = curData2;
 
-        chartObj.data.datasets[0].label = `ID: ${sensor1data.id}`; //label
-        chartObj.data.datasets[1].label = `ID: ${sensor2data.id}`; //label
-        chartObj.options.plugins.legend.display = true;
-        chartObj.update();
-        }
-  }
-}
-
-function updateDaysBoxPlot(data) {
-  if (data) {
-    let sensor1data = data.sensor1;
-    let sensor2data = data.sensor2;
-    for (let param of parameters) {
-        let chartObj = document.getElementById(
-            `${param.toLowerCase()}DaysBoxPlot`
-        ).chartInstance;
-        chartObj.data.labels = sensor1data.dates;
-        let param_lower = param.toLowerCase();
-        let curData1 = sensor1data[param_lower];
-        let curData2 = sensor2data[param_lower];
-        chartObj.data.datasets[0].data = curData1;
-        chartObj.data.datasets[1].data = curData2;
         chartObj.data.datasets[0].label = `ID: ${sensor1data.id}`; //label
         chartObj.data.datasets[1].label = `ID: ${sensor2data.id}`; //label
         chartObj.options.plugins.legend.display = true;
@@ -365,7 +307,6 @@ for (let param of parameters) {
   createLineChartObj(`${param.toLowerCase()}LineChart`);
   createScatterPlotObj(`${param.toLowerCase()}ScatterPlot`);
   createBoxPlotChartObj(`${param.toLowerCase()}BoxPlot`);
-  createBoxPlotChartObj(`${param.toLowerCase()}DaysBoxPlot`);
 }
 
 

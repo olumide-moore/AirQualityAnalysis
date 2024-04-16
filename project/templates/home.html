@@ -19,21 +19,21 @@
         <!-- AQI Cards -->
         <div class="grid grid-cols-1 md:grid-cols-3 lg:gap-48 lg:grid-cols-3 lg:pt-20 gap-8 items-stretch">
           <!-- NO2 card-->
-          <div class="text-black rounded-2xl shadow-lg overflow-hidden flex flex-col justify-between p-4 w-56 h-36 bg-gray-300 hidden" id="no2card">
+          <div class="text-black rounded-2xl shadow-lg overflow-hidden flex flex-col justify-between p-4 w-52 h-36 bg-gray-300 hidden" id="no2card">
             <div class="flex justify-end items-center mt-2 mr-2">
-              <img src="{% static 'icons/no2.svg' %}" alt="NO2" class="w-10 h-10">
+              <img src="{% static 'icons/no2.svg' %}" alt="NO<sub>2</sub>" class="w-10 h-10">
             </div>
             <div class="flex-grow">
               <div class="font-bold text-xl">
                 <span id="no2AQIDesc" class="text-xl"></span>
               </div>
               <div class="text-md">
-                <div><span class="text-md font-semibold">NO2</span>  Daily AQI - <span id="no2AQI"></span></div>
+                <div><span class="text-md font-semibold">NO<sub>2</sub></span>  Daily AQI - <span id="no2AQI"></span></div>
               </div>
             </div>
           </div>
           <!-- PM2.5 card -->
-          <div class="text-black rounded-2xl shadow-lg overflow-hidden flex flex-col justify-between p-4 w-56 h-36 bg-gray-300 hidden" id="pm2_5card">
+          <div class="text-black rounded-2xl shadow-lg overflow-hidden flex flex-col justify-between p-4 w-52 h-36 bg-gray-300 hidden" id="pm2_5card">
             <div class="flex justify-end items-center">
               <img src="{% static 'icons/pm2_5.svg' %}" alt="PM2_5" class="w-12 h-12">
             </div>
@@ -42,22 +42,22 @@
                 <span id="pm2_5AQIDesc" class="text-xl"></span>
               </div>
               <div class="text-md">
-                <div><span class="text-md font-semibold">PM2.5</span>  Daily AQI - <span id="pm2_5AQI"></span></div>
+                <div><span class="text-md font-semibold">PM<sub>2.5</sub></span>  Daily AQI - <span id="pm2_5AQI"></span></div>
               </div>
             </div>
           </div>
 
           <!-- PM10 card -->
-          <div class="text-black rounded-2xl shadow-lg overflow-hidden flex flex-col justify-between p-4 w-56 h-36 bg-gray-300 hidden" id="pm10card">
+          <div class="text-black rounded-2xl shadow-lg overflow-hidden flex flex-col justify-between p-4 w-52 h-36 bg-gray-300 hidden" id="pm10card">
             <div class="flex justify-end items-center mt-1 mr-2">
-              <img src="{% static 'icons/pm10.svg' %}" alt="PM10" class="w-10 h-10">
+              <img src="{% static 'icons/pm10.svg' %}" alt="PM₁₀" class="w-10 h-10">
             </div>
             <div class="flex-grow">
               <div class="font-bold text-xl">
                 <span id="pm10AQIDesc" class="text-xl"></span>
               </div>
               <div class="text-md">
-                <div><span class="text-md font-semibold">PM10</span>  Daily AQI - <span id="pm10AQI"></span></div>
+                <div><span class="text-md font-semibold">PM<sub>10</sub></span>  Daily AQI - <span id="pm10AQI"></span></div>
               </div>
             </div>
           </div>
@@ -123,15 +123,15 @@
             <td id="lastUpdated" class="px-4 py-2"></td>
           </tr>
           <tr>
-            <td class="px-4 py-2 font-semibold">NO2 <span class="text-2xs"> max hourly avg </span> (µg m-3)</td>
+            <td class="px-4 py-2 font-semibold">NO<sub>2</sub> <span class="text-2xs"> max hourly avg </span> (µg/m<sup>3</sup>)</td>
             <td id="no2Value" class="px-4 py-2"></td>
           </tr>
           <tr class="bg-gray-100">
-            <td class="px-4 py-2 font-semibold">PM2.5 <span class="text-2xs"> 24 hour avg </span> (µg m-3)</td>
+            <td class="px-4 py-2 font-semibold">PM<sub>2.5</sub> <span class="text-2xs"> 24 hour avg </span> (µg/m<sup>3</sup>)</td>
             <td id="pm2_5Value" class="px-4 py-2"></td>
           </tr>
           <tr>
-            <td class="px-4 py-2 font-semibold">PM10 <span class="text-2xs">  24 hour avg </span> (µg m-3)</td>
+            <td class="px-4 py-2 font-semibold">PM<sub>10</sub> <span class="text-2xs">  24 hour avg </span> (µg/m<sup>3</sup>)</td>
             <td id="pm10Value" class="px-4 py-2"></td>
           </tr>
         </tbody>
@@ -144,11 +144,11 @@
     <div>
       <ul class="flex">
         <li class="mr-1">
-          <button class="py-2 px-4 inline-block periodTabs" id="hourlyTab" onclick="switchPeriodTab(event, 'HourlyBarCharts')"> Hourly averages
+          <button class="py-2 px-4 inline-block periodTabs" id="rawdataTab" onclick="switchPeriodTab(event, 'RawDataLineCharts')"> Raw Data
           </button>
         </li>
         <li class="mr-1">
-          <button class="py-2 px-4 inline-block periodTabs" id="rawdataTab" onclick="switchPeriodTab(event, 'RawDataLineCharts')"> Raw Data
+          <button class="py-2 px-4 inline-block periodTabs" id="hourlyTab" onclick="switchPeriodTab(event, 'HourlyBarCharts')"> Hourly averages
           </button>
         </li>
         <span data-tooltip-target="chartTooltip" >
@@ -164,44 +164,43 @@
     </div>
 
     <div class="bg-white">
+      <!-- Raw Data Line Charts -->
+      <div id="rawdataLineCharts">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div class="p-4 border-gray-300 border-[1px] my-2 bg-white ml-2">
+            <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">NO<sub>2</sub> Data</h2>
+            <div><canvas id="no2LineChart"></canvas></div>
+          </div>
+          <div class="p-4 border-gray-300 border-[1px] my-2 bg-white">
+            <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">PM<sub>2.5</sub> Data</h2>
+            <div><canvas id="pm2_5LineChart"></canvas></div>
+          </div>
+          <div class="p-4 border-gray-300 border-[1px] my-2 bg-white mr-2">
+            <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">PM<sub>10</sub> Data</h2>
+            <div><canvas id="pm10LineChart"></canvas></div>
+          </div>
+        </div>
+      </div>
       <!-- Hourly averages bars-->
       <div id="hourlyBarCharts">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div class="p-4 border-gray-300 border-[1px] my-2 bg-white ml-2">
             <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">
-              NO2 Hourly averages
+              NO<sub>2</sub> Hourly averages
             </h2>
             <div><canvas id="no2HourlyAvgChart"></canvas></div>
           </div>
           <div class="p-4 border-gray-300 border-[1px] my-2 bg-white">
             <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">
-              PM2.5 Hourly averages
+              PM<sub>2.5</sub> Hourly averages
             </h2>
             <div><canvas id="pm2_5HourlyAvgChart"></canvas></div>
           </div>
           <div class="p-4 border-gray-300 border-[1px] my-2 bg-white mr-2">
             <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">
-              PM10 Hourly averages
+              PM<sub>10</sub> Hourly averages
             </h2>
             <div><canvas id="pm10HourlyAvgChart"></canvas></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Raw Data Line Charts -->
-      <div id="rawdataLineCharts">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div class="p-4 border-gray-300 border-[1px] my-2 bg-white ml-2">
-            <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">NO2 Data</h2>
-            <div><canvas id="no2LineChart"></canvas></div>
-          </div>
-          <div class="p-4 border-gray-300 border-[1px] my-2 bg-white">
-            <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">PM2.5 Data</h2>
-            <div><canvas id="pm2_5LineChart"></canvas></div>
-          </div>
-          <div class="p-4 border-gray-300 border-[1px] my-2 bg-white mr-2">
-            <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">PM10 Data</h2>
-            <div><canvas id="pm10LineChart"></canvas></div>
           </div>
         </div>
       </div>
@@ -235,7 +234,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 bg-white">
       <div class="p-4 border-gray-300 border-[1px] my-2 bg-white ml-2">
         <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">
-          NO2
+          NO<sub>2</sub>
         </h2>
         <div>
           <canvas id="no2ComparisonMultiChart"></canvas>
@@ -243,7 +242,7 @@
       </div>
       <div class="p-4 border-gray-300 border-[1px] my-2 bg-white">
         <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">
-          PM2.5
+          PM<sub>2.5</sub>
         </h2>
         <div>
           <canvas id="pm2_5ComparisonMultiChart"></canvas>
@@ -251,7 +250,7 @@
       </div>
       <div class="p-4 border-gray-300 border-[1px] my-2 bg-white mr-2">
         <h2 class="text-sm font-medium leading-6 text-gray-900 mb-4">
-          PM10
+          PM<sub>10</sub>
         </h2>
         <div>
           <canvas id="pm10ComparisonMultiChart"></canvas>
