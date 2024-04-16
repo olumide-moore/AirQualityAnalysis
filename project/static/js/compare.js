@@ -245,9 +245,9 @@ function updateDaysBoxPlot(data) {
 function updateCorrelationCards(correlations) {
   let no2=""; let pm2_5=""; let pm10="";
   if (correlations) {
-    if (correlations.no2) no2 = correlations.no2;
-    if (correlations.pm2_5) pm2_5 = correlations.pm2_5;
-    if (correlations.pm10) pm10 = correlations.pm10;
+    if (correlations.no2 != null) no2 = correlations.no2;
+    if (correlations.pm2_5 != null) pm2_5 = correlations.pm2_5;
+    if (correlations.pm10 != null) pm10 = correlations.pm10;
   }
   document.getElementById("no2correlation").textContent = no2;
   document.getElementById("pm2_5correlation").textContent = pm2_5;
