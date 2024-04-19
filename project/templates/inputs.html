@@ -7,10 +7,10 @@
       <div class="sm:w-full lg:w-1/5">
         <label for="sensorType1" class="block text-md font-semibold text-gray-700">Sensor Type:</label>
         <select id="sensorType1" name="sensorType1" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md" onchange="sensorTypeChanged(1)">
-          {% if sensor_types %} 
-          {% for id, sensor_type in sensor_types.items %}
-          <option value="{{ sensor_type }}" data-id="{{ id }}">
-              {{ sensor_type }}
+          {% if all_sensor_types %} 
+          {% for id, data in all_sensor_types.items %}
+          <option value="{{ data.name }}" data-id="{{ id }}">
+              {{ data.name }}
           </option>
           {% endfor %} 
         {% endif %}
@@ -19,10 +19,10 @@
       <div class="sm:w-full lg:w-1/5 hidden" id="sensorTypeDiv2">
         <label for="sensorType2" class="block text-md font-semibold text-gray-700">Sensor Type 2:</label>
         <select id="sensorType2" name="sensorType2" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md" onchange="sensorTypeChanged(2)">
-          {% if sensor_types %} 
-          {% for id, sensor_type in sensor_types.items %}
-          <option value="{{ sensor_type }}" data-id="{{ id }}">
-              {{ sensor_type }}
+          {% if all_sensor_types %} 
+          {% for id, data in all_sensor_types.items %}
+          <option value="{{ data.name }}" data-id="{{ id }}">
+              {{ data.name }}
           </option>
           {% endfor %} 
         {% endif %}
@@ -58,3 +58,6 @@
     Refresh
   </button>
 </div>
+<script type="text/javascript">
+  const all_sensor_types =JSON.parse('{{ all_sensor_types_json|safe }}');
+</script>

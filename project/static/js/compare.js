@@ -273,24 +273,18 @@ function updateCorrelation() {
     });
 }
 
-
 async function initializeInputs() {
   await sensorTypeChanged(2, fetchdata=false); // Ensure this completes before proceeding
   
-  let sensorTypeSelect = document.getElementById("sensorType1");
-  if (init_sensorType1 != "None") sensorTypeSelect.value = init_sensorType1;
+  let sensorTypeDropDown = document.getElementById("sensorType1"); 
+  if (init_sensorType1 != "None") sensorTypeDropDown.value = init_sensorType1; //set the sensor type dropdown to the initial value
   
-  let selectedType = sensorTypeSelect.options[sensorTypeSelect.selectedIndex];
-  let typeid1 = selectedType.getAttribute("data-id");
-  let sensorIdSelect1 = document.getElementById("sensorId1");
-  
+  let newtypeid = sensorTypeDropDown.options[sensorTypeDropDown.selectedIndex].getAttribute("data-id");
+  let sensorIdDropdown = document.getElementById("sensorId1");
   if (init_date != "None") document.getElementById('dateInput').value = init_date;
-
-  let sensorIDs = await fetchSensorIDs(typeid1); // Use await here to ensure this completes
-  populateSensorIDs(sensorIdSelect1, sensorIDs);
+  updateSensorIdsDropDown(sensorIdDropdown, newtypeid); //populate sensor ids of first sensor list
   
-  if (init_sensorId1 != "None") sensorIdSelect1.value = `${init_sensorId1}`;
-
+  if (init_sensorId1 != "None") sensorIdDropdown.value = `${init_sensorId1}`;
   fetchData();
 
 }

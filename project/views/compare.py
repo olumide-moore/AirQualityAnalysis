@@ -5,6 +5,7 @@ from ..services import sensors_metadata
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
+import json
 
 from datetime import datetime
 import numpy as np
@@ -17,9 +18,14 @@ def initialize_page(request):
     sensorType1= request.POST.get('sensorType1')
     sensorId1= request.POST.get('sensorId1')
     date= request.POST.get('dateInput')
-    sensor_types= sensors_metadata.get_all_sensor_types()
+    sensors= sensors_metadata.get_all_sensor_types()
+    all_sensor_types= {
+        typeid: {'name': name, 'ids': sensors_metadata.get_sensor_ids(typeid)} for typeid, name in sensors.items()
+    }
     return render(request, 'compare.html',
-                context={'sensor_types': sensor_types,
+                context={
+                    'all_sensor_types': all_sensor_types,
+                    'all_sensor_types_json': json.dumps(all_sensor_types),
                          'sensorType1': sensorType1,
                             'sensorId1': sensorId1,
                             'date': date})
@@ -154,7 +160,7 @@ def updateCorrelation(request, sensor_type1, sensor_id1, sensor_type2, sensor_id
     else:
         date_rawdata2 = fetcher2.fetch_raw_data([date]).get(date)
         fetcher2.update_cache({date: date_rawdata2})
-    correlations= DataProcessor.calc_correlations_all_pollutants(date_rawdata1, date_rawdata2, corravginterval=corravginterval)
+    correlations= DataProcessor.calc_correlations_all_pollutants(date_rawdata1, date_rawdata2, resample_interval_minutes=corravginterval)
 
     return JsonResponse(
         {'correlations': correlations}

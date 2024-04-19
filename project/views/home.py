@@ -6,6 +6,7 @@ from ..services import sensors_metadata
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
+import json
 
 from datetime import datetime
 import numpy as np
@@ -16,11 +17,15 @@ fetcher= SensorDataFetcher()
 
 @login_required
 def initialize_page(request):
-    sensor_types= sensors_metadata.get_all_sensor_types()
+    sensors= sensors_metadata.get_all_sensor_types()
+    all_sensor_types= {
+        typeid: {'name': name, 'ids': sensors_metadata.get_sensor_ids(typeid)} for typeid, name in sensors.items()
+    }
+    print(all_sensor_types)
     return render(request, 'home.html',
-                  context={'sensor_types': sensor_types}
+                  context={'all_sensor_types': all_sensor_types,
+                            'all_sensor_types_json': json.dumps(all_sensor_types)}
                   )
-
 @login_required
 def get_sensor_ids(request, type_id):
     sensorsids= sensors_metadata.get_sensor_ids(type_id)    

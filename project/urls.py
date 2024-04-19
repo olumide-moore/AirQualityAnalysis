@@ -29,7 +29,6 @@ urlpatterns = [
     path("correlationguide/", compare.correlationguide, name="correlationguide"),
     path("howto/", home.howto, name="howto"),
     path("__debug__/", include(debug_toolbar.urls)),
-    path("sensors-ids/<int:type_id>/", home.get_sensor_ids, name="sensors_ids"),
     path("sensor/<str:sensor_type>/<int:sensor_id>/date/<str:date>/", home.get_data_for_date, name="sensor_data_for_date"),
     path("sensor/<str:sensor_type>/<int:sensor_id>/dates/<str:dates>/", home.get_data_across_dates, name="sensor_compare_days"),
     path("sensors/compare/<str:sensor_type1>/<int:sensor_id1>/and/<str:sensor_type2>/<int:sensor_id2>/date/<str:date>/corravginterval/<int:corravginterval>/", compare.get_data_for_date, name="sensors_data_for_date"),
