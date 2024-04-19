@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Python: module data_processor</title>
+</head><body>
+
+<table class="heading">
+<tr class="heading-text decor">
+<td class="title">&nbsp;<br><strong class="title">data_processor</strong></td>
+</table>
+    <p></p>
+<p>
+<table class="section">
+<tr class="decor pkg-content-decor heading-text">
+<td class="section-title" colspan=3>&nbsp;<br><strong class="bigsection">Modules</strong></td></tr>
+    
+<tr><td class="decor pkg-content-decor"><span class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td><td>&nbsp;</td>
+<td class="singlecolumn"><table><tr><td class="multicolumn"><a href="numpy.html">numpy</a><br>
+</td><td class="multicolumn"><a href="pandas.html">pandas</a><br>
+</td><td class="multicolumn"></td><td class="multicolumn"></td></tr></table></td></tr></table><p>
+<table class="section">
+<tr class="decor index-decor heading-text">
+<td class="section-title" colspan=3>&nbsp;<br><strong class="bigsection">Classes</strong></td></tr>
+    
+<tr><td class="decor index-decor"><span class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td><td>&nbsp;</td>
+<td class="singlecolumn">
+<dd>
+<dl>
+<dt class="heading-text"><a href="data_processor.html#DataProcessor">DataProcessor</a>
+</dt></dl>
+</dd>
+</dl>
+ <p>
+<table class="section">
+<tr class="decor title-decor heading-text">
+<td class="section-title" colspan=3>&nbsp;<br><a name="DataProcessor">class <strong>DataProcessor</strong></a>(<a href="builtins.html#object">builtins.object</a>)</td></tr>
+    
+<tr><td class="decor title-decor" rowspan=2><span class="code">&nbsp;&nbsp;&nbsp;</span></td>
+<td class="decor title-decor" colspan=2><span class="code"><a href="#DataProcessor">DataProcessor</a>&nbsp;class&nbsp;is&nbsp;used&nbsp;to&nbsp;process&nbsp;the&nbsp;sensor&nbsp;data&nbsp;into&nbsp;useful&nbsp;aggegates<br>&nbsp;</span></td></tr>
+<tr><td>&nbsp;</td>
+<td class="singlecolumn">Static methods defined here:<br>
+<dl><dt><a name="DataProcessor-calc_24hr_avg_single_pollutant"><strong>calc_24hr_avg_single_pollutant</strong></a>(rawdata, minute_threshold=1080) -&gt; float</dt><dd><span class="code">Calculates&nbsp;the&nbsp;24hour&nbsp;average&nbsp;if&nbsp;there&nbsp;is&nbsp;atleast&nbsp;[minute_threshold]&nbsp;minutes&nbsp;of&nbsp;data<br>
+&nbsp;<br>
+:param&nbsp;rawdata:&nbsp;pd.Series<br>
+:param&nbsp;minute_threshold:&nbsp;int<br>
+:return:&nbsp;float&nbsp;-&nbsp;the&nbsp;average&nbsp;concentration</span></dd></dl>
+
+<dl><dt><a name="DataProcessor-calc_correlations_all_pollutants"><strong>calc_correlations_all_pollutants</strong></a>(data1, data2, resample_interval_minutes=1) -&gt; dict</dt><dd><span class="code">Returns&nbsp;the&nbsp;correlations&nbsp;for&nbsp;each&nbsp;pollutant&nbsp;between&nbsp;two&nbsp;data&nbsp;sets&nbsp;using&nbsp;the&nbsp;Pearson&nbsp;correlation&nbsp;coefficient&nbsp;after&nbsp;sampling&nbsp;the&nbsp;data&nbsp;into&nbsp;the&nbsp;specified&nbsp;resolution<br>
+&nbsp;<br>
+:param&nbsp;data1:&nbsp;pd.DataFrame&nbsp;-&nbsp;the&nbsp;first&nbsp;data&nbsp;set<br>
+:param&nbsp;data2:&nbsp;pd.DataFrame&nbsp;-&nbsp;the&nbsp;second&nbsp;data&nbsp;set&nbsp;(must&nbsp;have&nbsp;the&nbsp;same&nbsp;columns&nbsp;as&nbsp;data1)<br>
+:param&nbsp;resample_interval_minutes:&nbsp;int&nbsp;-&nbsp;the&nbsp;resolution&nbsp;to&nbsp;aggregate&nbsp;the&nbsp;data&nbsp;to&nbsp;(default&nbsp;is&nbsp;1&nbsp;minute)<br>
+:return:&nbsp;dict&nbsp;-&nbsp;a&nbsp;dictionary&nbsp;containing&nbsp;the&nbsp;correlation&nbsp;between&nbsp;the&nbsp;two&nbsp;data&nbsp;sets&nbsp;for&nbsp;each&nbsp;concentration</span></dd></dl>
+
+<dl><dt><a name="DataProcessor-calc_hrly_avgs_all_pollutants"><strong>calc_hrly_avgs_all_pollutants</strong></a>(rawdata, date_obj, minute_threshold=45) -&gt; dict</dt><dd><span class="code">Calculates&nbsp;hourly&nbsp;averages&nbsp;across&nbsp;all&nbsp;given&nbsp;pollutants&nbsp;for&nbsp;the&nbsp;given&nbsp;date.&nbsp;It&nbsp;includes&nbsp;a&nbsp;reindexing&nbsp;step&nbsp;to&nbsp;include<br>
+all&nbsp;hours&nbsp;of&nbsp;the&nbsp;day.&nbsp;If&nbsp;the&nbsp;number&nbsp;of&nbsp;minutes&nbsp;for&nbsp;an&nbsp;hour&nbsp;is&nbsp;less&nbsp;than&nbsp;the&nbsp;minute_threshold,&nbsp;None&nbsp;is&nbsp;returned&nbsp;for&nbsp;that&nbsp;hour.<br>
+&nbsp;<br>
+:param&nbsp;rawdata:&nbsp;pd.DataFrame&nbsp;with&nbsp;a&nbsp;DateTimeIndex<br>
+:param&nbsp;date_obj:&nbsp;datetime.date&nbsp;<a href="builtins.html#object">object</a>&nbsp;representing&nbsp;the&nbsp;date&nbsp;to&nbsp;calculate&nbsp;averages&nbsp;for<br>
+:param&nbsp;minute_threshold:&nbsp;int,&nbsp;the&nbsp;minimum&nbsp;number&nbsp;of&nbsp;minutes&nbsp;required&nbsp;for&nbsp;the&nbsp;hourly&nbsp;average&nbsp;to&nbsp;be&nbsp;calculated<br>
+:return:&nbsp;dict&nbsp;-&nbsp;a&nbsp;dictionary&nbsp;with&nbsp;keys&nbsp;for&nbsp;each&nbsp;pollutant&nbsp;and&nbsp;'time',&nbsp;each&nbsp;containing&nbsp;a&nbsp;list&nbsp;of&nbsp;hourly&nbsp;averages&nbsp;or&nbsp;None</span></dd></dl>
+
+<dl><dt><a name="DataProcessor-calc_hrly_avgs_single_pollutant"><strong>calc_hrly_avgs_single_pollutant</strong></a>(rawdata, minute_threshold=45) -&gt; list</dt><dd><span class="code">Calculates&nbsp;the&nbsp;hourly&nbsp;averages&nbsp;of&nbsp;the&nbsp;raw&nbsp;data&nbsp;with&nbsp;atleast&nbsp;[minute_threshold]&nbsp;minutes&nbsp;of&nbsp;data&nbsp;required<br>
+&nbsp;<br>
+:param&nbsp;rawdata:&nbsp;pd.Series<br>
+:param&nbsp;minute_threshold:&nbsp;int<br>
+:return:&nbsp;list&nbsp;-&nbsp;the&nbsp;corresponding&nbsp;hourly&nbsp;averages</span></dd></dl>
+
+<dl><dt><a name="DataProcessor-convert_df_to_dict"><strong>convert_df_to_dict</strong></a>(df)</dt><dd><span class="code">param&nbsp;df:&nbsp;pd.DataFrame<br>
+return:&nbsp;dict&nbsp;-&nbsp;a&nbsp;dictionary&nbsp;of&nbsp;key-&nbsp;value-list&nbsp;pairs&nbsp;representing&nbsp;the&nbsp;data&nbsp;in&nbsp;the&nbsp;dataframe<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5&nbsp;keys:&nbsp;time,&nbsp;no2,&nbsp;pm10,&nbsp;pm2_5,&nbsp;pm1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;and&nbsp;their&nbsp;corresponding&nbsp;values</span></dd></dl>
+
+<dl><dt><a name="DataProcessor-extract_hrly_rawdata"><strong>extract_hrly_rawdata</strong></a>(rawdata) -&gt; dict</dt><dd><span class="code">Extracts&nbsp;data&nbsp;splitted&nbsp;into&nbsp;different&nbsp;hours&nbsp;<br>
+&nbsp;<br>
+:param&nbsp;rawdata:&nbsp;pd.DataFrame&nbsp;data&nbsp;&nbsp;data&nbsp;for&nbsp;a&nbsp;day&nbsp;with&nbsp;a&nbsp;DateTimeIndex<br>
+:return:&nbsp;dict&nbsp;&nbsp;-&nbsp;a&nbsp;dictionary&nbsp;with&nbsp;time,&nbsp;pollutants&nbsp;as&nbsp;keys&nbsp;and&nbsp;their&nbsp;corresponding&nbsp;values<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--&gt;&nbsp;{'time':['00:00','01:00',...],&nbsp;'no2':[[1,2,3],[4,5,6],...],&nbsp;'pm10':[[1,2,3],[4,5,6],...],&nbsp;'pm2_5':[[1,2,3],[4,5,6],...]}</span></dd></dl>
+</body></html>

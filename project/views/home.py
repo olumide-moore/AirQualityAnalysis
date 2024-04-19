@@ -68,13 +68,13 @@ def get_data_for_date(request, sensor_type, sensor_id, date):
 
     last_updated = fetcher.fetch_last_updated()
 
-    if date != date.today() and date in fetcher.cacheRawData:
-        rawdata = fetcher.cacheRawData[date]
-        hourly_avgs = fetcher.cacheHourlyAvgs[date]
-        # print(fetcher.cacheRawData.keys())
+    if date != date.today() and date in fetcher.cache_rawdata:
+        rawdata = fetcher.cache_rawdata[date]
+        hourly_avgs = fetcher.cache_hourlyavgs[date]
+        # print(fetcher.cache_rawdata.keys())
     else:
         rawdata = fetcher.fetch_raw_data([date]).get(date)
-        hourly_avgs = DataProcessor.calc_hrly_avgs_pollutants(rawdata, date)
+        hourly_avgs = DataProcessor.calc_hrly_avgs_all_pollutants(rawdata, date)
         fetcher.update_cache({date: rawdata}, {date: hourly_avgs})
 
 
@@ -135,15 +135,15 @@ def get_data_across_dates(request, sensor_type, sensor_id, dates):
     
     dates_hourly_data={}
     #Check if the data for the given dates is available in the cache
-    for date in list(fetcher.cacheHourlyAvgs.keys()):
+    for date in list(fetcher.cache_hourlyavgs.keys()):
         if date in dates:
-            dates_hourly_data[date]= fetcher.cacheHourlyAvgs[date]
+            dates_hourly_data[date]= fetcher.cache_hourlyavgs[date]
             # print(dates_hourly_data[date])
             dates.remove(date)
     if dates: #If the data for some dates is not available in the cache, fetch the data from the database
         dates_raw_data = fetcher.fetch_raw_data(dates)
         for date, data in dates_raw_data.items():
-            hourly_avgs = DataProcessor.calc_hrly_avgs_pollutants(data, date)
+            hourly_avgs = DataProcessor.calc_hrly_avgs_all_pollutants(data, date)
             dates_hourly_data[date]= hourly_avgs
         #update the cache
         fetcher.update_cache(dates_raw_data, dates_hourly_data)

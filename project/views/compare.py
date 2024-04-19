@@ -71,19 +71,19 @@ def get_data_for_date(request, sensor_type1, sensor_id1, sensor_type2, sensor_id
     if fetcher2.get_sensor_id() != sensor_id2:
         fetcher2.set_sensor_id(sensor_id2)
 
-    if date!=date.today() and date in fetcher1.cacheRawData:
-        date_rawdata1= fetcher1.cacheRawData[date]
+    if date!=date.today() and date in fetcher1.cache_rawdata:
+        date_rawdata1= fetcher1.cache_rawdata[date]
     else:
         date_rawdata1 = fetcher1.fetch_raw_data([date]).get(date)
         fetcher1.update_cache({date: date_rawdata1})
-    if date!=date.today() and date in fetcher2.cacheRawData:
-        date_rawdata2= fetcher2.cacheRawData[date]
+    if date!=date.today() and date in fetcher2.cache_rawdata:
+        date_rawdata2= fetcher2.cache_rawdata[date]
     else:
         date_rawdata2 = fetcher2.fetch_raw_data([date]).get(date)
         fetcher2.update_cache({date: date_rawdata2})
 
-    date_hourly_rawdata1= DataProcessor.extract_hrly_raw_data(date_rawdata1)
-    date_hourly_rawdata2= DataProcessor.extract_hrly_raw_data(date_rawdata2)
+    date_hourly_rawdata1= DataProcessor.extract_hrly_rawdata(date_rawdata1)
+    date_hourly_rawdata2= DataProcessor.extract_hrly_rawdata(date_rawdata2)
     
     sensors_info= {'sensor1': {'type': fetcher1.get_sensor_type(), 'id': fetcher1.get_sensor_id(), 'last_updated': fetcher1.fetch_last_updated()},
                      'sensor2': {'type': fetcher2.get_sensor_type(), 'id': fetcher2.get_sensor_id(), 'last_updated': fetcher2.fetch_last_updated()}
@@ -95,7 +95,7 @@ def get_data_for_date(request, sensor_type1, sensor_id1, sensor_type2, sensor_id
     date_hourly_rawdata1['id']= fetcher1.get_sensor_id()
     date_hourly_rawdata2['id']= fetcher2.get_sensor_id()
 
-    correlations= DataProcessor.get_correlations(date_rawdata1, date_rawdata2, corravginterval=corravginterval)
+    correlations= DataProcessor.calc_correlations_all_pollutants(date_rawdata1, date_rawdata2, resample_interval_minutes=corravginterval)
 
     return JsonResponse(
         {'sensors_info': sensors_info,
@@ -144,17 +144,17 @@ def updateCorrelation(request, sensor_type1, sensor_id1, sensor_type2, sensor_id
     if fetcher2.get_sensor_id() != sensor_id2:
         fetcher2.set_sensor_id(sensor_id2)
 
-    if date!=date.today() and date in fetcher1.cacheRawData:
-        date_rawdata1= fetcher1.cacheRawData[date]
+    if date!=date.today() and date in fetcher1.cache_rawdata:
+        date_rawdata1= fetcher1.cache_rawdata[date]
     else:
         date_rawdata1 = fetcher1.fetch_raw_data([date]).get(date)
         fetcher1.update_cache({date: date_rawdata1})
-    if date!=date.today() and date in fetcher2.cacheRawData:
-        date_rawdata2= fetcher2.cacheRawData[date]
+    if date!=date.today() and date in fetcher2.cache_rawdata:
+        date_rawdata2= fetcher2.cache_rawdata[date]
     else:
         date_rawdata2 = fetcher2.fetch_raw_data([date]).get(date)
         fetcher2.update_cache({date: date_rawdata2})
-    correlations= DataProcessor.get_correlations(date_rawdata1, date_rawdata2, corravginterval=corravginterval)
+    correlations= DataProcessor.calc_correlations_all_pollutants(date_rawdata1, date_rawdata2, corravginterval=corravginterval)
 
     return JsonResponse(
         {'correlations': correlations}

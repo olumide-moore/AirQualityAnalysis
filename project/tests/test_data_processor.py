@@ -16,19 +16,19 @@ class DataProcessorTests(SimpleTestCase):
         }, index=pd.date_range(start='2024-01-22', periods=72, freq='20min', tz='UTC')) #rawdata for 24 hours with 3 data points per hour
         self.date = datetime.strptime('2024-01-22', '%Y-%m-%d').date()
 
-  #extract_hrly_raw_data TESTS
-    def test_extract_hrly_raw_data_valid(self):
-        """Test for extract_hrly_raw_data"""
+  #extract_hrly_rawdata TESTS
+    def test_extract_hrly_rawdata_valid(self):
+        """Test for extract_hrly_rawdata"""
         expected = {
             'time': ['00:00', '01:00', '02:00', '03:00', '04:00', '05:00', '06:00', '07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00'],
             'no2': [[(j//3) for j in range(i, i+3)] for i in range(1, 73, 3)], #3 data points expected for each hour
             'pm10': [[(j//3) for j in range(i, i+3)] for i in range(1, 73, 3)],
             'pm2_5': [[(j//3) for j in range(i, i+3)] for i in range(1, 73, 3)]
         }
-        self.assertEqual(DataProcessor.extract_hrly_raw_data(self.rawdata), expected)
+        self.assertEqual(DataProcessor.extract_hrly_rawdata(self.rawdata), expected)
 
-    def test_extract_hrly_raw_data_empty(self):
-        """Test for extract_hrly_raw_data with empty data"""
+    def test_extract_hrly_rawdata_empty(self):
+        """Test for extract_hrly_rawdata with empty data"""
         rawdata = pd.DataFrame({
             'no2': [],
             'pm10': [],
@@ -40,10 +40,10 @@ class DataProcessorTests(SimpleTestCase):
             'pm10': [[] for _ in range(24)],
             'pm2_5': [[] for _ in range(24)]
         }
-        self.assertEqual(DataProcessor.extract_hrly_raw_data(rawdata), expected) 
+        self.assertEqual(DataProcessor.extract_hrly_rawdata(rawdata), expected) 
 
-    def test_extract_hrly_raw_data_missing_pollutants(self):
-        """Test for extract_hrly_raw_data with some data missing for some hours"""
+    def test_extract_hrly_rawdata_missing_pollutants(self):
+        """Test for extract_hrly_rawdata with some data missing for some hours"""
         #drop data between 4th and 6th hour
         rawdata = self.rawdata.drop(self.rawdata.index[self.rawdata.index.hour.isin([4, 6])])
 
@@ -53,10 +53,10 @@ class DataProcessorTests(SimpleTestCase):
             'pm10': [[(j//3) for j in range(i, i+3) if i not in [(4*3)+1,(6*3)+1]] for i in range(1, 73, 3)],
             'pm2_5': [[(j//3) for j in range(i, i+3) if i not in [(4*3)+1,(6*3)+1]] for i in range(1, 73, 3)]
         }
-        self.assertEqual(DataProcessor.extract_hrly_raw_data(rawdata), expected)
+        self.assertEqual(DataProcessor.extract_hrly_rawdata(rawdata), expected)
 
-    def test_extract_hrly_raw_data_missing_for_some_pollutants(self):
-        """Test for extract_hrly_raw_data with some pollutants"""
+    def test_extract_hrly_rawdata_missing_for_some_pollutants(self):
+        """Test for extract_hrly_rawdata with some pollutants"""
         rawdata = pd.DataFrame({
             'no2': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
         }, index=pd.date_range(start='2024-01-22', periods=12, freq='h'))
@@ -64,16 +64,16 @@ class DataProcessorTests(SimpleTestCase):
             'time': ['00:00', '01:00', '02:00', '03:00', '04:00', '05:00', '06:00', '07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00'],
             'no2': [[1], [2], [3], [4], [5], [6], [7], [8], [9], [10], [11], [12],[], [], [], [], [], [], [], [], [], [], [], []]
         }
-        self.assertEqual(DataProcessor.extract_hrly_raw_data(rawdata), expected)
+        self.assertEqual(DataProcessor.extract_hrly_rawdata(rawdata), expected)
 
-    def test_extract_hrly_raw_data_invalid_inputs(self):
+    def test_extract_hrly_rawdata_invalid_inputs(self):
         with self.assertRaises(ValueError):
-            DataProcessor.extract_hrly_raw_data('rawdata')
+            DataProcessor.extract_hrly_rawdata('rawdata')
         with self.assertRaises(ValueError):
-            DataProcessor.extract_hrly_raw_data(pd.DataFrame({'no2': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}, index=range(10)))
+            DataProcessor.extract_hrly_rawdata(pd.DataFrame({'no2': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}, index=range(10)))
 
 
-  #calc_hrly_avgs_pollutants TESTS
+  #calc_hrly_avgs_all_pollutants TESTS
     def test_hrly_avgs_pollutants_small_threshold(self):
         date_time= datetime.strptime('2024-01-22', '%Y-%m-%d')
         expected = {
@@ -82,7 +82,7 @@ class DataProcessorTests(SimpleTestCase):
             'pm10': [average([(j//3) for j in range(i, i+3)]) for i in range(1, 73, 3)],
             'pm2_5': [average([(j//3) for j in range(i, i+3)]) for i in range(1, 73, 3)],
         }
-        self.assertEqual(DataProcessor.calc_hrly_avgs_pollutants(self.rawdata, self.date, minute_threshold=1), expected)
+        self.assertEqual(DataProcessor.calc_hrly_avgs_all_pollutants(self.rawdata, self.date, minute_threshold=1), expected)
 
     def test_hrly_avgs_pollutants_large_threshold(self):
         date_time= datetime.strptime('2024-01-22', '%Y-%m-%d')
@@ -99,7 +99,7 @@ class DataProcessorTests(SimpleTestCase):
             'pm2_5': [average(range(i * 60, (i + 1) * 60)) for i in range(24)],
             'pm10': [average(range(i * 60, (i + 1) * 60)) for i in range(24)]
         }
-        self.assertEqual(DataProcessor.calc_hrly_avgs_pollutants(rawdata, date_time, minute_threshold=45), expected)
+        self.assertEqual(DataProcessor.calc_hrly_avgs_all_pollutants(rawdata, date_time, minute_threshold=45), expected)
     def test_hrly_avgs_pollutants_no_data(self):
         date_time= datetime.strptime('2024-01-22', '%Y-%m-%d')
         rawdata = pd.DataFrame({
@@ -113,7 +113,7 @@ class DataProcessorTests(SimpleTestCase):
             'pm10': [None for _ in range(24)],
             'pm2_5': [None for _ in range(24)]
         }
-        self.assertEqual(DataProcessor.calc_hrly_avgs_pollutants(rawdata, date_time), expected)
+        self.assertEqual(DataProcessor.calc_hrly_avgs_all_pollutants(rawdata, date_time), expected)
 
     def test_hrly_avgs_pollutants_insufficient_data(self):
         date_time= datetime.strptime('2024-01-22', '%Y-%m-%d')
@@ -129,26 +129,26 @@ class DataProcessorTests(SimpleTestCase):
             'pm10': [1, 2, 3, 4, None, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24],
             'pm2_5': [1, 2, 3, 4, None, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]
         }
-        self.assertEqual(DataProcessor.calc_hrly_avgs_pollutants(rawdata, date_time, minute_threshold=1), expected)
+        self.assertEqual(DataProcessor.calc_hrly_avgs_all_pollutants(rawdata, date_time, minute_threshold=1), expected)
 
     def test_hrly_avgs_pollutants_invalid_inputs(self):
         date_time= datetime.strptime('2024-01-22', '%Y-%m-%d')
         with self.assertRaises(ValueError):
-            DataProcessor.calc_hrly_avgs_pollutants('rawdata', date_time, minute_threshold=45)
+            DataProcessor.calc_hrly_avgs_all_pollutants('rawdata', date_time, minute_threshold=45)
         with self.assertRaises(ValueError):
-            DataProcessor.calc_hrly_avgs_pollutants(pd.DataFrame({'no2': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}, index=range(10)), date_time, minute_threshold=45)
+            DataProcessor.calc_hrly_avgs_all_pollutants(pd.DataFrame({'no2': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}, index=range(10)), date_time, minute_threshold=45)
         with self.assertRaises(ValueError):
-            DataProcessor.calc_hrly_avgs_pollutants(self.rawdata, 'date', minute_threshold=45)
+            DataProcessor.calc_hrly_avgs_all_pollutants(self.rawdata, 'date', minute_threshold=45)
         with self.assertRaises(ValueError):
-            DataProcessor.calc_hrly_avgs_pollutants(self.rawdata, datetime.strptime('1969-12-31', '%Y-%m-%d'))
+            DataProcessor.calc_hrly_avgs_all_pollutants(self.rawdata, datetime.strptime('1969-12-31', '%Y-%m-%d'))
         with self.assertRaises(ValueError):
-            DataProcessor.calc_hrly_avgs_pollutants(self.rawdata, datetime.strptime('2263-01-01', '%Y-%m-%d'))
+            DataProcessor.calc_hrly_avgs_all_pollutants(self.rawdata, datetime.strptime('2263-01-01', '%Y-%m-%d'))
         with self.assertRaises(ValueError):
-            DataProcessor.calc_hrly_avgs_pollutants(self.rawdata, date_time, minute_threshold=-1)
+            DataProcessor.calc_hrly_avgs_all_pollutants(self.rawdata, date_time, minute_threshold=-1)
         with self.assertRaises(ValueError):
-            DataProcessor.calc_hrly_avgs_pollutants(self.rawdata, date_time, minute_threshold=61)
+            DataProcessor.calc_hrly_avgs_all_pollutants(self.rawdata, date_time, minute_threshold=61)
         with self.assertRaises(ValueError):
-            DataProcessor.calc_hrly_avgs_pollutants(self.rawdata, date_time, minute_threshold='45')
+            DataProcessor.calc_hrly_avgs_all_pollutants(self.rawdata, date_time, minute_threshold='45')
         
 
  #calc_hrly_avgs_single_pollutant TESTS
@@ -213,8 +213,8 @@ class DataProcessorTests(SimpleTestCase):
             DataProcessor.calc_24hr_avg_single_pollutant(self.rawdata, minute_threshold='1080')
 
 
-  #get_correlations TESTS
-    def test_get_correlations(self):
+  #calc_correlations_all_pollutants TESTS
+    def test_calc_correlations_all_pollutants(self):
         data1 = pd.DataFrame({
             'no2': [1, 2, 3, 4, 5],
             'pm10': [6, 7, 8, 9, 10],
@@ -230,7 +230,7 @@ class DataProcessorTests(SimpleTestCase):
             'pm10': 1.0,
             'pm2_5': 1.0
         }
-        self.assertEqual(DataProcessor.get_correlations(data1, data2), expected)
+        self.assertEqual(DataProcessor.calc_correlations_all_pollutants(data1, data2), expected)
 
     def test_get_correlatoins_some_nan_values(self):
         data1 = pd.DataFrame({
@@ -248,9 +248,9 @@ class DataProcessorTests(SimpleTestCase):
             'pm10': 1.0,
             'pm2_5': 1.0
         }
-        self.assertEqual(DataProcessor.get_correlations(data1, data2), expected)
+        self.assertEqual(DataProcessor.calc_correlations_all_pollutants(data1, data2), expected)
 
-    def test_get_correlations_unmatched_columns(self):
+    def test_calc_correlations_all_pollutants_unmatched_columns(self):
         data1 = pd.DataFrame({
             'no2': [1, 2, 3, 4, 5],
             'pm10': [6, 7, 8, 9, 10],
@@ -267,10 +267,10 @@ class DataProcessorTests(SimpleTestCase):
             'pm10': 1.0,
             'pm2_5': 1.0
         }
-        self.assertEqual(DataProcessor.get_correlations(data1, data2), expected)
+        self.assertEqual(DataProcessor.calc_correlations_all_pollutants(data1, data2), expected)
 
 
-    def test_get_correlations_empty(self):
+    def test_calc_correlations_all_pollutants_empty(self):
         data1 = pd.DataFrame({
             'no2': [],
             'pm10': [],
@@ -286,15 +286,15 @@ class DataProcessorTests(SimpleTestCase):
             'pm10': None,
             'pm2_5': None
         }
-        self.assertEqual(DataProcessor.get_correlations(data1, data2), expected)   
+        self.assertEqual(DataProcessor.calc_correlations_all_pollutants(data1, data2), expected)   
 
-    def test_get_correlations_invalid_inputs(self):
+    def test_calc_correlations_all_pollutants_invalid_inputs(self):
         with self.assertRaises(ValueError):
-            DataProcessor.get_correlations('data1', 'data2')
+            DataProcessor.calc_correlations_all_pollutants('data1', 'data2')
         with self.assertRaises(ValueError):
-            DataProcessor.get_correlations(pd.Series([1, 2, 3, 4, 5], index=range(5)), pd.Series([6, 7, 8, 9, 10], index=range(5)))
+            DataProcessor.calc_correlations_all_pollutants(pd.Series([1, 2, 3, 4, 5], index=range(5)), pd.Series([6, 7, 8, 9, 10], index=range(5)))
         with self.assertRaises(ValueError):
-            DataProcessor.get_correlations(pd.DataFrame({'no2': [1, 2, 3, 4, 5], 'pm10': [6, 7, 8, 9, 10]}, index=range(5)), pd.DataFrame({'no2': [6, 7, 8, 9, 10], 'pm10': [11, 12, 13, 14, 15]}, index=range(5)))
+            DataProcessor.calc_correlations_all_pollutants(pd.DataFrame({'no2': [1, 2, 3, 4, 5], 'pm10': [6, 7, 8, 9, 10]}, index=range(5)), pd.DataFrame({'no2': [6, 7, 8, 9, 10], 'pm10': [11, 12, 13, 14, 15]}, index=range(5)))
 
 
   #convert_df_to_dict TESTS

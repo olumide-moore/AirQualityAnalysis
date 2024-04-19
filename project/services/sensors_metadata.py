@@ -6,7 +6,7 @@ def get_sensor_ids(type_id):
     Get sensor ids for a given sensor type id
     :param request: request object
     :param type_id: int - the id of the sensor type'''
-    sensors = Sensors.objects.values('id').filter(type_id=type_id)
+    sensors = Sensors.objects.values('id').filter(type_id=type_id).order_by('id')
     sensorsids=list(map(lambda x: x['id'], sensors))
     return sensorsids
 

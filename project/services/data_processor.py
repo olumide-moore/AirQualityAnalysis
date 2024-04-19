@@ -7,7 +7,7 @@ class DataProcessor():
     """DataProcessor class is used to process the sensor data into useful aggegates"""
 
     @staticmethod
-    def extract_hrly_raw_data(rawdata) -> dict:
+    def extract_hrly_rawdata(rawdata) -> dict:
         """
         Extracts data splitted into different hours 
         
@@ -29,13 +29,13 @@ class DataProcessor():
     
 
     @staticmethod
-    def calc_hrly_avgs_pollutants(rawdata, dateObj, minute_threshold=45) -> dict:
+    def calc_hrly_avgs_all_pollutants(rawdata, date_obj, minute_threshold=45) -> dict:
         """
         Calculates hourly averages across all given pollutants for the given date. It includes a reindexing step to include
         all hours of the day. If the number of minutes for an hour is less than the minute_threshold, None is returned for that hour.
 
         :param rawdata: pd.DataFrame with a DateTimeIndex
-        :param dateObj: datetime.date object representing the date to calculate averages for
+        :param date_obj: datetime.date object representing the date to calculate averages for
         :param minute_threshold: int, the minimum number of minutes required for the hourly average to be calculated
         :return: dict - a dictionary with keys for each pollutant and 'time', each containing a list of hourly averages or None
         """
@@ -43,16 +43,16 @@ class DataProcessor():
             raise ValueError("rawdata must be a pandas DataFrame")
         if not isinstance(rawdata.index, pd.DatetimeIndex):
             raise ValueError("rawdata must have a DateTimeIndex")
-        if not isinstance(dateObj, date):
+        if not isinstance(date_obj, date):
             raise ValueError("date must be a datetime.date object")
         #Check if the date isn't going to cause overflow in the conversion to ns
-        if dateObj.year < 1970 or dateObj.year > 2262:
+        if date_obj.year < 1970 or date_obj.year > 2262:
             raise ValueError("date must be between 1970 and 2262")
         if not isinstance(minute_threshold, int) or minute_threshold < 0 or minute_threshold > 60:
             raise ValueError("minute_threshold must be int between 0 and 60")
 
-        start = datetime.combine(dateObj, datetime.min.time())  # Start of the day with time 00:00:00
-        end = datetime.combine(dateObj, datetime.max.time())    # End of the day with time 23:59:59
+        start = datetime.combine(date_obj, datetime.min.time())  # Start of the day with time 00:00:00
+        end = datetime.combine(date_obj, datetime.max.time())    # End of the day with time 23:59:59
         
         data_per_hour = rawdata.resample('h').apply( 
             lambda x: x.mean() if len(x) >= minute_threshold else np.nan)  # Resampling and calculating conditional averages
@@ -103,21 +103,21 @@ class DataProcessor():
         return None
     
     @staticmethod
-    def get_correlations(data1, data2, corravginterval=1) -> dict:
+    def calc_correlations_all_pollutants(data1, data2, resample_interval_minutes=1) -> dict:
         """
         Returns the correlations for each pollutant between two data sets using the Pearson correlation coefficient after sampling the data into the specified resolution
 
         :param data1: pd.DataFrame - the first data set
-        :param data2: pd.DataFrame - the second data set
-        :param corravginterval: int - the resolution to aggregate the data to (default is 1 minute)
+        :param data2: pd.DataFrame - the second data set (must have the same columns as data1)
+        :param resample_interval_minutes: int - the resolution to aggregate the data to (default is 1 minute)
         :return: dict - a dictionary containing the correlation between the two data sets for each concentration
         """
         if not isinstance(data1, pd.DataFrame) or not isinstance(data2, pd.DataFrame):
             raise ValueError("data1 and data2 must be pandas DataFrames")
         if not isinstance(data1.index, pd.DatetimeIndex) or not isinstance(data2.index, pd.DatetimeIndex):
             raise ValueError("data1 and data2 must have a DateTimeIndex")
-        if not isinstance(corravginterval, int) or corravginterval < 1 or corravginterval > 1440:
-            raise ValueError("corravginterval must be a positive integer between 1 and 1440")
+        if not isinstance(resample_interval_minutes, int) or resample_interval_minutes < 1 or resample_interval_minutes > 1440:
+            raise ValueError("resample_interval_minutes must be a positive integer between 1 and 1440")
         
 
         correlations= {}
@@ -133,8 +133,8 @@ class DataProcessor():
 
         if data1.empty or data2.empty: return {col : None for col in data1.columns} #if any of the data sets is empty, return None for all the attributes
 
-        agg_data1= data1.resample(f'{corravginterval}min').mean() #resample the data to the specified resolution
-        agg_data2= data2.resample(f'{corravginterval}min').mean()
+        agg_data1= data1.resample(f'{resample_interval_minutes}min').mean() #resample the data to the specified resolution
+        agg_data2= data2.resample(f'{resample_interval_minutes}min').mean()
 
         #Ensure that the two data sets have the same time indexes for the correlation calculation
         common_index= agg_data1.index.intersection(agg_data2.index)

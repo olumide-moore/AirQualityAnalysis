@@ -314,9 +314,6 @@ window.onload = function() {
   initializeInputs().then(() => {
     //Select the hourly data tab by default
     document.getElementById("rawdataTab").click();
-    //Select the last 7 days tab by default
-    document.getElementById("last7daysTab").click();
-
   });
   
 }
