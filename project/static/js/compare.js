@@ -33,7 +33,6 @@ function createScatterPlotObj(chartId) {
     data: {
       datasets: [
         {
-          // label: "Scatter Plot",
           data: [],
           backgroundColor: "rgba(0, 0, 0, 0.1)",
         },
@@ -42,9 +41,19 @@ function createScatterPlotObj(chartId) {
     options: {
       scales: {
         x: {
-          // type: 'linear',
-          // position: 'bottom'
+          type: 'linear',
+          title: {
+            display: true,
+            text: 'X-axis'
+          }
         },
+        y: {
+          type: 'linear',
+          title: {
+            display: true,
+            text: 'Y-axis'
+          }
+        }
       },
       responsive: true,
       maintainAspectRatio: false,
@@ -65,7 +74,6 @@ function createBoxPlotChartObj(chartId){
   canvas.chartInstance = new Chart(ctx, {
       type: 'boxplot', //bar, horizontalBar, pie, line, doughnut, radar, polarArea//bar, horizontalBar, pie, line, doughnut, radar, polarArea
       data: {
-
           datasets: [{
                 data: [],
                 backgroundColor: "rgba(0,0,0, 0.4)",
@@ -76,6 +84,15 @@ function createBoxPlotChartObj(chartId){
             }],
       },
       options: {
+          scales: {
+            y: {
+              type: 'linear',
+              title: {
+                display: true,
+                text: 'µg/m³'
+              }
+            }
+          },
           plugins: {
               legend: {
                   display: false,
@@ -156,6 +173,8 @@ function updateScatterPlot(data) {
             });
         }
         chartObj.data.datasets[0].data = scatterData;
+        chartObj.options.scales.x.title.text = `ID: ${sensor1data.id}`; //label
+        chartObj.options.scales.y.title.text = `ID: ${sensor2data.id}`; //label
         chartObj.update();
     }
   }

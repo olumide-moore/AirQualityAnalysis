@@ -2,7 +2,7 @@ from unittest.mock import patch, MagicMock
 from django.test import TestCase
 from ..services.sensor_data_fetcher import SensorDataFetcher
 from ..models import *
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import pandas as pd
 
 class SensorDataFetcherTests(TestCase):
@@ -10,10 +10,20 @@ class SensorDataFetcherTests(TestCase):
         self.fetcher= SensorDataFetcher()
         self.fetcher.set_sensor_id(1)
         self.fetcher.set_sensor_type('Zephyr')
+        self.date_time_utc= datetime(2021, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
         return super().setUp()
     
   #set_sensor_id TESTS
+  
     def test_set_sensor_id(self):
+        #When the sensor id changes, the last updated and cache variables should be reset
+        self.fetcher.set_sensor_id(2)
+        self.assertEqual(self.fetcher.get_sensor_id(), 2)
+        self.assertIsNone(self.fetcher.last_updated)
+        self.assertEqual(self.fetcher.cache_rawdata, {})
+        self.assertEqual(self.fetcher.cache_hourlyavgs, {})
+
+    def test_set_sensor_id_invalid_input(self):
         
         #Test for id type
         with self.assertRaises(ValueError):
@@ -21,13 +31,6 @@ class SensorDataFetcherTests(TestCase):
 
         with self.assertRaises(ValueError): #Test for non-integer input
             self.fetcher.set_sensor_id(1.5)
-
-        #When the sensor id changes, the last updated and cache variables should be reset
-        self.fetcher.set_sensor_id(2)
-        self.assertEqual(self.fetcher.get_sensor_id(), 2)
-        self.assertIsNone(self.fetcher.last_updated)
-        self.assertEqual(self.fetcher.cache_rawdata, {})
-        self.assertEqual(self.fetcher.cache_hourlyavgs, {})
 
   #set_sensor_type TESTS
     def test_set_sensor_type(self):
@@ -44,9 +47,11 @@ class SensorDataFetcherTests(TestCase):
         self.assertEqual(self.fetcher.get_sensor_type(), 'Plume')
         self.assertEqual(self.fetcher.sensor_table, AllPlumeMeasurements)
 
+    def test_set_sensor_type_None_input(self):
         self.fetcher.set_sensor_type(None) #Test for None input
         self.assertIsNone(self.fetcher.sensor_table)
 
+    def test_set_sensor_type_invalid_input(self):
         with self.assertRaises(ValueError):
             self.fetcher.set_sensor_type('Invalid') #Test for invalid input
             self.assertIsNone(self.fetcher.get_sensor_type())
@@ -181,47 +186,46 @@ class SensorDataFetcherTests(TestCase):
     @patch('project.models.AllSensorMeasurementsWithLocationsZephyr.objects.filter')
     def test_fetch_raw_data(self, mock_filter, mock_values):
         mock_values.return_value.filter.return_value.annotate.return_value.filter.return_value.order_by.return_value = [{
-            'datetime': '2021-01-01 12:00:00',
+            'datetime': self.date_time_utc,
             'no2': 10.5,
             'particulatepm10': 20.5,
             'particulatepm2_5': 5.5
         }]
         expected_df = pd.DataFrame({
-            'datetime': [pd.to_datetime('2021-01-01 12:00:00')],
+            'datetime': [self.date_time_utc],
             'no2': [10.5],
             'pm10': [20.5],
             'pm2_5': [5.5]
         }).set_index('datetime')
 
-        data_by_date = self.fetcher.fetch_raw_data([datetime(2021, 1, 1).date()])
-        pd.testing.assert_frame_equal(data_by_date[datetime(2021, 1, 1).date()], expected_df)
+        data_by_date = self.fetcher.fetch_raw_data([self.date_time_utc.date()])
+        pd.testing.assert_frame_equal(data_by_date[self.date_time_utc.date()], expected_df)
 
     @patch('project.models.AllSensorMeasurementsWithLocationsZephyr.objects.values')
     @patch('project.models.AllSensorMeasurementsWithLocationsZephyr.objects.filter')
     def test_fetch_raw_data_no_data(self, mock_filter, mock_values):
         mock_values.return_value.filter.return_value.annotate.return_value.filter.return_value.order_by.return_value = [{
-        
         }]
-        data_by_date = self.fetcher.fetch_raw_data([datetime(2021, 1, 1).date()])
+        data_by_date = self.fetcher.fetch_raw_data([self.date_time_utc.date()])
         expected_df = pd.DataFrame(columns=['no2', 'pm10', 'pm2_5'], index=pd.DatetimeIndex([]))
         expected_df.index.name = 'datetime'
-        pd.testing.assert_frame_equal(data_by_date[datetime(2021, 1, 1).date()], expected_df)
+        pd.testing.assert_frame_equal(data_by_date[self.date_time_utc.date()], expected_df)
 
     def test_fetch_raw_data_no_sensor_table(self):
         self.fetcher.sensor_table = None
-        data_by_date = self.fetcher.fetch_raw_data([datetime(2021, 1, 1).date()])
+        data_by_date = self.fetcher.fetch_raw_data([self.date_time_utc.date()])
         expected_df = pd.DataFrame(columns=['no2', 'pm10', 'pm2_5'], index=pd.DatetimeIndex([]))
         expected_df.index.name = 'datetime'
         expected_df = expected_df.astype(float)
-        pd.testing.assert_frame_equal(data_by_date[datetime(2021, 1, 1).date()], expected_df)
+        pd.testing.assert_frame_equal(data_by_date[self.date_time_utc.date()], expected_df)
 
     def test_fetch_raw_data_no_sensor_id(self):
         self.fetcher.sensor_id = None
-        data_by_date = self.fetcher.fetch_raw_data([datetime(2021, 1, 1).date()])
+        data_by_date = self.fetcher.fetch_raw_data([self.date_time_utc.date()])
         expected_df = pd.DataFrame(columns=['no2', 'pm10', 'pm2_5'], index=pd.DatetimeIndex([]))
         expected_df.index.name = 'datetime'
         expected_df = expected_df.astype(float)
-        pd.testing.assert_frame_equal(data_by_date[datetime(2021, 1, 1).date()], expected_df)
+        pd.testing.assert_frame_equal(data_by_date[self.date_time_utc.date()], expected_df)
 
     def test_fetch_raw_data_invalid_dates(self):
         with self.assertRaises(ValueError):

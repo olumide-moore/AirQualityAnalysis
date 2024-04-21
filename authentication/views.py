@@ -5,6 +5,9 @@ from django.contrib.auth import login as auth_login, logout as auth_logout
 
 
 def signup(request):
+    '''
+    This function is used to register a new user
+    '''
     if request.method=='POST':
         username, email, pass1, pass2 = request.POST['username'], request.POST['email'], request.POST['pass1'], request.POST['pass2']
                
@@ -36,6 +39,9 @@ def signup(request):
     return render(request,'authentication/signup.html')
     
 def login(request):
+    '''
+    This function is used to login a user
+    '''
     if request.method=='POST':
         email, password = request.POST['email'], request.POST['password']
         try:
@@ -51,6 +57,9 @@ def login(request):
             return redirect('login')
     return  render(request,'authentication/login.html')
 def logout(request):
+    '''
+    This function is used to logout a user
+    '''
     auth_logout(request)
     messages.success(request, 'You have been logged out successfully')
     return redirect('login')

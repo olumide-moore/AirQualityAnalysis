@@ -74,7 +74,7 @@ class DataProcessorTests(SimpleTestCase):
 
 
   #calc_hrly_avgs_all_pollutants TESTS
-    def test_hrly_avgs_pollutants_small_threshold(self):
+    def test_calc_hrly_avgs_pollutants_small_threshold(self):
         date_time= datetime.strptime('2024-01-22', '%Y-%m-%d')
         expected = {
             'time': [date_time.replace(hour=i).strftime('%Y-%m-%d %H:00:00') for i in range(24)],
@@ -84,7 +84,7 @@ class DataProcessorTests(SimpleTestCase):
         }
         self.assertEqual(DataProcessor.calc_hrly_avgs_all_pollutants(self.rawdata, self.date, minute_threshold=1), expected)
 
-    def test_hrly_avgs_pollutants_large_threshold(self):
+    def test_calc_hrly_avgs_pollutants_large_threshold(self):
         date_time= datetime.strptime('2024-01-22', '%Y-%m-%d')
         #test with at least 45 minutes of data required for the hourly average
         rawdata = pd.DataFrame({ #rawdata for 24 hours with 60 data points per hour
@@ -100,7 +100,7 @@ class DataProcessorTests(SimpleTestCase):
             'pm10': [average(range(i * 60, (i + 1) * 60)) for i in range(24)]
         }
         self.assertEqual(DataProcessor.calc_hrly_avgs_all_pollutants(rawdata, date_time, minute_threshold=45), expected)
-    def test_hrly_avgs_pollutants_no_data(self):
+    def test_calc_hrly_avgs_pollutants_no_data(self):
         date_time= datetime.strptime('2024-01-22', '%Y-%m-%d')
         rawdata = pd.DataFrame({
             'no2': [],
@@ -115,7 +115,7 @@ class DataProcessorTests(SimpleTestCase):
         }
         self.assertEqual(DataProcessor.calc_hrly_avgs_all_pollutants(rawdata, date_time), expected)
 
-    def test_hrly_avgs_pollutants_insufficient_data(self):
+    def test_calc_hrly_avgs_pollutants_missing_data(self):
         date_time= datetime.strptime('2024-01-22', '%Y-%m-%d')
         rawdata = pd.DataFrame({
             'no2': [i for i in range(1, 25)],
@@ -131,7 +131,7 @@ class DataProcessorTests(SimpleTestCase):
         }
         self.assertEqual(DataProcessor.calc_hrly_avgs_all_pollutants(rawdata, date_time, minute_threshold=1), expected)
 
-    def test_hrly_avgs_pollutants_invalid_inputs(self):
+    def test_calc_hrly_avgs_pollutants_invalid_inputs(self):
         date_time= datetime.strptime('2024-01-22', '%Y-%m-%d')
         with self.assertRaises(ValueError):
             DataProcessor.calc_hrly_avgs_all_pollutants('rawdata', date_time, minute_threshold=45)
@@ -151,7 +151,7 @@ class DataProcessorTests(SimpleTestCase):
             DataProcessor.calc_hrly_avgs_all_pollutants(self.rawdata, date_time, minute_threshold='45')
         
 
- #calc_hrly_avgs_single_pollutant TESTS
+  #calc_hrly_avgs_single_pollutant TESTS
     def test_calc_hrly_avgs_single_pollutant_small_threshold(self):
         rawdata=self.rawdata['no2']
         expected = pd.Series([average([(j//3) for j in range(i, i+3)]) for i in range(1, 73, 3)], index=pd.date_range(start=self.date, periods=24, freq='h', tz='UTC'))
@@ -185,7 +185,7 @@ class DataProcessorTests(SimpleTestCase):
 
   #calc_24hr_avg_single_pollutant TESTS
     def test_calc_24hr_avg_single_pollutant_small_threshold(self):
-        rawdata = self.rawdata['no2']
+        rawdata = self.rawdata['pm2_5']
         expected = average([i//3 for i in range(1, 73)])
         self.assertEqual(DataProcessor.calc_24hr_avg_single_pollutant(rawdata, minute_threshold=1), expected)
 
@@ -204,7 +204,7 @@ class DataProcessorTests(SimpleTestCase):
         with self.assertRaises(ValueError):
             DataProcessor.calc_24hr_avg_single_pollutant(pd.Series([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], index=range(10)), minute_threshold=1080)
         with self.assertRaises(ValueError):
-            DataProcessor.calc_24hr_avg_single_pollutant(pd.DataFrame({'no2': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}, index=range(10)), minute_threshold=1080)
+            DataProcessor.calc_24hr_avg_single_pollutant(pd.DataFrame({'pm2_5': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}, index=range(10)), minute_threshold=1080)
         with self.assertRaises(ValueError):
             DataProcessor.calc_24hr_avg_single_pollutant(self.rawdata, minute_threshold=-1)
         with self.assertRaises(ValueError):
@@ -232,16 +232,16 @@ class DataProcessorTests(SimpleTestCase):
         }
         self.assertEqual(DataProcessor.calc_correlations_all_pollutants(data1, data2), expected)
 
-    def test_get_correlatoins_some_nan_values(self):
+    def test_calc_correlatoins_all_pollutants_some_nan_values(self):
         data1 = pd.DataFrame({
             'no2': [1, None, 3, 4, 5],
             'pm10': [6, 7, 8, 9, 10],
             'pm2_5': [11, 12, 13, 14, 15]
         }, index=pd.date_range(start='2024-01-22', periods=5, freq='h', tz='UTC'))
         data2 = pd.DataFrame({
-            'no2': [6, 7, 8, None, 10],
-            'pm10': [11, 12, 13, 14, 15],
-            'pm2_5': [16, 17, 18, 19, 20]
+            'no2': [1, 7, 3, None, 5],
+            'pm10': [6, 7, 8, 9, 10],
+            'pm2_5': [11, 12, 13, 14, 15]
         }, index=pd.date_range(start='2024-01-22', periods=5, freq='h', tz='UTC'))
         expected = {
             'no2': 1.0,
@@ -298,7 +298,7 @@ class DataProcessorTests(SimpleTestCase):
 
 
   #convert_df_to_dict TESTS
-    def test_convert_df_to_dict(self):
+    def test_convert_df_to_dict_populated(self):
         data = pd.DataFrame({
             'no2': [1, 2, 3, 4, 5],
             'pm10': [6, 7, 8, 9, 10],

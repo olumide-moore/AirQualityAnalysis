@@ -48,13 +48,6 @@ def get_data_for_date(request, sensor_type1, sensor_id1, sensor_type2, sensor_id
     :param corravginterval: int - the interval for calculating the correlation
     :return: JsonResponse - a json response containing the data for the given date
     """
-    # ### Test data
-    # date='2024-01-22'
-    # sensor_type1='Zephyr'
-    # sensor_id1 = 60
-    # sensor_type2='Zephyr'
-    # sensor_id2 = 62
-    # ### End test data
     try:
         date = datetime.strptime(date, '%Y-%m-%d').date()
     except:
@@ -63,18 +56,12 @@ def get_data_for_date(request, sensor_type1, sensor_id1, sensor_type2, sensor_id
         )
  
     #Check if the two the sensors is linked to fetcher1 or fetcher2, if not, link them
-    if fetcher1.get_sensor_type() != sensor_type1:
+    if fetcher1.get_sensor_type() != sensor_type1 or fetcher1.get_sensor_id() != sensor_id1:
         fetcher1.set_sensor_type(sensor_type1)
         fetcher1.set_sensor_id(sensor_id1)
-    if fetcher1.get_sensor_id() != sensor_id1:
-        print('setting sensor id')
-        fetcher1.set_sensor_id(sensor_id1)
-        print(fetcher1.get_sensor_id())
         
-    if fetcher2.get_sensor_type() != sensor_type2:
+    if fetcher2.get_sensor_type() != sensor_type2 or fetcher2.get_sensor_id() != sensor_id2:
         fetcher2.set_sensor_type(sensor_type2)
-        fetcher2.set_sensor_id(sensor_id2)
-    if fetcher2.get_sensor_id() != sensor_id2:
         fetcher2.set_sensor_id(sensor_id2)
 
     if date!=date.today() and date in fetcher1.cache_rawdata:
@@ -124,13 +111,6 @@ def updateCorrelation(request, sensor_type1, sensor_id1, sensor_type2, sensor_id
     :param corravginterval: int - the resolution to aggregate the data to
     :return: JsonResponse - a json response containing the updated correlations for the given date
     """
-    # ### Test data
-    # date='2024-01-20'
-    # sensor_type1='Zephyr'
-    # sensor_id1 = 60
-    # sensor_type2='Zephyr'
-    # sensor_id2 = 62
-    # ### End test data
     try:
         date = datetime.strptime(date, '%Y-%m-%d').date()
     except:
@@ -138,18 +118,13 @@ def updateCorrelation(request, sensor_type1, sensor_id1, sensor_type2, sensor_id
             {'error': 'Invalid date format'}
         )
     #Check if the two the sensors is linked to fetcher1 or fetcher2, if not, link them
-    if fetcher1.get_sensor_type() != sensor_type1:
+    if fetcher1.get_sensor_type() != sensor_type1 or fetcher1.get_sensor_id() != sensor_id1:
         fetcher1.set_sensor_type(sensor_type1)
         fetcher1.set_sensor_id(sensor_id1)
-    if fetcher1.get_sensor_id() != sensor_id1:
-        fetcher1.set_sensor_id(sensor_id1)
         
-    if fetcher2.get_sensor_type() != sensor_type2:
+    if fetcher2.get_sensor_type() != sensor_type2 or fetcher2.get_sensor_id() != sensor_id2:
         fetcher2.set_sensor_type(sensor_type2)
         fetcher2.set_sensor_id(sensor_id2)
-    if fetcher2.get_sensor_id() != sensor_id2:
-        fetcher2.set_sensor_id(sensor_id2)
-
     if date!=date.today() and date in fetcher1.cache_rawdata:
         date_rawdata1= fetcher1.cache_rawdata[date]
     else:
