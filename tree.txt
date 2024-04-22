@@ -1,0 +1,72 @@
+Folder PATH listing for volume Windows
+Volume serial number is 46AD-CE39
+C:.
+|   manage.py
+|   README.md
+|   requirements.txt
+|   
++---authentication
+|   |   tests.py
+|   |   urls.py
+|   |   views.py
+|   |   
+|   +---migrations
+|           
++---project
+|   |   models.py
+|   |   settings.py
+|   |   urls.py
+|   |   
+|   +---documentations
+|   |       aqi_calculator.html
+|   |       data_processor.html
+|   |       sensors_metadata.html
+|   |       sensor_data_fetcher.html
+|   |       
+|   +---services
+|   |       aqi_calculator.py
+|   |       data_processor.py
+|   |       sensors_metadata.py
+|   |       sensor_data_fetcher.py
+|   |       
+|   +---static
+|   |   +---css
+|   |   |       style.css
+|   |   |       
+|   |   +---icons
+|   |   |       
+|   |   +---js
+|   |           base.js
+|   |           compare.js
+|   |           home.js
+|   |           inputs.js
+|   |           
+|   +---templates
+|   |   |   aqiguide.html
+|   |   |   base.html
+|   |   |   compare.html
+|   |   |   correlationguide.html
+|   |   |   home.html
+|   |   |   inputs.html
+|   |   |   
+|   |   +---authentication
+|   |           login.html
+|   |           signup.html
+|   |           
+|   +---tests_integration
+|   |       test_compare.py
+|   |       test_home.py
+|   |       
+|   +---tests_unit
+|   |       test_aqi_calculator.py
+|   |       test_data_processor.py
+|   |       test_sensors_metadata.py
+|   |       test_sensor_data_fetcher.py
+|   |       
+|   +---views
+|           compare.py
+|           home.py
+|           
++---routers
+        db_routers.py
+        
