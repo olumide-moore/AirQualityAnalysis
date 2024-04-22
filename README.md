@@ -23,21 +23,26 @@ To install the project, follow these steps:
 
 2. Create a virtual environment and activate it
 ```python -m venv venv```
-```source venv/bin/activate```
 
-3. Install the project dependencies
-```pip install -r requirements.txt```
+3. Activate the virtual environment
+   ```source venv/bin/activate``` (Linux/Mac)
+
+   ```venv\Scripts\activate``` (Windows)
+
+4. Install the project dependencies
+```pip install -r requirements.txt```   (this may take a few minutes)
 
 ## Setup Database
-4. Apply the migrations
+5. Apply the migrations
 ```python manage.py migrate```
-```python manage.py makemigrations```
 
-5. Create a superuser
-```python manage.py createsuperuser```
+    ```python manage.py makemigrations```
+
+6. Create a superuser
+```python manage.py createsuperuser``` (follow the prompts to create a superuser)
 
 ## Run the project
-6. Run the project
+7. Run the project
 ```python manage.py runserver```
 
 Open your browser and navigate to http://127.0.0.1:8000/
@@ -54,10 +59,11 @@ To run the tests, run the following command:
 ```
  python manage.py test
 ```
+
 This will run all the tests in the directories and display the results in the terminal.
 Optionally, you can run a specific test file by running the following command:
 ```
- python manage.py test .tests.<test_file_name>
+ python manage.py test project.tests.<test_file_name>
 ```
 
 ## File Structure
