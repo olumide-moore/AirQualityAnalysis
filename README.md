@@ -18,7 +18,8 @@ To run this project, you need to have the following installed:
 To install the project, follow these steps:
 1. Clone the repository to your local machine
 ```git clone https://github.com/olumide-moore/AirQualityAnalysis.git```
-```cd AirQualityAnalysis```
+
+   ```cd AirQualityAnalysis```
 
 2. Create a virtual environment and activate it
 ```python -m venv venv```
