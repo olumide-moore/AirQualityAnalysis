@@ -46,7 +46,7 @@ To install the project, follow these steps:
 ```python manage.py runserver```
 
 Open your browser and navigate to http://127.0.0.1:8000/
-Login with the superuser credentials created in step 2.
+Login with the superuser credentials created in step 6.
 
 ## Usage
 To access populated data, options include:
