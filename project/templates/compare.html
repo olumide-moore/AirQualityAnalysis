@@ -18,8 +18,9 @@
         </h2>
         <div class="grid grid-cols-1 md:grid-cols-3 lg:gap-48 lg:grid-cols-3 lg:pt-20 gap-8 items-stretch">
           
+          <h2 class="text-lg text-gray-700 col-span-3 text-center" id="noCorrelations">Insufficient data to calculate correlation</h2>
           <!-- NO2 correlation -->
-          <div class="text-black rounded-2xl shadow-lg overflow-hidden flex flex-col justify-between p-4 w-44 h-36 bg-gray-300">
+          <div class="text-black rounded-2xl shadow-lg overflow-hidden flex flex-col justify-between p-4 w-44 h-36 bg-gray-300 hidden" id="no2card">
             <div class="flex justify-end items-center mt-2 mr-2">
               <img src="{% static 'icons/no2.svg' %}" alt="NO₂" class="w-10 h-10">
             </div>
@@ -30,7 +31,7 @@
           </div>
 
           <!-- PM2.5 correlation -->
-          <div  class="text-black rounded-2xl shadow-lg overflow-hidden flex flex-col justify-between p-4 w-44 h-36 bg-gray-300">
+          <div  class="text-black rounded-2xl shadow-lg overflow-hidden flex flex-col justify-between p-4 w-44 h-36 bg-gray-300 hidden" id="pm2_5card">
             <div class="flex justify-end items-center">
               <img src="{% static 'icons/pm2_5.svg' %}" alt="PM2_5" class="w-12 h-12">
             </div>
@@ -41,7 +42,7 @@
           </div>
 
           <!-- PM10 correlation -->
-          <div class="text-black rounded-2xl shadow-lg overflow-hidden flex flex-col justify-between p-4 w-44 h-36 bg-gray-300">
+          <div class="text-black rounded-2xl shadow-lg overflow-hidden flex flex-col justify-between p-4 w-44 h-36 bg-gray-300 hidden" id="pm10card">
             <div class="flex justify-end items-center mt-1 mr-2">
               <img src="{% static 'icons/pm10.svg' %}" alt="PM₁₀" class="w-10 h-10">
             </div>

@@ -40,6 +40,7 @@ function updateAQICards(aqi_data) {
   let no2Div = document.getElementById("no2card");
   let pm2_5Div = document.getElementById("pm2_5card");
   let pm10Div = document.getElementById("pm10card");
+  let noAQIs=document.getElementById("noAQIs");
 
   if (aqi_data.no2) { 
     let no2aqi_color = getAQIColor(aqi_data.no2); //Get the AQI color for the NO2 value
@@ -76,6 +77,12 @@ function updateAQICards(aqi_data) {
     document.getElementById("pm10AQIDesc").textContent = "";
     document.getElementById("pm10card").style.display = "none";
   }
+  if (aqi_data.no2 || aqi_data.pm2_5 || aqi_data.pm10) {
+    noAQIs.style.display = "none";
+  } else {
+    noAQIs.style.display = "block";
+  }
+
 
 }
 

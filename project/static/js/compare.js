@@ -206,13 +206,35 @@ function updateBoxPlot(data) {
 function updateCorrelationCards(correlations) {
   let no2=""; let pm2_5=""; let pm10="";
   if (correlations) {
-    if (correlations.no2 != null) no2 = correlations.no2;
-    if (correlations.pm2_5 != null) pm2_5 = correlations.pm2_5;
-    if (correlations.pm10 != null) pm10 = correlations.pm10;
+    if (correlations.no2 != null) {
+      no2 = correlations.no2;
+      document.getElementById("no2card").style.display = "block";
+    }
+    else {
+      document.getElementById("no2card").style.display = "none";
+    }
+    if (correlations.pm2_5 != null) {
+      pm2_5 = correlations.pm2_5;
+     document.getElementById("pm2_5card").style.display = "block";
+    } else {
+      document.getElementById("pm2_5card").style.display = "none";
+    }
+    if (correlations.pm10 != null) {
+      pm10 = correlations.pm10;
+      document.getElementById("pm10card").style.display = "block";
+    }
+    else {
+      document.getElementById("pm10card").style.display = "none";
+    }
   }
   document.getElementById("no2correlation").textContent = no2;
   document.getElementById("pm2_5correlation").textContent = pm2_5;
   document.getElementById("pm10correlation").textContent = pm10;
+  if (no2 == "" && pm2_5 == "" && pm10 == "") {
+    document.getElementById("noCorrelations").style.display = "block";
+  } else {
+    document.getElementById("noCorrelations").style.display = "none";
+  }
 }
 
 function fetchData() {
